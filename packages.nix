@@ -11,8 +11,8 @@
   environment.systemPackages = with pkgs; [
     chromium
     git
-	stow
-	tree
+    stow
+    tree
     vim
     micro
     wget

@@ -16,6 +16,6 @@
     work-sans
     noto-fonts-cjk-sans
     adwaita-fonts
-	roboto
+    roboto
   ];
 }
