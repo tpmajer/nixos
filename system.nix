@@ -98,6 +98,8 @@
     };
   };
 
+  environment.variables.EDITOR = "micro";
+
   system.stateVersion = "25.05";
 
 }
