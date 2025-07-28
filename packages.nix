@@ -9,7 +9,7 @@
 
 {
   environment.systemPackages = with pkgs; [
-    chromium
+    google-chrome
     git
     stow
     tree
@@ -54,6 +54,7 @@
     ncspot
     bat
     nixfmt-rfc-style
+    winbox4
   ];
 
   programs = {

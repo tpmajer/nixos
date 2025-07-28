@@ -12,15 +12,19 @@
     ./hardware-configuration.nix
   ];
 
-  boot.loader = {
-    systemd-boot.enable = true;
-    efi.canTouchEfiVariables = true;
+#  hardware.enableAllFirmware = true;
+
+  boot = {
+  	loader = {
+    	systemd-boot.enable = true;
+    	efi.canTouchEfiVariables = true;
+  	};
+	kernelPackages = pkgs.linuxPackages_latest;
+	initrd.luks.devices."luks-2388d8ad-9a00-401a-b4b4-8e3582a4ef9f".device = "/dev/disk/by-uuid/2388d8ad-9a00-401a-b4b4-8e3582a4ef9f";
   };
 
-  boot.kernelPackages = pkgs.linuxPackages_latest;
-
   networking.hostName = "nixos";
-  #  networking.wireless.enable = true;
+  # networking.wireless.enable = true;
   networking.networkmanager.enable = true;
 
   time.timeZone = "Europe/Warsaw";
@@ -43,7 +47,13 @@
 
   security.rtkit.enable = true;
 
+
+# Workaround for GNOME autologin: https://github.com/NixOS/nixpkgs/issues/103746#issuecomment-945091229
+  systemd.services."getty@tty1".enable = false;
+  systemd.services."autovt@tty1".enable = false;
+
   services = {
+	fwupd.enable = true;
     xserver.enable = false;
     xserver.xkb = {
       layout = "pl";
