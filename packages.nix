@@ -55,6 +55,7 @@
     bat
     nixfmt-rfc-style
     transmission_4
+    spotify
   ];
 
   programs = {
