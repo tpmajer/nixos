@@ -54,7 +54,7 @@
     ncspot
     bat
     nixfmt-rfc-style
-    winbox4
+    transmission_4
   ];
 
   programs = {

@@ -12,15 +12,19 @@
     ./hardware-configuration.nix
   ];
 
-#  hardware.enableAllFirmware = true;
+  hardware.enableAllFirmware = true;
+  hardware.graphics.extraPackages = with pkgs; [
+    amdvlk
+  ];
 
   boot = {
-  	loader = {
-    	systemd-boot.enable = true;
-    	efi.canTouchEfiVariables = true;
-  	};
-	kernelPackages = pkgs.linuxPackages_latest;
-	initrd.luks.devices."luks-2388d8ad-9a00-401a-b4b4-8e3582a4ef9f".device = "/dev/disk/by-uuid/2388d8ad-9a00-401a-b4b4-8e3582a4ef9f";
+    loader = {
+      systemd-boot.enable = true;
+      efi.canTouchEfiVariables = true;
+    };
+    kernelPackages = pkgs.linuxPackages_latest;
+    initrd.luks.devices."luks-2388d8ad-9a00-401a-b4b4-8e3582a4ef9f".device =
+      "/dev/disk/by-uuid/2388d8ad-9a00-401a-b4b4-8e3582a4ef9f";
   };
 
   networking.hostName = "nixos";
@@ -47,13 +51,12 @@
 
   security.rtkit.enable = true;
 
-
-# Workaround for GNOME autologin: https://github.com/NixOS/nixpkgs/issues/103746#issuecomment-945091229
+  # Workaround for GNOME autologin: https://github.com/NixOS/nixpkgs/issues/103746#issuecomment-945091229
   systemd.services."getty@tty1".enable = false;
   systemd.services."autovt@tty1".enable = false;
 
   services = {
-	fwupd.enable = true;
+    fwupd.enable = true;
     xserver.enable = false;
     xserver.xkb = {
       layout = "pl";
@@ -78,6 +81,7 @@
     libinput.enable = true;
     flatpak.enable = true;
     envfs.enable = true;
+    fprintd.enable = true; # 'sudo fprintd-enroll $USER' to enroll
   };
 
   users.users.tpmajer = {
