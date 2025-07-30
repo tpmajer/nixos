@@ -11,6 +11,7 @@
   imports = [
     ./hardware-configuration.nix
   ];
+
   hardware.enableRedistributableFirmware = true;
   hardware.enableAllFirmware = true;
   hardware.graphics.extraPackages = with pkgs; [
@@ -25,11 +26,20 @@
     kernelPackages = pkgs.linuxPackages_latest;
     initrd.luks.devices."luks-2388d8ad-9a00-401a-b4b4-8e3582a4ef9f".device =
       "/dev/disk/by-uuid/2388d8ad-9a00-401a-b4b4-8e3582a4ef9f";
+    initrd.availableKernelModules = [ "usbhid" ];
   };
 
   networking.hostName = "nixos";
-  # networking.wireless.enable = true;
   networking.networkmanager.enable = true;
+  networking.networkmanager.wifi.backend = "iwd";
+  networking.wireless.iwd = {
+    enable = true;
+    settings.IPv6.Enabled = false;
+    settings.Settings.AutoConnect = true;
+    settings.Settings.BandModifier2_4Ghz = "0";
+    settings.Settings.BandModifier5Ghz = "50";
+    settings.Settings.BandModifier6Ghz = "100";
+  };
 
   time.timeZone = "Europe/Warsaw";
 

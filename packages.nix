@@ -9,6 +9,8 @@
 
 {
   environment.systemPackages = with pkgs; [
+    wiremix
+    pamixer
     google-chrome
     git
     stow
@@ -56,6 +58,10 @@
     nixfmt-rfc-style
     transmission_4
     spotify
+    zstd
+    celluloid
+    mesa
+    ffmpeg
   ];
 
   programs = {

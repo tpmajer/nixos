@@ -6,6 +6,7 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     chaotic.url = "github:chaotic-cx/nyx/nyxpkgs-unstable";
+    wiremix.url = "github:tsowell/wiremix";
   };
 
   outputs =
@@ -13,6 +14,7 @@
       self,
       nixpkgs,
       chaotic,
+      wiremix,
       ...
     }@inputs:
     {
