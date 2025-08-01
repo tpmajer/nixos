@@ -14,6 +14,7 @@
 
   hardware.enableRedistributableFirmware = true;
   hardware.enableAllFirmware = true;
+  hardware.graphics.enable = true;
   hardware.graphics.extraPackages = with pkgs; [
     amdvlk
   ];
@@ -34,11 +35,13 @@
   networking.networkmanager.wifi.backend = "iwd";
   networking.wireless.iwd = {
     enable = true;
-    settings.IPv6.Enabled = false;
-    settings.Settings.AutoConnect = true;
-    settings.Settings.BandModifier2_4Ghz = "0";
-    settings.Settings.BandModifier5Ghz = "50";
-    settings.Settings.BandModifier6Ghz = "100";
+    settings = {
+      IPv6.Enabled = false;
+      Settings.AutoConnect = true;
+      Settings.BandModifier2_4Ghz = "0.0";
+      Settings.BandModifier5Ghz = "50.0";
+      Settings.BandModifier6Ghz = "100.0";
+    };
   };
 
   time.timeZone = "Europe/Warsaw";
@@ -66,6 +69,7 @@
   systemd.services."autovt@tty1".enable = false;
 
   services = {
+    power-profiles-daemon.enable = true;
     fwupd.enable = true;
     xserver.enable = false;
     xserver.xkb = {
@@ -119,6 +123,7 @@
     extraGroups = [
       "networkmanager"
       "wheel"
+      "video"
     ];
     packages = with pkgs; [
     ];

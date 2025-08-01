@@ -9,12 +9,20 @@
 
 {
   environment.systemPackages = with pkgs; [
+    coreutils
+    colorls
+    wl-clipboard-rs
+    fishPlugins.done
+    fishPlugins.fzf-fish
+    fishPlugins.forgit
+    fishPlugins.hydro
+    fishPlugins.grc
+    grc
     wiremix
     pamixer
     google-chrome
     git
     stow
-    tree
     vim
     micro
     wget
@@ -33,7 +41,6 @@
     htop
     neovim
     waybar
-    warp-terminal
     gnome-tweaks
     signal-desktop
     nix-search-tv
@@ -65,6 +72,7 @@
   ];
 
   programs = {
+    fish.enable = true;
     zsh = {
       enable = true;
       enableCompletion = true;
@@ -79,7 +87,9 @@
     television = {
       enable = true;
       enableZshIntegration = true;
+      enableFishIntegration = true;
     };
     fzf.fuzzyCompletion = true;
+    light.enable = true;
   };
 }
