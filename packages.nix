@@ -9,8 +9,12 @@
 
 {
   environment.systemPackages = with pkgs; [
+    bluetui
+    brightnessctl
+    playerctl
+    discord
+    helix
     coreutils
-    colorls
     wl-clipboard-rs
     fishPlugins.done
     fishPlugins.fzf-fish
@@ -48,7 +52,6 @@
     mako
     swww
     nwg-bar
-    swaylock
     xwayland-satellite
     cava
     simp1e-cursors
@@ -66,9 +69,10 @@
     transmission_4
     spotify
     zstd
-    celluloid
     mesa
     ffmpeg
+    onlyoffice-desktopeditors
+    impala
   ];
 
   programs = {
@@ -90,6 +94,5 @@
       enableFishIntegration = true;
     };
     fzf.fuzzyCompletion = true;
-    light.enable = true;
   };
 }

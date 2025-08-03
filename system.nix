@@ -147,6 +147,20 @@
   };
 
   environment.variables.EDITOR = "micro";
+  environment.variables.QT_QPA_PLATFORM = "wayland;xcb";
+
+  xdg.portal.enable = true;
+  xdg.portal.config = {
+    common = {
+      default = [
+        "gtk"
+        "xapp"
+      ];
+      "org.freedesktop.impl.portal.Secret" = [
+        "gnome-keyring"
+      ];
+    };
+  };
 
   system.stateVersion = "25.05";
 
