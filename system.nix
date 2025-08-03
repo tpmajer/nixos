@@ -27,7 +27,7 @@
     kernelPackages = pkgs.linuxPackages_latest;
     initrd.luks.devices."luks-2388d8ad-9a00-401a-b4b4-8e3582a4ef9f".device =
       "/dev/disk/by-uuid/2388d8ad-9a00-401a-b4b4-8e3582a4ef9f";
-    initrd.availableKernelModules = [ "usbhid" ];
+#    initrd.availableKernelModules = [ "usbhid" ];
   };
 
   networking.hostName = "nixos";
@@ -36,7 +36,7 @@
   networking.wireless.iwd = {
     enable = true;
     settings = {
-      IPv6.Enabled = false;
+      IPv6.Enabled = true;
       Settings.AutoConnect = true;
       Settings.BandModifier2_4Ghz = "0.0";
       Settings.BandModifier5Ghz = "50.0";
@@ -68,6 +68,11 @@
   systemd.services."getty@tty1".enable = false;
   systemd.services."autovt@tty1".enable = false;
 
+  systemd.services.systemd-vconsole-setup = {
+    unitConfig = {
+      After = "local-fs.target";
+    };
+  };
   services = {
     power-profiles-daemon.enable = true;
     fwupd.enable = true;
@@ -147,20 +152,6 @@
   };
 
   environment.variables.EDITOR = "micro";
-  environment.variables.QT_QPA_PLATFORM = "wayland;xcb";
-
-  xdg.portal.enable = true;
-  xdg.portal.config = {
-    common = {
-      default = [
-        "gtk"
-        "xapp"
-      ];
-      "org.freedesktop.impl.portal.Secret" = [
-        "gnome-keyring"
-      ];
-    };
-  };
 
   system.stateVersion = "25.05";
 
