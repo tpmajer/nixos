@@ -18,6 +18,7 @@
   hardware.graphics.extraPackages = with pkgs; [
     amdvlk
   ];
+  hardware.steam-hardware.enable = true;
 
   boot = {
     loader = {
@@ -27,20 +28,20 @@
     kernelPackages = pkgs.linuxPackages_latest;
     initrd.luks.devices."luks-2388d8ad-9a00-401a-b4b4-8e3582a4ef9f".device =
       "/dev/disk/by-uuid/2388d8ad-9a00-401a-b4b4-8e3582a4ef9f";
-#    initrd.availableKernelModules = [ "usbhid" ];
+    initrd.availableKernelModules = [ "usbhid" ];
   };
 
   networking.hostName = "nixos";
-  networking.networkmanager.enable = true;
-  networking.networkmanager.wifi.backend = "iwd";
+  networking.networkmanager.enable = false;
+#  networking.networkmanager.wifi.backend = "iwd";
   networking.wireless.iwd = {
     enable = true;
     settings = {
-      IPv6.Enabled = true;
+      IPv6.Enabled = false;
       Settings.AutoConnect = true;
-      Settings.BandModifier2_4Ghz = "0.0";
-      Settings.BandModifier5Ghz = "50.0";
-      Settings.BandModifier6Ghz = "100.0";
+      Settings.BandModifier2_4Ghz = "0";
+      Settings.BandModifier5Ghz = "1";
+      Settings.BandModifier6Ghz = "10";
     };
   };
 

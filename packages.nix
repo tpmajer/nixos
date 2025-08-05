@@ -76,7 +76,15 @@
   ];
 
   programs = {
-    fish.enable = true;
+    fish = {
+      enable = true;
+      generateCompletions = true;
+      vendor = {
+      	config.enable = true;
+      	functions.enable = true;
+      	completions.enable = true;
+      };
+    };
     zsh = {
       enable = true;
       enableCompletion = true;
@@ -94,5 +102,6 @@
       enableFishIntegration = true;
     };
     fzf.fuzzyCompletion = true;
+    steam.enable = true;
   };
 }
