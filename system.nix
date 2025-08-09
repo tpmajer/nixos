@@ -17,6 +17,7 @@
   hardware.graphics.enable = true;
   hardware.graphics.extraPackages = with pkgs; [
     amdvlk
+    mesa.opencl
   ];
   hardware.steam-hardware.enable = true;
 
@@ -32,22 +33,22 @@
   };
 
   networking.hostName = "nixos";
-  networking.networkmanager.enable = false;
-#  networking.networkmanager.wifi.backend = "iwd";
-  networking.wireless.iwd = {
-    enable = true;
-    settings = {
-      IPv6.Enabled = false;
-      Settings.AutoConnect = true;
-      Settings.BandModifier2_4Ghz = "0";
-      Settings.BandModifier5Ghz = "1";
-      Settings.BandModifier6Ghz = "10";
-    };
-  };
+  networking.networkmanager.enable = true;
+  networking.networkmanager.wifi.backend = "iwd";
+  #  networking.wireless.iwd = {
+  #    enable = true;
+  #    settings = {
+  #      IPv6.Enabled = false;
+  #      Settings.AutoConnect = true;
+  #      Settings.BandModifier2_4Ghz = "0";
+  #      Settings.BandModifier5Ghz = "1";
+  #      Settings.BandModifier6Ghz = "10";
+  #    };
+  #  };
 
   time.timeZone = "Europe/Warsaw";
 
-  i18n.defaultLocale = "pl_PL.UTF-8";
+  i18n.defaultLocale = "en_US.UTF-8";
 
   i18n.extraLocaleSettings = {
     LC_ADDRESS = "pl_PL.UTF-8";
@@ -58,7 +59,7 @@
     LC_NUMERIC = "pl_PL.UTF-8";
     LC_PAPER = "pl_PL.UTF-8";
     LC_TELEPHONE = "pl_PL.UTF-8";
-    LC_TIME = "pl_PL.UTF-8";
+    LC_TIME = "en_US.UTF-8";
   };
 
   console.keyMap = "pl2";
@@ -74,7 +75,17 @@
       After = "local-fs.target";
     };
   };
+
+  systemd.services.flatpak-repo = {
+    wantedBy = [ "multi-user.target" ];
+    path = [ pkgs.flatpak ];
+    script = ''
+      flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+    '';
+  };
+
   services = {
+    preload.enable = true;
     power-profiles-daemon.enable = true;
     fwupd.enable = true;
     xserver.enable = false;
@@ -152,7 +163,13 @@
     };
   };
 
+  xdg.portal = {
+    enable = true;
+    extraPortals = [
+    ];
+  };
   environment.variables.EDITOR = "micro";
+  environment.variables.RUSTICL_ENABLE = "radeonsi";
 
   system.stateVersion = "25.05";
 

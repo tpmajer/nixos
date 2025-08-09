@@ -13,6 +13,7 @@
     nerd-fonts.hack
     nerd-fonts.adwaita-mono
     nerd-fonts.jetbrains-mono
+    nerd-fonts.victor-mono
     work-sans
     noto-fonts-cjk-sans
     adwaita-fonts

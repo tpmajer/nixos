@@ -22,6 +22,7 @@
         modules = [
           ./system.nix
           ./packages.nix
+          #		  ./user-services.nix
           ./fonts.nix
           chaotic.nixosModules.default
         ];

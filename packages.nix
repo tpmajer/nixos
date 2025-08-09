@@ -9,6 +9,13 @@
 
 {
   environment.systemPackages = with pkgs; [
+	git
+	stow
+	ghostty
+	starship
+	wget
+	vim
+	micro
     bluetui
     brightnessctl
     playerctl
@@ -23,24 +30,13 @@
     fishPlugins.grc
     grc
     wiremix
-    pamixer
     google-chrome
-    git
-    stow
-    vim
-    micro
-    wget
-    zsh
-    ghostty
-    starship
-    zsh-autocomplete
-    zsh-completions
-    zsh-autosuggestions
     fzf
     yt-dlp
     wgcf
     yubikey-manager
     fastfetch
+    neofetch
     btop
     htop
     neovim
@@ -55,7 +51,7 @@
     xwayland-satellite
     cava
     simp1e-cursors
-    catppuccin-gtk
+    catppuccin-cursors
     thunderbird
     bazaar_git
     evolve-core
@@ -72,7 +68,19 @@
     mesa
     ffmpeg
     onlyoffice-desktopeditors
-    impala
+    #    impala
+    wlogout
+    gtk-layer-shell
+    cliphist
+    calcure
+    tree
+    beauty-line-icon-theme
+    firefox_nightly
+    networkmanager_dmenu
+    tuba
+    davinci-resolve
+    showtime
+    distrobox
   ];
 
   programs = {
@@ -80,17 +88,14 @@
       enable = true;
       generateCompletions = true;
       vendor = {
-      	config.enable = true;
-      	functions.enable = true;
-      	completions.enable = true;
+        config.enable = true;
+        functions.enable = true;
+        completions.enable = true;
       };
     };
-    zsh = {
+    zoxide = {
       enable = true;
-      enableCompletion = true;
-      autosuggestions.enable = true;
-      enableLsColors = true;
-      syntaxHighlighting.enable = true;
+      enableFishIntegration = true;
     };
     niri.enable = true;
     starship.enable = true;
@@ -98,7 +103,6 @@
     yazi.enable = true;
     television = {
       enable = true;
-      enableZshIntegration = true;
       enableFishIntegration = true;
     };
     fzf.fuzzyCompletion = true;
