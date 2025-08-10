@@ -85,6 +85,7 @@
   };
 
   services = {
+    gnome.gnome-keyring.enable = true;
     preload.enable = true;
     power-profiles-daemon.enable = true;
     fwupd.enable = true;
@@ -165,7 +166,8 @@
 
   xdg.portal = {
     enable = true;
-    extraPortals = [
+    extraPortals = with pkgs; [
+      xdg-desktop-portal-gtk
     ];
   };
   environment.variables.EDITOR = "micro";

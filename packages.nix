@@ -9,13 +9,13 @@
 
 {
   environment.systemPackages = with pkgs; [
-	git
-	stow
-	ghostty
-	starship
-	wget
-	vim
-	micro
+    git
+    stow
+    ghostty
+    starship
+    wget
+    vim
+    micro
     bluetui
     brightnessctl
     playerctl
@@ -51,10 +51,8 @@
     xwayland-satellite
     cava
     simp1e-cursors
-    catppuccin-cursors
     thunderbird
     bazaar_git
-    evolve-core
     libnotify
     clock-rs
     grim
@@ -74,13 +72,15 @@
     cliphist
     calcure
     tree
-    beauty-line-icon-theme
     firefox_nightly
     networkmanager_dmenu
     tuba
     davinci-resolve
     showtime
     distrobox
+    superfile
+    candy-icons
+    catppuccin-papirus-folders
   ];
 
   programs = {
@@ -100,7 +100,6 @@
     niri.enable = true;
     starship.enable = true;
     firefox.enable = true;
-    yazi.enable = true;
     television = {
       enable = true;
       enableFishIntegration = true;
