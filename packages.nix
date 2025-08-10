@@ -22,16 +22,14 @@
     discord
     helix
     coreutils
+	fd
     wl-clipboard-rs
     fishPlugins.done
-    fishPlugins.fzf-fish
     fishPlugins.forgit
-    fishPlugins.hydro
     fishPlugins.grc
     grc
     wiremix
     google-chrome
-    fzf
     yt-dlp
     wgcf
     yubikey-manager
@@ -43,7 +41,6 @@
     waybar
     gnome-tweaks
     signal-desktop
-    nix-search-tv
     fuzzel
     mako
     swww
@@ -72,7 +69,6 @@
     cliphist
     calcure
     tree
-    firefox_nightly
     networkmanager_dmenu
     tuba
     davinci-resolve
@@ -81,6 +77,8 @@
     superfile
     candy-icons
     catppuccin-papirus-folders
+	nix-search-tv
+    timg # for terminal image preview
   ];
 
   programs = {
@@ -93,10 +91,6 @@
         completions.enable = true;
       };
     };
-    zoxide = {
-      enable = true;
-      enableFishIntegration = true;
-    };
     niri.enable = true;
     starship.enable = true;
     firefox.enable = true;
@@ -104,7 +98,6 @@
       enable = true;
       enableFishIntegration = true;
     };
-    fzf.fuzzyCompletion = true;
     steam.enable = true;
   };
 }
