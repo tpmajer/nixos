@@ -22,7 +22,7 @@
     discord
     helix
     coreutils
-	fd
+    fd
     wl-clipboard-rs
     fishPlugins.done
     fishPlugins.forgit
@@ -34,7 +34,6 @@
     wgcf
     yubikey-manager
     fastfetch
-    neofetch
     btop
     htop
     neovim
@@ -77,8 +76,11 @@
     superfile
     candy-icons
     catppuccin-papirus-folders
-	nix-search-tv
+    nix-search-tv
     timg # for terminal image preview
+    krita
+    godot
+    obsidian
   ];
 
   programs = {
