@@ -10,16 +10,32 @@
 {
   imports = [
     ./hardware-configuration.nix
+    ./network.nix
   ];
 
   hardware.enableRedistributableFirmware = true;
   hardware.enableAllFirmware = true;
-  hardware.graphics.enable = true;
-  hardware.graphics.extraPackages = with pkgs; [
-    amdvlk
-    mesa.opencl
-  ];
+  hardware.graphics = {
+    enable = true;
+    enable32Bit = true;
+    extraPackages = with pkgs; [
+      amdvlk
+      mesa.opencl
+    ];
+    extraPackages32 = with pkgs; [
+      driversi686Linux.amdvlk
+    ];
+  };
   hardware.steam-hardware.enable = true;
+  hardware.bluetooth = {
+    enable = true;
+    powerOnBoot = true;
+    settings = {
+      General = {
+        Experimental = true; # Show battery charge of Bluetooth devices
+      };
+    };
+  };
 
   boot = {
     loader = {
@@ -31,20 +47,6 @@
       "/dev/disk/by-uuid/2388d8ad-9a00-401a-b4b4-8e3582a4ef9f";
     initrd.availableKernelModules = [ "usbhid" ];
   };
-
-  networking.hostName = "nixos";
-  networking.networkmanager.enable = true;
-  networking.networkmanager.wifi.backend = "iwd";
-  #  networking.wireless.iwd = {
-  #    enable = true;
-  #    settings = {
-  #      IPv6.Enabled = false;
-  #      Settings.AutoConnect = true;
-  #      Settings.BandModifier2_4Ghz = "0";
-  #      Settings.BandModifier5Ghz = "1";
-  #      Settings.BandModifier6Ghz = "10";
-  #    };
-  #  };
 
   time.timeZone = "Europe/Warsaw";
 
@@ -65,15 +67,19 @@
   console.keyMap = "pl2";
 
   security.rtkit.enable = true;
-
-  # Workaround for GNOME autologin: https://github.com/NixOS/nixpkgs/issues/103746#issuecomment-945091229
-  systemd.services."getty@tty1".enable = false;
-  systemd.services."autovt@tty1".enable = false;
+  security.pam.services.hyprlock = { };
+  security.pam.services.hyprlock.enableGnomeKeyring = true;
+  security.pam.services.gdm.enableGnomeKeyring = true;
 
   systemd.services.systemd-vconsole-setup = {
     unitConfig = {
       After = "local-fs.target";
     };
+  };
+
+  virtualisation.podman = {
+    enable = true;
+    dockerCompat = true;
   };
 
   systemd.services.flatpak-repo = {
@@ -85,20 +91,24 @@
   };
 
   services = {
+    hypridle.enable = true;
     gnome.gnome-keyring.enable = true;
+    gnome.core-apps.enable = true;
     preload.enable = true;
-    power-profiles-daemon.enable = true;
+    power-profiles-daemon.enable = false;
+    tlp.enable = true;
     fwupd.enable = true;
     xserver.enable = false;
     xserver.xkb = {
       layout = "pl";
       variant = "";
     };
-    desktopManager.gnome.enable = true;
+    blueman.enable = true;
+    desktopManager.gnome.enable = false;
     displayManager = {
       gdm.enable = true;
       autoLogin = {
-        enable = true;
+        enable = false;
         user = "tpmajer";
       };
     };
@@ -160,7 +170,7 @@
     gc = {
       automatic = true;
       dates = "weekly";
-      options = "--delete-older-than 1w";
+      options = "--delete-older-than 7d";
     };
   };
 
@@ -170,8 +180,11 @@
       xdg-desktop-portal-gtk
     ];
   };
+
   environment.variables.EDITOR = "micro";
   environment.variables.RUSTICL_ENABLE = "radeonsi";
+  environment.variables.AMD_VULKAN_ICD = "RADV";
+  environment.variables.XDG_RUNTIME_DIR = "/run/user/$UID"; # set the runtime directory
 
   system.stateVersion = "25.05";
 

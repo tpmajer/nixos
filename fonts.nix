@@ -14,6 +14,7 @@
     nerd-fonts.adwaita-mono
     nerd-fonts.jetbrains-mono
     nerd-fonts.victor-mono
+    nerd-fonts.lekton
     work-sans
     noto-fonts-cjk-sans
     adwaita-fonts

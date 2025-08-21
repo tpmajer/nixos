@@ -22,6 +22,7 @@
     discord
     helix
     coreutils
+    reaction # for ip46tables command
     fd
     wl-clipboard-rs
     fishPlugins.done
@@ -48,7 +49,6 @@
     cava
     simp1e-cursors
     thunderbird
-    bazaar_git
     libnotify
     clock-rs
     grim
@@ -81,9 +81,14 @@
     krita
     godot
     obsidian
+    jetbrains.rust-rover
+    jetbrains.pycharm-professional
+    wireguard-tools
   ];
 
   programs = {
+    localsend.enable = true;
+    hyprlock.enable = true;
     fish = {
       enable = true;
       generateCompletions = true;
