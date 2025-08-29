@@ -62,7 +62,7 @@
     mesa
     ffmpeg
     onlyoffice-desktopeditors
-    #    impala
+    impala
     wlogout
     gtk-layer-shell
     cliphist
@@ -71,7 +71,6 @@
     networkmanager_dmenu
     tuba
     davinci-resolve
-    showtime
     distrobox
     superfile
     candy-icons
@@ -84,6 +83,14 @@
     jetbrains.rust-rover
     jetbrains.pycharm-professional
     wireguard-tools
+    upscaler
+    clean-css-cli
+    caligula
+	(mpv.override {
+	  scripts = [
+	    mpvScripts.uosc
+	  ];
+	})
   ];
 
   programs = {

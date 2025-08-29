@@ -67,9 +67,15 @@
   console.keyMap = "pl2";
 
   security.rtkit.enable = true;
+  security.polkit.enable = true;
   security.pam.services.hyprlock = { };
   security.pam.services.hyprlock.enableGnomeKeyring = true;
   security.pam.services.gdm.enableGnomeKeyring = true;
+
+  virtualisation.podman = {
+    enable = true;
+    dockerCompat = true;
+  };
 
   systemd.services.systemd-vconsole-setup = {
     unitConfig = {
@@ -77,23 +83,20 @@
     };
   };
 
-  virtualisation.podman = {
-    enable = true;
-    dockerCompat = true;
-  };
-
   systemd.services.flatpak-repo = {
     wantedBy = [ "multi-user.target" ];
     path = [ pkgs.flatpak ];
-    script = ''
+    script = "
       flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-    '';
+    ";
   };
 
   services = {
     hypridle.enable = true;
     gnome.gnome-keyring.enable = true;
     gnome.core-apps.enable = true;
+    gvfs.enable = true;
+    geoclue2.enable = true;
     preload.enable = true;
     power-profiles-daemon.enable = false;
     tlp.enable = true;
@@ -181,10 +184,16 @@
     ];
   };
 
+  qt.platformTheme = "qt5ct";
+
   environment.variables.EDITOR = "micro";
   environment.variables.RUSTICL_ENABLE = "radeonsi";
   environment.variables.AMD_VULKAN_ICD = "RADV";
   environment.variables.XDG_RUNTIME_DIR = "/run/user/$UID"; # set the runtime directory
+  environment.sessionVariables.NIXOS_OZONE_WL = "1";
+
+  services.desktopManager.gnome.extraGSettingsOverrides = {
+  };
 
   system.stateVersion = "25.05";
 
