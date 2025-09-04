@@ -19,11 +19,13 @@
     enable = true;
     enable32Bit = true;
     extraPackages = with pkgs; [
-      amdvlk
-      mesa.opencl
+      #  amdvlk
+      rocmPackages.clr.icd
+      rocmPackages.rocm-runtime
+      rocmPackages.rocminfo
     ];
     extraPackages32 = with pkgs; [
-      driversi686Linux.amdvlk
+      #  driversi686Linux.amdvlk
     ];
   };
   hardware.steam-hardware.enable = true;
@@ -45,7 +47,10 @@
     kernelPackages = pkgs.linuxPackages_latest;
     initrd.luks.devices."luks-2388d8ad-9a00-401a-b4b4-8e3582a4ef9f".device =
       "/dev/disk/by-uuid/2388d8ad-9a00-401a-b4b4-8e3582a4ef9f";
-    initrd.availableKernelModules = [ "usbhid" ];
+    initrd.availableKernelModules = [
+      "usbhid"
+    ];
+    blacklistedKernelModules = [ "ucsi_acpi" ];
   };
 
   time.timeZone = "Europe/Warsaw";
@@ -94,7 +99,7 @@
   services = {
     hypridle.enable = true;
     gnome.gnome-keyring.enable = true;
-    gnome.core-apps.enable = true;
+    gnome.core-apps.enable = false;
     gvfs.enable = true;
     geoclue2.enable = true;
     preload.enable = true;
@@ -184,16 +189,11 @@
     ];
   };
 
-  qt.platformTheme = "qt5ct";
-
   environment.variables.EDITOR = "micro";
-  environment.variables.RUSTICL_ENABLE = "radeonsi";
-  environment.variables.AMD_VULKAN_ICD = "RADV";
+  #  environment.variables.RUSTICL_ENABLE = "radeonsi";
+  #  environment.variables.AMD_VULKAN_ICD = "RADV";
   environment.variables.XDG_RUNTIME_DIR = "/run/user/$UID"; # set the runtime directory
   environment.sessionVariables.NIXOS_OZONE_WL = "1";
-
-  services.desktopManager.gnome.extraGSettingsOverrides = {
-  };
 
   system.stateVersion = "25.05";
 

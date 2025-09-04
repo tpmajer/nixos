@@ -20,9 +20,9 @@
     settings = {
       IPv6.Enabled = false;
       Settings.AutoConnect = true;
-      Settings.BandModifier2_4Ghz = "0";
-      Settings.BandModifier5Ghz = "1";
-      Settings.BandModifier6Ghz = "10";
+      Settings.BandModifier2_4Ghz = "1";
+      Settings.BandModifier5Ghz = "50";
+      Settings.BandModifier6Ghz = "100";
     };
   };
 

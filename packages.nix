@@ -19,6 +19,7 @@
     bluetui
     brightnessctl
     playerctl
+	xwayland-satellite
     discord
     helix
     coreutils
@@ -36,7 +37,6 @@
     yubikey-manager
     fastfetch
     btop
-    htop
     neovim
     waybar
     gnome-tweaks
@@ -45,7 +45,6 @@
     mako
     swww
     nwg-bar
-    xwayland-satellite
     cava
     simp1e-cursors
     thunderbird
@@ -60,7 +59,7 @@
     spotify
     zstd
     mesa
-    ffmpeg
+    ffmpeg-full
     onlyoffice-desktopeditors
     impala
     wlogout
@@ -70,31 +69,39 @@
     tree
     networkmanager_dmenu
     tuba
-    davinci-resolve
     distrobox
     superfile
     candy-icons
     catppuccin-papirus-folders
     nix-search-tv
     timg # for terminal image preview
-    krita
-    godot
     obsidian
-    jetbrains.rust-rover
-    jetbrains.pycharm-professional
     wireguard-tools
     upscaler
-    clean-css-cli
-    caligula
-	(mpv.override {
-	  scripts = [
-	    mpvScripts.uosc
-	  ];
-	})
+    clean-css-cli # css formatter
+    caligula # TUI for disk imaging
+    (mpv.override {
+      scripts = [
+        mpvScripts.uosc
+      ];
+    })
+    gnome-logs
+    gnome-font-viewer
+    loupe
+    nautilus
+    baobab
+    gthumb
+    papers
+    clinfo
+    vulkan-tools
+    davinci-resolve
   ];
 
   programs = {
-    localsend.enable = true;
+    localsend = {
+      enable = true;
+      openFirewall = true;
+    };
     hyprlock.enable = true;
     fish = {
       enable = true;
@@ -112,6 +119,6 @@
       enable = true;
       enableFishIntegration = true;
     };
-    steam.enable = true;
+    steam.enable = false;
   };
 }

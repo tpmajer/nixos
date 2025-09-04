@@ -19,5 +19,6 @@
     noto-fonts-cjk-sans
     adwaita-fonts
     roboto
+    font-awesome
   ];
 }
