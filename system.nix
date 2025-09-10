@@ -38,13 +38,15 @@
       };
     };
   };
+  hardware.sane.enable = true; # enables support for SANE scanners
 
   boot = {
     loader = {
       systemd-boot.enable = true;
       efi.canTouchEfiVariables = true;
     };
-    kernelPackages = pkgs.linuxPackages_latest;
+    #  kernelPackages = pkgs.linuxPackages_latest;
+    kernelPackages = pkgs.linuxPackages_cachyos;
     initrd.luks.devices."luks-2388d8ad-9a00-401a-b4b4-8e3582a4ef9f".device =
       "/dev/disk/by-uuid/2388d8ad-9a00-401a-b4b4-8e3582a4ef9f";
     initrd.availableKernelModules = [
@@ -160,6 +162,8 @@
       "networkmanager"
       "wheel"
       "video"
+      "scanner"
+      "lp"
     ];
     packages = with pkgs; [
     ];
@@ -188,8 +192,11 @@
       xdg-desktop-portal-gtk
     ];
   };
+  xdg.terminal-exec.enable = true; # Makes nautilus open ghostty insted of kgx
 
   environment.variables.EDITOR = "micro";
+  environment.variables.VISUAL = "micro";
+  environment.variables.TERMINAL = "ghostty";
   #  environment.variables.RUSTICL_ENABLE = "radeonsi";
   #  environment.variables.AMD_VULKAN_ICD = "RADV";
   environment.variables.XDG_RUNTIME_DIR = "/run/user/$UID"; # set the runtime directory

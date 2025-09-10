@@ -14,12 +14,11 @@
     ghostty
     starship
     wget
-    vim
     micro
     bluetui
     brightnessctl
     playerctl
-	xwayland-satellite
+    xwayland-satellite
     discord
     helix
     coreutils
@@ -37,7 +36,6 @@
     yubikey-manager
     fastfetch
     btop
-    neovim
     waybar
     gnome-tweaks
     signal-desktop
@@ -60,6 +58,8 @@
     zstd
     mesa
     ffmpeg-full
+    gst_all_1.gst-libav
+    gst_all_1.gst-plugins-ugly
     onlyoffice-desktopeditors
     impala
     wlogout
@@ -90,19 +90,24 @@
     loupe
     nautilus
     baobab
+    simple-scan
+    gnome-calendar
     gthumb
     papers
     clinfo
     vulkan-tools
     davinci-resolve
+    ffmpegthumbnailer
+    pinta
   ];
 
   programs = {
+
     localsend = {
       enable = true;
       openFirewall = true;
     };
-    hyprlock.enable = true;
+
     fish = {
       enable = true;
       generateCompletions = true;
@@ -112,13 +117,40 @@
         completions.enable = true;
       };
     };
-    niri.enable = true;
+
     starship.enable = true;
-    firefox.enable = true;
+
     television = {
       enable = true;
       enableFishIntegration = true;
     };
+
+    niri.enable = true;
+
+    hyprlock.enable = true;
+
+    firefox.enable = true;
+
     steam.enable = false;
+
+    dconf.profiles.user = {
+      databases = [
+        {
+          lockAll = true;
+          settings = {
+            "org/gnome/desktop/privacy" = {
+              remember-recent-files = false;
+            };
+          };
+        }
+      ];
+    };
+
+    nautilus-open-any-terminal = {
+      enable = true;
+      terminal = "ghostty";
+    };
+
   };
+
 }
