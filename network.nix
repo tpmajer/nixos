@@ -40,7 +40,7 @@
           "::/0"
         ];
         endpoint = "REDACTED-ENDPOINT:51820";
-        persistentKeepalive = 25;
+        persistentKeepalive = 15;
       }
     ];
     postUp = "
