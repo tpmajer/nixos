@@ -19,13 +19,9 @@
     enable = true;
     enable32Bit = true;
     extraPackages = with pkgs; [
-    #  amdvlk
       rocmPackages.clr.icd
       rocmPackages.rocm-runtime
       rocmPackages.rocminfo
-    ];
-    extraPackages32 = with pkgs; [
-    #  driversi686Linux.amdvlk
     ];
   };
   hardware.steam-hardware.enable = true;
@@ -172,6 +168,8 @@
         "nix-command"
         "flakes"
       ];
+      substituters = [ "https://vicinae.cachix.org" ];
+      trusted-public-keys = [ "vicinae.cachix.org-1:1kDrfienkGHPYbkpNj1mWTr7Fm1+zcenzgTizIcI3oc=" ];
     };
     gc = {
       automatic = true;

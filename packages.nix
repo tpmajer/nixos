@@ -99,6 +99,8 @@
     davinci-resolve
     ffmpegthumbnailer
     pinta
+	walker
+	inputs.vicinae.packages.x86_64-linux.default
   ];
 
   programs = {

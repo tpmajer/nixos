@@ -6,6 +6,7 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     chaotic.url = "github:chaotic-cx/nyx/nyxpkgs-unstable";
+	vicinae.url = "github:vicinaehq/vicinae";
   };
 
   outputs =
@@ -13,11 +14,12 @@
       self,
       nixpkgs,
       chaotic,
+      vicinae,
       ...
     }@inputs:
     {
       nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
-        system = "aarch64-linux";
+        system = "x86_64-linux";
         specialArgs = { inherit inputs; };
         modules = [
           ./system.nix
