@@ -6,7 +6,8 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     chaotic.url = "github:chaotic-cx/nyx/nyxpkgs-unstable";
-	vicinae.url = "github:vicinaehq/vicinae";
+    vicinae.url = "github:vicinaehq/vicinae";
+	niri.url = "github:sodiboo/niri-flake";
   };
 
   outputs =
@@ -15,6 +16,7 @@
       nixpkgs,
       chaotic,
       vicinae,
+      niri,
       ...
     }@inputs:
     {
@@ -24,9 +26,10 @@
         modules = [
           ./system.nix
           ./packages.nix
-          #		  ./user-services.nix
+          # ./user-services.nix
           ./fonts.nix
           chaotic.nixosModules.default
+          niri.nixosModules.niri
         ];
       };
     };

@@ -99,8 +99,10 @@
     davinci-resolve
     ffmpegthumbnailer
     pinta
-	walker
-	inputs.vicinae.packages.x86_64-linux.default
+    walker
+    # inputs.vicinae.packages.x86_64-linux.default
+    nmgui
+    cachix
   ];
 
   programs = {
@@ -127,7 +129,10 @@
       enableFishIntegration = true;
     };
 
-    niri.enable = true;
+    niri = {
+      enable = true;
+      package = pkgs.niri-unstable;
+    };
 
     hyprlock.enable = true;
 
@@ -154,5 +159,7 @@
     };
 
   };
+
+  nixpkgs.overlays = [ inputs.niri.overlays.niri ];
 
 }
