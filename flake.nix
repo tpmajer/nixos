@@ -7,8 +7,7 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     chaotic.url = "github:chaotic-cx/nyx/nyxpkgs-unstable";
     vicinae.url = "github:vicinaehq/vicinae";
-    niri.url = "github:sodiboo/niri-flake";
-	swww.url = "github:LGFae/swww";
+	niri.url = "github:sodiboo/niri-flake";
   };
 
   outputs =
@@ -18,7 +17,6 @@
       chaotic,
       vicinae,
       niri,
-      swww,
       ...
     }@inputs:
     {

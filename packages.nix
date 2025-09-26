@@ -9,102 +9,101 @@
 
 {
   environment.systemPackages = with pkgs; [
-    baobab
-    bat
+    git
+    stow
+    ghostty
+    starship
+    wget
+    micro
     bluetui
     brightnessctl
-    btop
-    cachix
-    calcure
-    caligula # TUI for disk imaging
-    candy-icons
-    catppuccin-papirus-folders
-    cava
-    clean-css-cli # css formatter
-    clinfo
-    cliphist
-    clock-rs
-    coreutils
-    davinci-resolve
+    playerctl
+    xwayland-satellite
     discord
-    distrobox
-    fastfetch
+    helix
+    coreutils
+    reaction # for ip46tables command
     fd
-    ffmpeg-full
-    ffmpegthumbnailer
+    wl-clipboard-rs
     fishPlugins.done
     fishPlugins.forgit
     fishPlugins.grc
-    fuzzel
-    ghostty
-    git
-    gnome-calendar
-    gnome-font-viewer
-    gnome-logs
-    gnome-tweaks
-    google-chrome
     grc
+    wiremix
+    google-chrome
+    yt-dlp
+    wgcf
+    yubikey-manager
+    fastfetch
+    btop
+    waybar
+    gnome-tweaks
+    signal-desktop
+    fuzzel
+    mako
+    swww
+    nwg-bar
+    cava
+    simp1e-cursors
+    thunderbird
+    libnotify
+    clock-rs
     grim
+    slurp
+    ncspot
+    bat
+    nixfmt-rfc-style
+    transmission_4
+    spotify
+    zstd
+    mesa
+    ffmpeg-full
     gst_all_1.gst-libav
     gst_all_1.gst-plugins-ugly
-    gthumb
-    gtk-layer-shell
-    helix
+    onlyoffice-desktopeditors
     impala
-    libnotify
-    loupe
-    mako
-    mesa
-    micro
+    wlogout
+    gtk-layer-shell
+    cliphist
+    calcure
+    tree
+    networkmanager_dmenu
+    tuba
+    distrobox
+    superfile
+    candy-icons
+    catppuccin-papirus-folders
+    nix-search-tv
+    timg # for terminal image preview
+    obsidian
+    wireguard-tools
+    upscaler
+    clean-css-cli # css formatter
+    caligula # TUI for disk imaging
     (mpv.override {
       scripts = [
         mpvScripts.uosc
       ];
     })
+    gnome-logs
+    gnome-font-viewer
+    loupe
     nautilus
-    ncspot
-    networkmanager_dmenu
-    nixfmt-rfc-style
-    nix-search-tv
-    nmgui
-    nwg-bar
-    obsidian
-    onlyoffice-desktopeditors
-    papers
-    pinta
-    playerctl
-    reaction # for ip46tables command
-    signal-desktop
-    simp1e-cursors
+    baobab
     simple-scan
-    slurp
-    spotify
-    starship
-    stow
-    superfile
-    inputs.swww.packages.${pkgs.system}.swww
-    thunderbird
-    timg # for terminal image preview
-    transmission_4
-    tree
-    tuba
-    upscaler
-    # inputs.vicinae.packages.${pkgs.system}.default
+    gnome-calendar
+    gthumb
+    papers
+    clinfo
     vulkan-tools
-    waybar
-    wgcf
-    wget
-    wireguard-tools
-    wiremix
-    wl-clipboard-rs
-    wlogout
-    xwayland-satellite
-    yt-dlp
-    yubikey-manager
-    zstd
+    davinci-resolve
+    ffmpegthumbnailer
+    pinta
+    walker
+    # inputs.vicinae.packages.x86_64-linux.default
+    nmgui
+    cachix
   ];
-
-  nixpkgs.overlays = [ inputs.niri.overlays.niri ];
 
   programs = {
 
@@ -160,5 +159,7 @@
     };
 
   };
+
+  nixpkgs.overlays = [ inputs.niri.overlays.niri ];
 
 }
