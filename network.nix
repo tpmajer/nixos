@@ -43,11 +43,9 @@
         persistentKeepalive = 15;
       }
     ];
-    postUp = "
-      	  systemctl stop firewall.service
-      	  systemctl start firewall.service
-      	";
+    # postUp = " ";
   };
+
   networking.firewall = {
     logReversePathDrops = true;
     extraCommands = "

@@ -9,101 +9,102 @@
 
 {
   environment.systemPackages = with pkgs; [
-    git
-    stow
-    ghostty
-    starship
-    wget
-    micro
+    baobab
+    bat
     bluetui
     brightnessctl
-    playerctl
-    xwayland-satellite
-    discord
-    helix
+    btop
+    cachix
+    calcure
+    caligula # TUI for disk imaging
+    candy-icons
+    catppuccin-papirus-folders
+    cava
+    clean-css-cli # css formatter
+    clinfo
+    cliphist
+    clock-rs
     coreutils
-    reaction # for ip46tables command
+    davinci-resolve
+    discord
+    distrobox
+    fastfetch
     fd
-    wl-clipboard-rs
+    ffmpeg-full
+    ffmpegthumbnailer
     fishPlugins.done
     fishPlugins.forgit
     fishPlugins.grc
-    grc
-    wiremix
-    google-chrome
-    yt-dlp
-    wgcf
-    yubikey-manager
-    fastfetch
-    btop
-    waybar
-    gnome-tweaks
-    signal-desktop
     fuzzel
-    mako
-    swww
-    nwg-bar
-    cava
-    simp1e-cursors
-    thunderbird
-    libnotify
-    clock-rs
+    ghostty
+    git
+    gnome-calendar
+    gnome-font-viewer
+    gnome-logs
+    gnome-tweaks
+    google-chrome
+    grc
     grim
-    slurp
-    ncspot
-    bat
-    nixfmt-rfc-style
-    transmission_4
-    spotify
-    zstd
-    mesa
-    ffmpeg-full
     gst_all_1.gst-libav
     gst_all_1.gst-plugins-ugly
-    onlyoffice-desktopeditors
-    impala
-    wlogout
+    gthumb
     gtk-layer-shell
-    cliphist
-    calcure
-    tree
-    networkmanager_dmenu
-    tuba
-    distrobox
-    superfile
-    candy-icons
-    catppuccin-papirus-folders
-    nix-search-tv
-    timg # for terminal image preview
-    obsidian
-    wireguard-tools
-    upscaler
-    clean-css-cli # css formatter
-    caligula # TUI for disk imaging
+    helix
+    impala
+    libnotify
+    loupe
+    mako
+    mesa
+    micro
     (mpv.override {
       scripts = [
         mpvScripts.uosc
       ];
     })
-    gnome-logs
-    gnome-font-viewer
-    loupe
     nautilus
-    baobab
-    simple-scan
-    gnome-calendar
-    gthumb
-    papers
-    clinfo
-    vulkan-tools
-    davinci-resolve
-    ffmpegthumbnailer
-    pinta
-    walker
-    # inputs.vicinae.packages.x86_64-linux.default
+    ncspot
+    networkmanager_dmenu
+    nixfmt-rfc-style
+    nix-search-tv
     nmgui
-    cachix
+    nwg-bar
+    obsidian
+    onlyoffice-desktopeditors
+    papers
+    pinta
+    playerctl
+    reaction # for ip46tables command
+    signal-desktop
+    simp1e-cursors
+    simple-scan
+    slurp
+    spotify
+    starship
+    stow
+    superfile
+    inputs.swww.packages.${pkgs.system}.swww
+    thunderbird
+    timg # for terminal image preview
+    transmission_4
+    tree
+    tuba
+    upscaler
+    # inputs.vicinae.packages.${pkgs.system}.default
+    vulkan-tools
+    waybar
+    wgcf
+    wget
+    wireguard-tools
+    wiremix
+    wl-clipboard-rs
+    wlogout
+    xwayland-satellite
+    yt-dlp
+    yubikey-manager
+    zstd
   ];
+
+  nixpkgs.overlays = [ inputs.niri.overlays.niri ];
 
   programs = {
 
@@ -159,7 +160,5 @@
     };
 
   };
-
-  nixpkgs.overlays = [ inputs.niri.overlays.niri ];
 
 }
