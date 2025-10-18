@@ -71,21 +71,24 @@
 
   security.rtkit.enable = true;
   security.polkit.enable = true;
+  security.pam.services.gdm.enableGnomeKeyring = true;
+  security.pam.services.login.enableGnomeKeyring = true;
   security.pam.services.hyprlock = { };
   security.pam.services.hyprlock.enableGnomeKeyring = true;
-  security.pam.services.gdm.enableGnomeKeyring = true;
 
   virtualisation.podman = {
     enable = true;
     dockerCompat = true;
   };
 
-  systemd.services.flatpak-repo = {
-    wantedBy = [ "multi-user.target" ];
-    path = [ pkgs.flatpak ];
-    script = "
-      flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-    ";
+  systemd.services = {
+    flatpak-repo = {
+      wantedBy = [ "multi-user.target" ];
+      path = [ pkgs.flatpak ];
+      script = "
+        flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+      ";
+    };
   };
 
   services = {

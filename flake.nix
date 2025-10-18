@@ -6,8 +6,10 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     chaotic.url = "github:chaotic-cx/nyx/nyxpkgs-unstable";
-	niri.url = "github:sodiboo/niri-flake";
-	swww.url = "github:LGFae/swww";
+    niri.url = "github:sodiboo/niri-flake";
+    # swww.url = "github:LGFae/swww";
+    # nix-search-tv.url = "github:3timeslazy/nix-search-tv";
+    # eza.url = "github:eza-community/eza";
   };
 
   outputs =
@@ -16,7 +18,9 @@
       nixpkgs,
       chaotic,
       niri,
-      swww,
+      # swww,
+      # nix-search-tv,
+      # eza,
       ...
     }@inputs:
     {
@@ -26,7 +30,6 @@
         modules = [
           ./system.nix
           ./packages.nix
-          # ./user-services.nix
           ./fonts.nix
           chaotic.nixosModules.default
           niri.nixosModules.niri

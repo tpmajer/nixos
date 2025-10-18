@@ -15,7 +15,7 @@
     brightnessctl
     btop
     cachix
-    calcure
+    # calcure
     caligula # TUI for disk imaging
     candy-icons
     catppuccin-papirus-folders
@@ -25,9 +25,10 @@
     cliphist
     clock-rs
     coreutils
-    davinci-resolve
     discord
     distrobox
+    eza
+    # inputs.eza.packages.${pkgs.system}.default
     fastfetch
     fd
     ffmpeg-full
@@ -35,9 +36,11 @@
     fishPlugins.done
     fishPlugins.forgit
     fishPlugins.grc
+    fishPlugins.sponge
     fuzzel
     ghostty
     git
+    gnome-calculator
     gnome-calendar
     gnome-font-viewer
     gnome-logs
@@ -45,10 +48,10 @@
     google-chrome
     grc
     grim
-	gst_all_1.gstreamer
-	gst_all_1.gst-plugins-base
-	gst_all_1.gst-plugins-good
-	gst_all_1.gst-plugins-bad
+    gst_all_1.gstreamer
+    gst_all_1.gst-plugins-base
+    gst_all_1.gst-plugins-good
+    gst_all_1.gst-plugins-bad
     gst_all_1.gst-plugins-ugly
     gst_all_1.gst-libav
     gthumb
@@ -56,6 +59,7 @@
     helix
     impala
     libnotify
+    libsecret
     loupe
     mako
     mesa
@@ -66,15 +70,16 @@
       ];
     })
     nautilus
-    ncspot
     networkmanager_dmenu
     nixfmt-rfc-style
+    nushell
     nix-search-tv
-    nmgui
+    # inputs.nix-search-tv.packages.${pkgs.system}.default
     nwg-bar
     obsidian
     onlyoffice-desktopeditors
     papers
+    pinentry-all
     pinta
     playerctl
     reaction # for ip46tables command
@@ -86,11 +91,12 @@
     starship
     stow
     superfile
-    inputs.swww.packages.${pkgs.system}.swww
+    swww
+    # inputs.swww.packages.${pkgs.system}.swww
     thunderbird
     timg # for terminal image preview
     transmission_4
-    tree
+	tree
     tuba
     upscaler
     vulkan-tools
