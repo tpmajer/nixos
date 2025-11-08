@@ -40,7 +40,7 @@
           "::/0"
         ];
         endpoint = "REDACTED-ENDPOINT:51820";
-        persistentKeepalive = 15;
+        persistentKeepalive = 25;
       }
     ];
     # postUp = " ";
@@ -48,14 +48,16 @@
 
   networking.firewall = {
     logReversePathDrops = true;
-    extraCommands = "
+    extraCommands = ''
       ip46tables -t mangle -I nixos-fw-rpfilter -p udp -m udp --sport 51820 -j RETURN
       ip46tables -t mangle -I nixos-fw-rpfilter -p udp -m udp --dport 51820 -j RETURN
-    ";
-    extraStopCommands = "
+    '';
+    extraStopCommands = ''
       ip46tables -t mangle -D nixos-fw-rpfilter -p udp -m udp --sport 51820 -j RETURN || true
       ip46tables -t mangle -D nixos-fw-rpfilter -p udp -m udp --dport 51820 -j RETURN || true
-    ";
+    '';
+    allowedUDPPorts = [ 5353 ]; # SpotifyConnect
+    allowedTCPPorts = [ 57621 ]; # Spotify - local files sync with mobile devices
   };
 
   services.resolved.enable = true;

@@ -3,6 +3,7 @@
 {
   config,
   pkgs,
+  lib,
   inputs,
   ...
 }:
@@ -10,16 +11,22 @@
 {
 
   systemd.user.services = {
-    waybar = {
+
+    xwayland-satellite = {
       enable = true;
       after = [ "graphical-session.target" ];
       wantedBy = [ "niri.service" ];
-      description = "Waybar Service";
+      description = "xwayland-satellite Service";
       serviceConfig = {
         Type = "simple";
-        ExecStart = ''/usr/bin/waybar'';
+        ExecStart = ''/usr/bin/xwayland-satellite :1'';
+        ExecStartPre = '''';
+        ExecStartPost = '''';
+        Restart = "on-failure";
       };
+      path = lib.mkForce [ ];
     };
+
     mako = {
       enable = true;
       after = [ "graphical-session.target" ];
@@ -28,8 +35,13 @@
       serviceConfig = {
         Type = "simple";
         ExecStart = ''/usr/bin/mako'';
+        Restart = "on-failure";
       };
+      path = lib.mkForce [ ];
     };
+
+    waybar.path = lib.mkForce [ ];
+
   };
 
 }

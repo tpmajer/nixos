@@ -33,6 +33,7 @@
     fd
     ffmpeg-full
     ffmpegthumbnailer
+    file-roller
     fishPlugins.done
     fishPlugins.forgit
     fishPlugins.grc
@@ -58,6 +59,7 @@
     gtk-layer-shell
     helix
     impala
+    lazygit
     libnotify
     libsecret
     loupe
@@ -96,11 +98,10 @@
     thunderbird
     timg # for terminal image preview
     transmission_4
-	tree
+    tree
     tuba
     upscaler
     vulkan-tools
-    waybar
     wgcf
     wget
     wireguard-tools
@@ -117,6 +118,11 @@
 
   programs = {
 
+    waybar = {
+      enable = true;
+      systemd.target = "graphical-session.target";
+    };
+
     localsend = {
       enable = true;
       openFirewall = true;
@@ -124,6 +130,7 @@
 
     fish = {
       enable = true;
+      package = pkgs.fish;
       generateCompletions = true;
       vendor = {
         config.enable = true;
