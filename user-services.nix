@@ -20,24 +20,22 @@
       serviceConfig = {
         Type = "simple";
         ExecStart = ''/usr/bin/xwayland-satellite :1'';
-        ExecStartPre = '''';
-        ExecStartPost = '''';
         Restart = "on-failure";
       };
-      path = lib.mkForce [ ];
+      path = [ pkgs.xwayland-satellite ];
     };
 
-    mako = {
+    awww-daemon = {
       enable = true;
       after = [ "graphical-session.target" ];
       wantedBy = [ "niri.service" ];
-      description = "Mako Service";
+      description = "AWWW Service";
       serviceConfig = {
         Type = "simple";
-        ExecStart = ''/usr/bin/mako'';
+        ExecStart = ''/usr/bin/awww-daemon'';
         Restart = "on-failure";
       };
-      path = lib.mkForce [ ];
+	  path = [ inputs.awww.packages.${pkgs.system}.awww ];
     };
 
     waybar.path = lib.mkForce [ ];

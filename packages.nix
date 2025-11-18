@@ -9,13 +9,14 @@
 
 {
   environment.systemPackages = with pkgs; [
+	inputs.awww.packages.${pkgs.system}.awww
     baobab
     bat
     bluetui
     brightnessctl
     btop
     cachix
-    # calcure
+    calcure
     caligula # TUI for disk imaging
     candy-icons
     catppuccin-papirus-folders
@@ -39,7 +40,8 @@
     fishPlugins.grc
     fishPlugins.sponge
     fuzzel
-    ghostty
+    # ghostty
+    inputs.ghostty.packages.${pkgs.system}.default
     git
     gnome-calculator
     gnome-calendar
@@ -59,6 +61,7 @@
     gtk-layer-shell
     helix
     impala
+	keepassxc
     lazygit
     libnotify
     libsecret
@@ -93,14 +96,12 @@
     starship
     stow
     superfile
-    swww
-    # inputs.swww.packages.${pkgs.system}.swww
     thunderbird
     timg # for terminal image preview
     transmission_4
     tree
     tuba
-    upscaler
+    # upscaler
     vulkan-tools
     wgcf
     wget

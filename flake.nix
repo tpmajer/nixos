@@ -7,7 +7,8 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     chaotic.url = "github:chaotic-cx/nyx/nyxpkgs-unstable";
     niri.url = "github:sodiboo/niri-flake";
-    # swww.url = "github:LGFae/swww";
+    awww.url = "git+https://codeberg.org/LGFae/awww";
+	ghostty.url = "github:ghostty-org/ghostty";
     # nix-search-tv.url = "github:3timeslazy/nix-search-tv";
     # eza.url = "github:eza-community/eza";
   };
@@ -18,7 +19,8 @@
       nixpkgs,
       chaotic,
       niri,
-      # swww,
+      awww,
+	  ghostty,
       # nix-search-tv,
       # eza,
       ...

@@ -18,7 +18,7 @@
   networking.wireless.iwd = {
     enable = true;
     settings = {
-      IPv6.Enabled = false;
+      IPv6.Enabled = true;
       Settings.AutoConnect = true;
       Settings.BandModifier2_4Ghz = "1";
       Settings.BandModifier5Ghz = "50";
