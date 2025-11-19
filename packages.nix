@@ -50,7 +50,6 @@
     gnome-tweaks
     google-chrome
     grc
-    grim
     gst_all_1.gstreamer
     gst_all_1.gst-plugins-base
     gst_all_1.gst-plugins-good
@@ -80,7 +79,6 @@
     nushell
     nix-search-tv
     # inputs.nix-search-tv.packages.${pkgs.system}.default
-    nwg-bar
     obsidian
     onlyoffice-desktopeditors
     papers
@@ -91,7 +89,6 @@
     signal-desktop
     simp1e-cursors
     simple-scan
-    slurp
     spotify
     starship
     stow
@@ -121,7 +118,6 @@
 
     waybar = {
       enable = true;
-      systemd.target = "graphical-session.target";
     };
 
     localsend = {

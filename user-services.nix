@@ -12,18 +12,7 @@
 
   systemd.user.services = {
 
-    xwayland-satellite = {
-      enable = true;
-      after = [ "graphical-session.target" ];
-      wantedBy = [ "niri.service" ];
-      description = "xwayland-satellite Service";
-      serviceConfig = {
-        Type = "simple";
-        ExecStart = ''/usr/bin/xwayland-satellite :1'';
-        Restart = "on-failure";
-      };
-      path = [ pkgs.xwayland-satellite ];
-    };
+	waybar.path = lib.mkForce [ ];
 
     awww-daemon = {
       enable = true;
@@ -35,10 +24,8 @@
         ExecStart = ''/usr/bin/awww-daemon'';
         Restart = "on-failure";
       };
-	  path = [ inputs.awww.packages.${pkgs.system}.awww ];
+      path = [ inputs.awww.packages.${pkgs.system}.awww ];
     };
-
-    waybar.path = lib.mkForce [ ];
 
   };
 

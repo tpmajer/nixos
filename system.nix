@@ -195,7 +195,9 @@
   xdg.portal = {
     enable = true;
     extraPortals = with pkgs; [
+	  xdg-desktop-portal-gnome
       xdg-desktop-portal-gtk
+      gnome-keyring
     ];
   };
   xdg.terminal-exec.enable = true; # Makes nautilus open ghostty insted of kgx
