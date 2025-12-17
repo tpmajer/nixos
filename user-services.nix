@@ -12,7 +12,8 @@
 
   systemd.user.services = {
 
-	waybar.path = lib.mkForce [ ];
+    waybar.path = lib.mkForce [ ];
+    hypridle.path = lib.mkForce [ ];
 
     awww-daemon = {
       enable = true;
@@ -24,7 +25,7 @@
         ExecStart = ''/usr/bin/awww-daemon'';
         Restart = "on-failure";
       };
-      path = [ inputs.awww.packages.${pkgs.system}.awww ];
+      path = [ inputs.awww.packages.${pkgs.stdenv.hostPlatform.system}.awww ];
     };
 
   };

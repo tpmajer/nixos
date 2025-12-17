@@ -12,6 +12,7 @@
     ./hardware-configuration.nix
     ./network.nix
     ./user-services.nix
+    ./gdm.nix
   ];
 
   hardware.enableRedistributableFirmware = true;
@@ -39,16 +40,17 @@
 
   boot = {
     loader = {
-      systemd-boot.enable = true;
+      systemd-boot = {
+      	enable = true;
+      	configurationLimit = 30;
+      };
       efi.canTouchEfiVariables = true;
     };
-    #  kernelPackages = pkgs.linuxPackages_latest;
-    kernelPackages = pkgs.linuxPackages_cachyos;
+    kernelPackages = pkgs.linuxPackages_latest;
+    #  kernelPackages = pkgs.linuxPackages_cachyos;
     initrd.luks.devices."luks-2388d8ad-9a00-401a-b4b4-8e3582a4ef9f".device =
       "/dev/disk/by-uuid/2388d8ad-9a00-401a-b4b4-8e3582a4ef9f";
-    initrd.availableKernelModules = [
-      "usbhid"
-    ];
+    initrd.availableKernelModules = [ "usbhid" ];
     blacklistedKernelModules = [ "ucsi_acpi" ];
   };
 
@@ -76,6 +78,10 @@
   security.pam.services.login.enableGnomeKeyring = true;
   security.pam.services.hyprlock = { };
   security.pam.services.hyprlock.enableGnomeKeyring = true;
+  security.sudo.extraConfig = ''
+      Defaults pwfeedback # password input feedback - makes typed password visible as asterisks
+    	Defaults insults
+  '';
 
   virtualisation.podman = {
     enable = true;
@@ -88,17 +94,26 @@
       path = [ pkgs.flatpak ];
       script = "
         flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+		flatpak remote-add --if-not-exists gnome-nightly https://nightly.gnome.org/gnome-nightly.flatpakrepo
       ";
     };
   };
 
   services = {
+  	avahi = {
+  	  enable = true;
+  	  publish = {
+  	    enable = true;
+  	    addresses = true;
+  	    workstation = true;
+  	  };
+  	};
+	dbus.implementation = "broker";
     hypridle.enable = true;
     gnome.gnome-keyring.enable = true;
     gnome.core-apps.enable = false;
     gvfs.enable = true;
     geoclue2.enable = true;
-    preload.enable = true;
     power-profiles-daemon.enable = false;
     tlp.enable = true;
     fwupd.enable = true;
@@ -112,7 +127,7 @@
     displayManager = {
       gdm.enable = true;
       autoLogin = {
-        enable = false;
+        enable = true;
         user = "tpmajer";
       };
     };
@@ -175,14 +190,14 @@
       substituters = [
         "https://chaotic-nyx.cachix.org"
         "https://niri.cachix.org"
-		"https://cache.garnix.io"
-		"https://ghostty.cachix.org"
+        "https://ghostty.cachix.org"
+        #  "https://cache.garnix.io"
       ];
       trusted-public-keys = [
         "chaotic-nyx.cachix.org-1:HfnXSw4pj95iI/n17rIDy40agHj12WfF+Gqk6SonIT8="
         "niri.cachix.org-1:Wv0OmO7PsuocRKzfDoJ3mulSl7Z6oezYhGhR+3W2964="
-		"cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g="
-		"ghostty.cachix.org-1:QB389yTa6gTyneehvqG58y0WnHjQOqgnA+wBnpWWxns="
+        "ghostty.cachix.org-1:QB389yTa6gTyneehvqG58y0WnHjQOqgnA+wBnpWWxns="
+        #  "cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g="
       ];
     };
     gc = {
@@ -194,9 +209,11 @@
 
   xdg.portal = {
     enable = true;
+    xdgOpenUsePortal = false;
     extraPortals = with pkgs; [
-	  xdg-desktop-portal-gnome
+      xdg-desktop-portal-gnome
       xdg-desktop-portal-gtk
+	#  xdg-desktop-portal-wlr
       gnome-keyring
     ];
   };

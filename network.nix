@@ -12,25 +12,17 @@
   networking.hostName = "nixos";
   networking.networkmanager = {
     enable = true;
-    wifi.backend = "iwd";
+    wifi.backend = "wpa_supplicant";
     dns = "systemd-resolved";
   };
-  networking.wireless.iwd = {
-    enable = true;
-    settings = {
-      IPv6.Enabled = true;
-      Settings.AutoConnect = true;
-      Settings.BandModifier2_4Ghz = "1";
-      Settings.BandModifier5Ghz = "50";
-      Settings.BandModifier6Ghz = "100";
-    };
-  };
+
+  networking.enableIPv6 = false;
 
   networking.wg-quick.interfaces.wg0 = {
     autostart = false;
     listenPort = 51820;
-    address = [ "192.168.6.5/32" ];
-    dns = [ "192.168.6.1" ];
+    address = [ "REDACTED-WG-ADDR/32" ];
+    dns = [ "REDACTED-WG-DNS" ];
     privateKeyFile = "/etc/wireguard/privateKey";
     peers = [
       {
@@ -56,8 +48,10 @@
       ip46tables -t mangle -D nixos-fw-rpfilter -p udp -m udp --sport 51820 -j RETURN || true
       ip46tables -t mangle -D nixos-fw-rpfilter -p udp -m udp --dport 51820 -j RETURN || true
     '';
-    allowedUDPPorts = [ 5353 ]; # SpotifyConnect
-    allowedTCPPorts = [ 57621 ]; # Spotify - local files sync with mobile devices
+    allowedUDPPorts = [ 5353 7236 ]; # SpotifyConnect
+    allowedTCPPorts = [ 57621 7236 7250 ]; # Spotify - local files sync with mobile devices
+
+	trustedInterfaces = [ "p2p-wl+" ];
   };
 
   services.resolved.enable = true;

@@ -9,7 +9,7 @@
 
 {
   environment.systemPackages = with pkgs; [
-	inputs.awww.packages.${pkgs.system}.awww
+    inputs.awww.packages.${pkgs.stdenv.hostPlatform.system}.awww
     baobab
     bat
     bluetui
@@ -29,7 +29,7 @@
     discord
     distrobox
     eza
-    # inputs.eza.packages.${pkgs.system}.default
+    #  inputs.eza.packages.${pkgs.stdenv.hostPlatform.system}.default
     fastfetch
     fd
     ffmpeg-full
@@ -39,14 +39,16 @@
     fishPlugins.forgit
     fishPlugins.grc
     fishPlugins.sponge
+    fragments
     fuzzel
-    # ghostty
-    inputs.ghostty.packages.${pkgs.system}.default
+    ghostty
+    #  inputs.ghostty.packages.${pkgs.stdenv.hostPlatform.system}.default
     git
     gnome-calculator
     gnome-calendar
     gnome-font-viewer
     gnome-logs
+    gnome-network-displays
     gnome-tweaks
     google-chrome
     grc
@@ -59,8 +61,9 @@
     gthumb
     gtk-layer-shell
     helix
-    impala
-	keepassxc
+    #  impala
+    jq # for niri screencasting
+    keepassxc
     lazygit
     libnotify
     libsecret
@@ -75,10 +78,11 @@
     })
     nautilus
     networkmanager_dmenu
+    newsflash
     nixfmt-rfc-style
     nushell
     nix-search-tv
-    # inputs.nix-search-tv.packages.${pkgs.system}.default
+    #  inputs.nix-search-tv.packages.${pkgs.stdenv.hostPlatform.system}.default
     obsidian
     onlyoffice-desktopeditors
     papers
@@ -94,27 +98,36 @@
     stow
     superfile
     thunderbird
+	tidal-hifi
     timg # for terminal image preview
-    transmission_4
     tree
     tuba
-    # upscaler
+    upscaler
     vulkan-tools
     wgcf
     wget
+    #  winbox4
     wireguard-tools
     wiremix
     wl-clipboard-rs
+    wl-mirror
     wlogout
     xwayland-satellite
     yt-dlp
-    yubikey-manager
     zstd
   ];
 
   nixpkgs.overlays = [ inputs.niri.overlays.niri ];
 
   programs = {
+
+    yubikey-manager.enable = true;
+    yubikey-touch-detector = {
+      enable = true;
+      libnotify = true;
+    };
+
+    gnome-disks.enable = true;
 
     waybar = {
       enable = true;
@@ -150,7 +163,10 @@
 
     hyprlock.enable = true;
 
-    firefox.enable = true;
+    firefox = {
+      enable = true;
+      package = pkgs.firefox;
+    };
 
     steam.enable = false;
 
