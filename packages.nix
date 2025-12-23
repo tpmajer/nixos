@@ -117,10 +117,25 @@
     zstd
   ];
 
-  nixpkgs.overlays = [ inputs.niri.overlays.niri ];
+  nixpkgs.overlays = with pkgs; [ 
+  	inputs.niri.overlays.niri
+  	(self: super: {
+  	    mpv-unwrapped = super.mpv-unwrapped.override {
+  	      ffmpeg = ffmpeg-full;
+  	    };
+  	})
+  ];
+
+ # nixpkgs.overlays = with pkgs; [
+ #   (self: super: {
+ #     mpv = super.mpv.override {
+ #       ffmpeg = ffmpeg-full;
+ #     };
+ #   })
+ # ];
 
   programs = {
-
+     
     yubikey-manager.enable = true;
     yubikey-touch-detector = {
       enable = true;

@@ -190,13 +190,13 @@
       substituters = [
         "https://chaotic-nyx.cachix.org"
         "https://niri.cachix.org"
-        "https://ghostty.cachix.org"
+        #  "https://ghostty.cachix.org"
         #  "https://cache.garnix.io"
       ];
       trusted-public-keys = [
         "chaotic-nyx.cachix.org-1:HfnXSw4pj95iI/n17rIDy40agHj12WfF+Gqk6SonIT8="
         "niri.cachix.org-1:Wv0OmO7PsuocRKzfDoJ3mulSl7Z6oezYhGhR+3W2964="
-        "ghostty.cachix.org-1:QB389yTa6gTyneehvqG58y0WnHjQOqgnA+wBnpWWxns="
+        #  "ghostty.cachix.org-1:QB389yTa6gTyneehvqG58y0WnHjQOqgnA+wBnpWWxns="
         #  "cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g="
       ];
     };
@@ -213,7 +213,7 @@
     extraPortals = with pkgs; [
       xdg-desktop-portal-gnome
       xdg-desktop-portal-gtk
-	#  xdg-desktop-portal-wlr
+	  xdg-desktop-portal-wlr
       gnome-keyring
     ];
   };
