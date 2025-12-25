@@ -80,7 +80,7 @@
   security.pam.services.hyprlock.enableGnomeKeyring = true;
   security.sudo.extraConfig = ''
       Defaults pwfeedback # password input feedback - makes typed password visible as asterisks
-    	Defaults insults
+      Defaults insults
   '';
 
   virtualisation.podman = {

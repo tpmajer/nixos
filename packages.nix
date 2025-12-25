@@ -74,6 +74,7 @@
     (mpv.override {
       scripts = [
         mpvScripts.uosc
+	#	mpvScripts.autosub
       ];
     })
     nautilus
@@ -126,33 +127,20 @@
   	})
   ];
 
- # nixpkgs.overlays = with pkgs; [
- #   (self: super: {
- #     mpv = super.mpv.override {
- #       ffmpeg = ffmpeg-full;
- #     };
- #   })
- # ];
-
   programs = {
-     
     yubikey-manager.enable = true;
     yubikey-touch-detector = {
       enable = true;
       libnotify = true;
     };
-
     gnome-disks.enable = true;
-
     waybar = {
       enable = true;
     };
-
     localsend = {
       enable = true;
       openFirewall = true;
     };
-
     fish = {
       enable = true;
       package = pkgs.fish;
@@ -163,28 +151,21 @@
         completions.enable = true;
       };
     };
-
     starship.enable = true;
-
     television = {
       enable = true;
-      enableFishIntegration = true;
+      enableFishIntegration = false;
     };
-
     niri = {
       enable = true;
       package = pkgs.niri-unstable;
     };
-
     hyprlock.enable = true;
-
     firefox = {
       enable = true;
       package = pkgs.firefox;
     };
-
     steam.enable = false;
-
     dconf.profiles.user = {
       databases = [
         {
@@ -197,12 +178,10 @@
         }
       ];
     };
-
     nautilus-open-any-terminal = {
       enable = true;
       terminal = "ghostty";
     };
-
   };
 
 }

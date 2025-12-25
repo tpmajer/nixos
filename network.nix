@@ -16,7 +16,7 @@
     dns = "systemd-resolved";
   };
 
-  networking.enableIPv6 = false;
+  networking.enableIPv6 = true;
 
   networking.wg-quick.interfaces.wg0 = {
     autostart = false;
