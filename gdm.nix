@@ -14,54 +14,54 @@
     let
       monitors.xml = pkgs.writeText "monitors.xml" ''
 
-		<monitors version="2">
-		  <configuration>
-		    <layoutmode>logical</layoutmode>
-		    <logicalmonitor>
-		      <x>0</x>
-		      <y>0</y>
-		      <scale>1.6666666269302368</scale>
-		      <primary>yes</primary>
-		      <monitor>
-		        <monitorspec>
-		          <connector>eDP-1</connector>
-		          <vendor>BOE</vendor>
-		          <product>NE135A1M-NY1</product>
-		          <serial>0x00000000</serial>
-		        </monitorspec>
-		        <mode>
-		          <width>2880</width>
-		          <height>1920</height>
-		          <rate>120.000</rate>
-		          <ratemode>variable</ratemode>
-		        </mode>
-		      </monitor>
-		    </logicalmonitor>
-		  </configuration>
-		  <configuration>
-		    <layoutmode>physical</layoutmode>
-		    <logicalmonitor>
-		      <x>0</x>
-		      <y>0</y>
-		      <scale>2</scale>
-		      <primary>yes</primary>
-		      <monitor>
-		        <monitorspec>
-		          <connector>eDP-1</connector>
-		          <vendor>BOE</vendor>
-		          <product>NE135A1M-NY1</product>
-		          <serial>0x00000000</serial>
-		        </monitorspec>
-		        <mode>
-		          <width>2880</width>
-		          <height>1920</height>
-		          <rate>120.000</rate>
-		        </mode>
-		      </monitor>
-		    </logicalmonitor>
-		  </configuration>
-		</monitors>
-		
+        		<monitors version="2">
+        		  <configuration>
+        		    <layoutmode>logical</layoutmode>
+        		    <logicalmonitor>
+        		      <x>0</x>
+        		      <y>0</y>
+        		      <scale>1.6666666269302368</scale>
+        		      <primary>yes</primary>
+        		      <monitor>
+        		        <monitorspec>
+        		          <connector>eDP-1</connector>
+        		          <vendor>BOE</vendor>
+        		          <product>NE135A1M-NY1</product>
+        		          <serial>0x00000000</serial>
+        		        </monitorspec>
+        		        <mode>
+        		          <width>2880</width>
+        		          <height>1920</height>
+        		          <rate>120.000</rate>
+        		          <ratemode>variable</ratemode>
+        		        </mode>
+        		      </monitor>
+        		    </logicalmonitor>
+        		  </configuration>
+        		  <configuration>
+        		    <layoutmode>physical</layoutmode>
+        		    <logicalmonitor>
+        		      <x>0</x>
+        		      <y>0</y>
+        		      <scale>2</scale>
+        		      <primary>yes</primary>
+        		      <monitor>
+        		        <monitorspec>
+        		          <connector>eDP-1</connector>
+        		          <vendor>BOE</vendor>
+        		          <product>NE135A1M-NY1</product>
+        		          <serial>0x00000000</serial>
+        		        </monitorspec>
+        		        <mode>
+        		          <width>2880</width>
+        		          <height>1920</height>
+        		          <rate>120.000</rate>
+        		        </mode>
+        		      </monitor>
+        		    </logicalmonitor>
+        		  </configuration>
+        		</monitors>
+        		
       '';
     in
     [

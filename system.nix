@@ -13,6 +13,7 @@
     ./network.nix
     ./user-services.nix
     ./gdm.nix
+    ./dlna.nix
   ];
 
   hardware.enableRedistributableFirmware = true;
@@ -41,8 +42,8 @@
   boot = {
     loader = {
       systemd-boot = {
-      	enable = true;
-      	configurationLimit = 30;
+        enable = true;
+        configurationLimit = 30;
       };
       efi.canTouchEfiVariables = true;
     };
@@ -79,8 +80,8 @@
   security.pam.services.hyprlock = { };
   security.pam.services.hyprlock.enableGnomeKeyring = true;
   security.sudo.extraConfig = ''
-      Defaults pwfeedback # password input feedback - makes typed password visible as asterisks
-      Defaults insults
+    Defaults pwfeedback # password input feedback - makes typed password visible as asterisks
+    Defaults insults
   '';
 
   virtualisation.podman = {
@@ -100,15 +101,7 @@
   };
 
   services = {
-  	avahi = {
-  	  enable = true;
-  	  publish = {
-  	    enable = true;
-  	    addresses = true;
-  	    workstation = true;
-  	  };
-  	};
-	dbus.implementation = "broker";
+    dbus.implementation = "broker";
     hypridle.enable = true;
     gnome.gnome-keyring.enable = true;
     gnome.core-apps.enable = false;
@@ -168,12 +161,14 @@
     isNormalUser = true;
     description = "Tomasz Majer";
     extraGroups = [
+      "users"
       "networkmanager"
       "wheel"
       "video"
       "scanner"
       "lp"
     ];
+    homeMode = "755";
     packages = with pkgs; [
     ];
   };
@@ -213,7 +208,7 @@
     extraPortals = with pkgs; [
       xdg-desktop-portal-gnome
       xdg-desktop-portal-gtk
-	  xdg-desktop-portal-wlr
+      xdg-desktop-portal-wlr
       gnome-keyring
     ];
   };

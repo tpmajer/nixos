@@ -20,5 +20,6 @@
     adwaita-fonts
     roboto
     font-awesome
+    fira-sans
   ];
 }

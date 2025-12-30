@@ -62,6 +62,7 @@
     gtk-layer-shell
     helix
     #  impala
+    inotify-tools # for DLNA
     jq # for niri screencasting
     keepassxc
     lazygit
@@ -74,7 +75,7 @@
     (mpv.override {
       scripts = [
         mpvScripts.uosc
-	#	mpvScripts.autosub
+        #	mpvScripts.autosub
       ];
     })
     nautilus
@@ -91,7 +92,9 @@
     pinta
     playerctl
     reaction # for ip46tables command
-    signal-desktop
+    reaper
+    reaper-reapack-extension
+    reaper-sws-extension
     simp1e-cursors
     simple-scan
     spotify
@@ -99,11 +102,11 @@
     stow
     superfile
     thunderbird
-	tidal-hifi
     timg # for terminal image preview
     tree
     tuba
     upscaler
+    uxplay
     vulkan-tools
     wgcf
     wget
@@ -118,13 +121,13 @@
     zstd
   ];
 
-  nixpkgs.overlays = with pkgs; [ 
-  	inputs.niri.overlays.niri
-  	(self: super: {
-  	    mpv-unwrapped = super.mpv-unwrapped.override {
-  	      ffmpeg = ffmpeg-full;
-  	    };
-  	})
+  nixpkgs.overlays = with pkgs; [
+    inputs.niri.overlays.niri
+    (self: super: {
+      mpv-unwrapped = super.mpv-unwrapped.override {
+        ffmpeg = ffmpeg-full;
+      };
+    })
   ];
 
   programs = {

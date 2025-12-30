@@ -13,17 +13,32 @@
   networking.networkmanager = {
     enable = true;
     wifi.backend = "wpa_supplicant";
-    dns = "systemd-resolved";
+    dns = "default"; # 'default' 'systemd-resolved'
   };
-
+  networking.nameservers = [ ];
   networking.enableIPv6 = true;
+
+  services.resolved.enable = false; # systemd-resolved
+
+  services.avahi = {
+    enable = true;
+    nssmdns4 = true;
+    openFirewall = true;
+    publish = {
+      enable = true;
+      addresses = true;
+      workstation = true;
+      userServices = true;
+      domain = true;
+    };
+  };
 
   networking.wg-quick.interfaces.wg0 = {
     autostart = false;
     listenPort = 51820;
     address = [ "REDACTED-WG-ADDR/32" ];
     dns = [ "REDACTED-WG-DNS" ];
-    privateKeyFile = "/etc/wireguard/privateKey";
+    privateKeyFile = "/etc/secrets/wireguard/privateKey";
     peers = [
       {
         publicKey = "REDACTED-WG-PUBKEY";
@@ -48,12 +63,23 @@
       ip46tables -t mangle -D nixos-fw-rpfilter -p udp -m udp --sport 51820 -j RETURN || true
       ip46tables -t mangle -D nixos-fw-rpfilter -p udp -m udp --dport 51820 -j RETURN || true
     '';
-    allowedUDPPorts = [ 5353 7236 ]; # SpotifyConnect
-    allowedTCPPorts = [ 57621 7236 7250 ]; # Spotify - local files sync with mobile devices
+    allowedUDPPorts = [
+      5353
+      7236
+      7011
+      6001
+      6000
+    ]; # SpotifyConnect, 7011, 6001, 6000 for uxplay -p
+    allowedTCPPorts = [
+      57621
+      7236
+      7250
+      7100
+      7000
+      7001
+    ]; # Spotify - local files sync with mobile devices, 7100, 7000, 7001 for uxplay -p
 
-	trustedInterfaces = [ "p2p-wl+" ];
+    trustedInterfaces = [ "p2p-wl+" ];
   };
-
-  services.resolved.enable = true;
 
 }
