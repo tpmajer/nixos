@@ -35,10 +35,9 @@
       description = "Gammastep Service";
       serviceConfig = {
         Type = "simple";
-        ExecStart = ''/nix/store/iggczrfkalgj6m57k3555dxbxwm4x2is-gammastep-2.0.11/bin/gammastep -l 50.5:22.0 -t 5700:3600 -g 0.8 -m randr -v'';
+        ExecStart = ''/nix/store/iggczrfkalgj6m57k3555dxbxwm4x2is-gammastep-2.0.11/bin/gammastep -l 50.5:22.0 -t 5700:3600 -g 0.8 -m wayland -v'';
         Restart = "on-failure";
       };
-      path = lib.mkForce [ ];
     };
 
 

@@ -117,6 +117,7 @@
     wl-clipboard-rs
     wl-mirror
     wlogout
+    wlr-randr
     xwayland-satellite
     yt-dlp
     zstd
