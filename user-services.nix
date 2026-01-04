@@ -22,11 +22,25 @@
       description = "AWWW Service";
       serviceConfig = {
         Type = "simple";
-        ExecStart = ''/usr/bin/awww-daemon'';
+        ExecStart = ''/nix/store/kr7w964dm4kbjz5h71bx70x7vpmbsa3r-awww-0.11.2-master2/bin/awww-daemon'';
         Restart = "on-failure";
       };
       path = [ inputs.awww.packages.${pkgs.stdenv.hostPlatform.system}.awww ];
     };
+
+	gammastep  = {
+      enable = true;
+      after = [ "graphical-session.target" ];
+      wantedBy = [ "niri.service" ];
+      description = "Gammastep Service";
+      serviceConfig = {
+        Type = "simple";
+        ExecStart = ''/nix/store/iggczrfkalgj6m57k3555dxbxwm4x2is-gammastep-2.0.11/bin/gammastep -l 50.5:22.0 -t 5700:3600 -g 0.8 -m randr -v'';
+        Restart = "on-failure";
+      };
+      path = lib.mkForce [ ];
+    };
+
 
   };
 

@@ -12,8 +12,8 @@
     ./hardware-configuration.nix
     ./network.nix
     ./user-services.nix
-    ./gdm.nix
-    ./dlna.nix
+  #  ./gdm.nix
+  #  ./dlna.nix
   ];
 
   hardware.enableRedistributableFirmware = true;
@@ -38,6 +38,11 @@
     };
   };
   hardware.sane.enable = true; # enables support for SANE scanners
+
+  hardware.wirelessRegulatoryDatabase = true;
+  boot.extraModprobeConfig = ''
+    options cfg80211 ieee80211_regdom="PL"
+  '';
 
   boot = {
     loader = {
@@ -120,7 +125,7 @@
     displayManager = {
       gdm.enable = true;
       autoLogin = {
-        enable = true;
+        enable = false;
         user = "tpmajer";
       };
     };
@@ -134,27 +139,8 @@
     };
     libinput.enable = true;
     flatpak.enable = true;
-    envfs.enable = true;
+    envfs.enable = false; # Fuse filesystem that returns symlinks to executables based on the PATH of the requesting process.
     fprintd.enable = true; # 'sudo fprintd-enroll $USER' to enroll
-    samba = {
-      enable = true;
-      openFirewall = true;
-      settings = {
-        global = {
-          "workgroup" = "WORKGROUP";
-          "server string" = "smbnix";
-          "netbios name" = "smbnix";
-          "security" = "user";
-          #"use sendfile" = "yes";
-          #"max protocol" = "smb2";
-          # note: localhost is the ipv6 localhost ::1
-          "hosts allow" = "192.168.0. 127.0.0.1 localhost";
-          "hosts deny" = "0.0.0.0/0";
-          "guest account" = "nobody";
-          "map to guest" = "bad user";
-        };
-      };
-    };
   };
 
   users.users.tpmajer = {

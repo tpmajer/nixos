@@ -5,6 +5,7 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixos-hardware.url = "github:NixOS/nixos-hardware/master";
     chaotic.url = "github:chaotic-cx/nyx/nyxpkgs-unstable";
     niri.url = "github:sodiboo/niri-flake";
     awww.url = "git+https://codeberg.org/LGFae/awww";
@@ -18,6 +19,7 @@
     {
       self,
       nixpkgs,
+      nixos-hardware,
       chaotic,
       niri,
       awww,
@@ -32,6 +34,7 @@
         system = "x86_64-linux";
         specialArgs = { inherit inputs; };
         modules = [
+		  nixos-hardware.nixosModules.framework-amd-ai-300-series
           ./system.nix
           ./packages.nix
           ./fonts.nix

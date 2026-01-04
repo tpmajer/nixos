@@ -13,12 +13,14 @@
   networking.networkmanager = {
     enable = true;
     wifi.backend = "wpa_supplicant";
-    dns = "default"; # 'default' 'systemd-resolved'
+    wifi.powersave = false;
+	wifi.scanRandMacAddress = true;
+    dns = "systemd-resolved"; # 'default' 'systemd-resolved'
   };
   networking.nameservers = [ ];
   networking.enableIPv6 = true;
 
-  services.resolved.enable = false; # systemd-resolved
+  services.resolved.enable = true; # systemd-resolved
 
   services.avahi = {
     enable = true;
@@ -32,6 +34,26 @@
       domain = true;
     };
   };
+
+  #services.samba = {
+  #  enable = true;
+  #  openFirewall = true;
+  #  settings = {
+  #    global = {
+  #      "workgroup" = "WORKGROUP";
+  #      "server string" = "smbnix";
+  #      "netbios name" = "smbnix";
+  #      "security" = "user";
+  #      #"use sendfile" = "yes";
+  #      #"max protocol" = "smb2";
+  #      # note: localhost is the ipv6 localhost ::1
+  #      "hosts allow" = "192.168.0. 127.0.0.1 localhost";
+  #      "hosts deny" = "0.0.0.0/0";
+  #      "guest account" = "nobody";
+  #      "map to guest" = "bad user";
+  #    };
+  #  };
+  #};
 
   networking.wg-quick.interfaces.wg0 = {
     autostart = false;
@@ -66,17 +88,17 @@
     allowedUDPPorts = [
       5353
       7236
-      7011
-      6001
-      6000
+    #  7011
+    #  6001
+    #  6000
     ]; # SpotifyConnect, 7011, 6001, 6000 for uxplay -p
     allowedTCPPorts = [
       57621
       7236
       7250
-      7100
-      7000
-      7001
+    #  7100
+    #  7000
+    #  7001
     ]; # Spotify - local files sync with mobile devices, 7100, 7000, 7001 for uxplay -p
 
     trustedInterfaces = [ "p2p-wl+" ];

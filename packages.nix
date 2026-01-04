@@ -16,7 +16,7 @@
     brightnessctl
     btop
     cachix
-    calcure
+    #  calcure
     caligula # TUI for disk imaging
     candy-icons
     catppuccin-papirus-folders
@@ -41,6 +41,7 @@
     fishPlugins.sponge
     fragments
     fuzzel
+    gammastep
     ghostty
     #  inputs.ghostty.packages.${pkgs.stdenv.hostPlatform.system}.default
     git
@@ -75,7 +76,6 @@
     (mpv.override {
       scripts = [
         mpvScripts.uosc
-        #	mpvScripts.autosub
       ];
     })
     nautilus
@@ -108,6 +108,7 @@
     upscaler
     uxplay
     vulkan-tools
+    wayland-utils
     wgcf
     wget
     #  winbox4
@@ -137,9 +138,7 @@
       libnotify = true;
     };
     gnome-disks.enable = true;
-    waybar = {
-      enable = true;
-    };
+    waybar.enable = true;
     localsend = {
       enable = true;
       openFirewall = true;
@@ -157,7 +156,7 @@
     starship.enable = true;
     television = {
       enable = true;
-      enableFishIntegration = false;
+      enableFishIntegration = true;
     };
     niri = {
       enable = true;
@@ -168,7 +167,13 @@
       enable = true;
       package = pkgs.firefox;
     };
-    steam.enable = false;
+    steam = {
+      enable = true;
+      remotePlay.openFirewall = true; # Open ports in the firewall for Steam Remote Play
+      dedicatedServer.openFirewall = true; # Open ports in the firewall for Source Dedicated Server
+      localNetworkGameTransfers.openFirewall = true; # Open ports in the firewall for Steam Local Network Game Transfers
+	  gamescopeSession.enable = true;
+	};
     dconf.profiles.user = {
       databases = [
         {
