@@ -23,8 +23,12 @@
     notify_interval = 60;
   };
   services.minidlna.openFirewall = true;
+
   users.users.minidlna = {
     extraGroups = [ "users" ]; # so minidlna can access the files.
   };
+
+  # Necessary to share files from home dir
+  users.users.tpmajer.homeMode = "755";
 
 }

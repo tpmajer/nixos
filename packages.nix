@@ -21,13 +21,16 @@
     candy-icons
     catppuccin-papirus-folders
     cava
+	clapgrep
     clean-css-cli # css formatter
     clinfo
     cliphist
     clock-rs
     coreutils
+	#  davinci-resolve
     discord
     distrobox
+	distroshelf
     eza
     #  inputs.eza.packages.${pkgs.stdenv.hostPlatform.system}.default
     fastfetch
@@ -41,6 +44,7 @@
     fishPlugins.sponge
     fragments
     fuzzel
+    fzf
     gammastep
     ghostty
     #  inputs.ghostty.packages.${pkgs.stdenv.hostPlatform.system}.default
@@ -73,15 +77,17 @@
     mako
     mesa
     micro
+    millisecond
     (mpv.override {
       scripts = [
         mpvScripts.uosc
       ];
     })
     nautilus
+    nautilus-python
     networkmanager_dmenu
     newsflash
-    nixfmt-rfc-style
+    nixfmt
     nushell
     nix-search-tv
     #  inputs.nix-search-tv.packages.${pkgs.stdenv.hostPlatform.system}.default
@@ -91,10 +97,12 @@
     pinentry-all
     pinta
     playerctl
+	protonup-qt
     reaction # for ip46tables command
     reaper
     reaper-reapack-extension
     reaper-sws-extension
+    signal-desktop
     simp1e-cursors
     simple-scan
     spotify
@@ -117,19 +125,9 @@
     wl-clipboard-rs
     wl-mirror
     wlogout
-    wlr-randr
     xwayland-satellite
     yt-dlp
     zstd
-  ];
-
-  nixpkgs.overlays = with pkgs; [
-    inputs.niri.overlays.niri
-    (self: super: {
-      mpv-unwrapped = super.mpv-unwrapped.override {
-        ffmpeg = ffmpeg-full;
-      };
-    })
   ];
 
   programs = {

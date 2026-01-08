@@ -12,7 +12,7 @@
     ./hardware-configuration.nix
     ./network.nix
     ./user-services.nix
-  #  ./gdm.nix
+    ./gdm.nix
   #  ./dlna.nix
   ];
 
@@ -53,11 +53,14 @@
       efi.canTouchEfiVariables = true;
     };
     kernelPackages = pkgs.linuxPackages_latest;
-    #  kernelPackages = pkgs.linuxPackages_cachyos;
     initrd.luks.devices."luks-2388d8ad-9a00-401a-b4b4-8e3582a4ef9f".device =
       "/dev/disk/by-uuid/2388d8ad-9a00-401a-b4b4-8e3582a4ef9f";
     initrd.availableKernelModules = [ "usbhid" ];
     blacklistedKernelModules = [ "ucsi_acpi" ];
+	kernel.sysctl = {
+	  "vm.swappiness" = 10;
+	};
+	#  kernelParams = [ "preempt=full" "threadirqs" ]; # for low latency audio
   };
 
   time.timeZone = "Europe/Warsaw";
@@ -143,6 +146,13 @@
     fprintd.enable = true; # 'sudo fprintd-enroll $USER' to enroll
   };
 
+  # For low latency audio developement
+  #  musnix = {
+  #    enable = true;
+  #    alsaSeq.enable = true;
+  #    rtcqs.enable = true;
+  #  };
+
   users.users.tpmajer = {
     isNormalUser = true;
     description = "Tomasz Majer";
@@ -151,15 +161,28 @@
       "networkmanager"
       "wheel"
       "video"
+      "audio"
       "scanner"
       "lp"
     ];
-    homeMode = "755";
     packages = with pkgs; [
     ];
   };
 
-  nixpkgs.config.allowUnfree = true;
+  nixpkgs = { 
+
+  	config.allowUnfree = true;
+
+    overlays = with pkgs; [
+      inputs.niri.overlays.niri
+      (self: super: {
+        mpv-unwrapped = super.mpv-unwrapped.override {
+          ffmpeg = ffmpeg-full;
+        };
+      })
+    ];
+
+  };
 
   nix = {
     settings = {
@@ -169,13 +192,11 @@
         "flakes"
       ];
       substituters = [
-        "https://chaotic-nyx.cachix.org"
         "https://niri.cachix.org"
         #  "https://ghostty.cachix.org"
         #  "https://cache.garnix.io"
       ];
       trusted-public-keys = [
-        "chaotic-nyx.cachix.org-1:HfnXSw4pj95iI/n17rIDy40agHj12WfF+Gqk6SonIT8="
         "niri.cachix.org-1:Wv0OmO7PsuocRKzfDoJ3mulSl7Z6oezYhGhR+3W2964="
         #  "ghostty.cachix.org-1:QB389yTa6gTyneehvqG58y0WnHjQOqgnA+wBnpWWxns="
         #  "cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g="
