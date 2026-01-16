@@ -132,24 +132,6 @@
     zstd
   ];
 
-  services.flatpak = {
-    update.onActivation = true;
-    uninstallUnmanaged = false;
-    packages = [
-      "com.mikrotik.WinBox"
-      "io.github.giantpinkrobots.flatsweep"
-      "io.github.josephmawa.Bella"
-      "io.github.kolunmi.Bazaar"
-      "xyz.tytanium.DoorKnocker"
-    ];
-    overrides.global = {
-      Environment = {
-        # Fix un-themed cursor in some Wayland apps
-        XCURSOR_PATH = "/run/host/user-share/icons:/run/host/share/icons";
-      };
-    };
-  };
-
   programs = {
     nh = {
       enable = true;
