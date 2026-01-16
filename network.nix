@@ -14,7 +14,7 @@
     enable = true;
     wifi.backend = "wpa_supplicant";
     wifi.powersave = false;
-	wifi.scanRandMacAddress = true;
+    wifi.scanRandMacAddress = true;
     dns = "systemd-resolved"; # 'default' 'systemd-resolved'
   };
   networking.nameservers = [ ];
@@ -88,17 +88,17 @@
     allowedUDPPorts = [
       5353
       7236
-    #  7011
-    #  6001
-    #  6000
+      #  7011
+      #  6001
+      #  6000
     ]; # SpotifyConnect, 7011, 6001, 6000 for uxplay -p
     allowedTCPPorts = [
       57621
       7236
       7250
-    #  7100
-    #  7000
-    #  7001
+      #  7100
+      #  7000
+      #  7001
     ]; # Spotify - local files sync with mobile devices, 7100, 7000, 7001 for uxplay -p
 
     trustedInterfaces = [ "p2p-wl+" ];

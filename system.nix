@@ -13,7 +13,7 @@
     ./network.nix
     ./user-services.nix
     ./gdm.nix
-  #  ./dlna.nix
+    #  ./dlna.nix
   ];
 
   hardware.enableRedistributableFirmware = true;
@@ -57,10 +57,10 @@
       "/dev/disk/by-uuid/2388d8ad-9a00-401a-b4b4-8e3582a4ef9f";
     initrd.availableKernelModules = [ "usbhid" ];
     blacklistedKernelModules = [ "ucsi_acpi" ];
-	kernel.sysctl = {
-	  "vm.swappiness" = 10;
-	};
-	#  kernelParams = [ "preempt=full" "threadirqs" ]; # for low latency audio
+    kernel.sysctl = {
+      "vm.swappiness" = 10;
+    };
+    #  kernelParams = [ "preempt=full" "threadirqs" ]; # for low latency audio
   };
 
   time.timeZone = "Europe/Warsaw";
@@ -97,16 +97,16 @@
     dockerCompat = true;
   };
 
-  systemd.services = {
-    flatpak-repo = {
-      wantedBy = [ "multi-user.target" ];
-      path = [ pkgs.flatpak ];
-      script = "
-        flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-		flatpak remote-add --if-not-exists gnome-nightly https://nightly.gnome.org/gnome-nightly.flatpakrepo
-      ";
-    };
-  };
+  # systemd.services = {
+  #   flatpak-repo = {
+  #     wantedBy = [ "multi-user.target" ];
+  #     path = [ pkgs.flatpak ];
+  #     script = "
+  #       flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+  # 	  flatpak remote-add --if-not-exists gnome-nightly https://nightly.gnome.org/gnome-nightly.flatpakrepo
+  #     ";
+  #   };
+  # };
 
   services = {
     dbus.implementation = "broker";
@@ -116,7 +116,10 @@
     gvfs.enable = true;
     geoclue2.enable = true;
     power-profiles-daemon.enable = false;
-    tlp.enable = true;
+    tlp = {
+      enable = true;
+      pd.enable = true;
+    };
     fwupd.enable = true;
     xserver.enable = false;
     xserver.xkb = {
@@ -169,9 +172,9 @@
     ];
   };
 
-  nixpkgs = { 
+  nixpkgs = {
 
-  	config.allowUnfree = true;
+    config.allowUnfree = true;
 
     overlays = with pkgs; [
       inputs.niri.overlays.niri
@@ -203,7 +206,7 @@
       ];
     };
     gc = {
-      automatic = true;
+      automatic = false;
       dates = "weekly";
       options = "--delete-older-than 14d";
     };

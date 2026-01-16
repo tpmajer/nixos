@@ -12,25 +12,26 @@
     inputs.awww.packages.${pkgs.stdenv.hostPlatform.system}.awww
     baobab
     bat
+    #  bazaar
     bluetui
     brightnessctl
     btop
     cachix
-    #  calcure
+    calcure
     caligula # TUI for disk imaging
     candy-icons
     catppuccin-papirus-folders
     cava
-	clapgrep
+    clapgrep
     clean-css-cli # css formatter
     clinfo
     cliphist
     clock-rs
     coreutils
-	#  davinci-resolve
+    #  davinci-resolve
     discord
     distrobox
-	distroshelf
+    distroshelf
     eza
     #  inputs.eza.packages.${pkgs.stdenv.hostPlatform.system}.default
     fastfetch
@@ -85,6 +86,7 @@
     })
     nautilus
     nautilus-python
+    ncdu
     networkmanager_dmenu
     newsflash
     nixfmt
@@ -97,7 +99,7 @@
     pinentry-all
     pinta
     playerctl
-	protonup-qt
+    protonup-qt
     reaction # for ip46tables command
     reaper
     reaper-reapack-extension
@@ -130,7 +132,31 @@
     zstd
   ];
 
+  services.flatpak = {
+    update.onActivation = true;
+    uninstallUnmanaged = false;
+    packages = [
+      "com.mikrotik.WinBox"
+      "io.github.giantpinkrobots.flatsweep"
+      "io.github.josephmawa.Bella"
+      "io.github.kolunmi.Bazaar"
+      "xyz.tytanium.DoorKnocker"
+    ];
+    overrides.global = {
+      Environment = {
+        # Fix un-themed cursor in some Wayland apps
+        XCURSOR_PATH = "/run/host/user-share/icons:/run/host/share/icons";
+      };
+    };
+  };
+
   programs = {
+    nh = {
+      enable = true;
+      clean.enable = true;
+      clean.extraArgs = "--keep-since 7d --keep 30";
+      flake = "/etc/nixos"; # sets NH_OS_FLAKE variable for you
+    };
     yubikey-manager.enable = true;
     yubikey-touch-detector = {
       enable = true;
@@ -171,8 +197,8 @@
       remotePlay.openFirewall = true; # Open ports in the firewall for Steam Remote Play
       dedicatedServer.openFirewall = true; # Open ports in the firewall for Source Dedicated Server
       localNetworkGameTransfers.openFirewall = true; # Open ports in the firewall for Steam Local Network Game Transfers
-	  gamescopeSession.enable = true;
-	};
+      gamescopeSession.enable = true;
+    };
     dconf.profiles.user = {
       databases = [
         {

@@ -6,9 +6,10 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
-	musnix.url = "github:musnix/musnix";
+    musnix.url = "github:musnix/musnix";
     niri.url = "github:sodiboo/niri-flake";
     awww.url = "git+https://codeberg.org/LGFae/awww";
+    nix-flatpak.url = "github:gmodena/nix-flatpak";
     #  ghostty.url = "github:ghostty-org/ghostty";
     #  hypridle.url = "github:hyprwm/hypridle";
     #  nix-search-tv.url = "github:3timeslazy/nix-search-tv";
@@ -23,6 +24,7 @@
       musnix,
       niri,
       awww,
+      nix-flatpak,
       #  ghostty,
       #  hypridle,
       #  nix-search-tv,
@@ -40,6 +42,7 @@
           nixos-hardware.nixosModules.framework-amd-ai-300-series
           musnix.nixosModules.musnix
           niri.nixosModules.niri
+          nix-flatpak.nixosModules.nix-flatpak
         ];
       };
     };
