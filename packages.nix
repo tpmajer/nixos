@@ -1,3 +1,4 @@
+
 # /etc/nixos/packages.nix
 
 {
@@ -52,6 +53,7 @@
     git
     gnome-calculator
     gnome-calendar
+	gnome-feeds
     gnome-font-viewer
     gnome-logs
     gnome-network-displays
@@ -90,9 +92,9 @@
     networkmanager_dmenu
     newsflash
     nixfmt
-    nushell
     nix-search-tv
     #  inputs.nix-search-tv.packages.${pkgs.stdenv.hostPlatform.system}.default
+	nushell
     obsidian
     onlyoffice-desktopeditors
     papers
@@ -115,7 +117,7 @@
     timg # for terminal image preview
     tree
     tuba
-    upscaler
+    #  upscaler
     uxplay
     vulkan-tools
     wayland-utils
