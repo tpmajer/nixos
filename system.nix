@@ -13,7 +13,7 @@
     ./network.nix
     ./user-services.nix
     ./gdm.nix
-    #  ./dlna.nix
+  #  ./dlna.nix
   ];
 
   hardware.enableRedistributableFirmware = true;
@@ -52,6 +52,7 @@
       };
       efi.canTouchEfiVariables = true;
     };
+	#  kernelPackages = pkgs.linuxPackages;
     kernelPackages = pkgs.linuxPackages_latest;
     initrd.luks.devices."luks-2388d8ad-9a00-401a-b4b4-8e3582a4ef9f".device =
       "/dev/disk/by-uuid/2388d8ad-9a00-401a-b4b4-8e3582a4ef9f";
@@ -196,12 +197,12 @@
       ];
       substituters = [
         "https://niri.cachix.org"
-        #  "https://ghostty.cachix.org"
+        "https://ghostty.cachix.org"
         #  "https://cache.garnix.io"
       ];
       trusted-public-keys = [
         "niri.cachix.org-1:Wv0OmO7PsuocRKzfDoJ3mulSl7Z6oezYhGhR+3W2964="
-        #  "ghostty.cachix.org-1:QB389yTa6gTyneehvqG58y0WnHjQOqgnA+wBnpWWxns="
+        "ghostty.cachix.org-1:QB389yTa6gTyneehvqG58y0WnHjQOqgnA+wBnpWWxns="
         #  "cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g="
       ];
     };
@@ -218,7 +219,6 @@
     extraPortals = with pkgs; [
       xdg-desktop-portal-gnome
       xdg-desktop-portal-gtk
-      xdg-desktop-portal-wlr
       gnome-keyring
     ];
   };

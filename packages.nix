@@ -13,7 +13,8 @@
     inputs.awww.packages.${pkgs.stdenv.hostPlatform.system}.awww
     baobab
     bat
-    #  bazaar
+    bazaar
+	bella
     bluetui
     brightnessctl
     btop
@@ -24,12 +25,10 @@
     catppuccin-papirus-folders
     cava
     clapgrep
-    clean-css-cli # css formatter
     clinfo
     cliphist
     clock-rs
     coreutils
-    #  davinci-resolve
     discord
     distrobox
     distroshelf
@@ -48,8 +47,8 @@
     fuzzel
     fzf
     gammastep
-    ghostty
-    #  inputs.ghostty.packages.${pkgs.stdenv.hostPlatform.system}.default
+    #ghostty
+    inputs.ghostty.packages.${pkgs.stdenv.hostPlatform.system}.default
     git
     gnome-calculator
     gnome-calendar
@@ -117,7 +116,7 @@
     timg # for terminal image preview
     tree
     tuba
-    #  upscaler
+    upscaler
     uxplay
     vulkan-tools
     wayland-utils
@@ -138,7 +137,7 @@
     nh = {
       enable = true;
       clean.enable = true;
-      clean.extraArgs = "--keep-since 7d --keep 30";
+      clean.extraArgs = "--keep-since 14d --keep 50";
       flake = "/etc/nixos"; # sets NH_OS_FLAKE variable for you
     };
     yubikey-manager.enable = true;
