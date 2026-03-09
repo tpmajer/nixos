@@ -9,7 +9,7 @@
     musnix.url = "github:musnix/musnix";
     niri.url = "github:sodiboo/niri-flake";
     awww.url = "git+https://codeberg.org/LGFae/awww";
-    ghostty.url = "github:ghostty-org/ghostty";
+    #  ghostty.url = "github:ghostty-org/ghostty";
     #  nix-flatpak.url = "github:gmodena/nix-flatpak";
     #  hypridle.url = "github:hyprwm/hypridle";
     #  nix-search-tv.url = "github:3timeslazy/nix-search-tv";
@@ -24,7 +24,7 @@
       musnix,
       niri,
       awww,
-      ghostty,
+      #  ghostty,
       #  nix-flatpak,
       #  hypridle,
       #  nix-search-tv,

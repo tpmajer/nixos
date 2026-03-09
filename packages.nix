@@ -25,6 +25,7 @@
     catppuccin-papirus-folders
     cava
     clapgrep
+    claude-code
     clinfo
     cliphist
     clock-rs
@@ -47,8 +48,8 @@
     fuzzel
     fzf
     gammastep
-    #ghostty
-    inputs.ghostty.packages.${pkgs.stdenv.hostPlatform.system}.default
+    ghostty
+    #  inputs.ghostty.packages.${pkgs.stdenv.hostPlatform.system}.default
     git
     gnome-calculator
     gnome-calendar
@@ -131,9 +132,24 @@
     xwayland-satellite
     yt-dlp
     zstd
+	#  zoxide
   ];
 
   programs = {
+	tmux = {
+	  enable = true;
+	  clock24 = true;
+	  aggressiveResize = true;
+	  baseIndex = 1;
+	  extraConfig = ''
+
+	  	set-option -g default-shell /nix/store/d305s1vfwd777ps7mz9sg1xfa2b82anf-fish-4.5.0/bin/fish
+	    	
+	    # Enable mouse support
+	    set -g mouse on
+
+	  '';
+	};
     nh = {
       enable = true;
       clean.enable = true;
