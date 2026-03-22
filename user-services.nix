@@ -10,7 +10,6 @@
 
 {
 
-  # 'readlink -f $(which gammastep)' for ExecStart path
   systemd.user.services = {
 
     waybar.path = lib.mkForce [ ];
