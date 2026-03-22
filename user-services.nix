@@ -23,7 +23,7 @@
       description = "AWWW Service";
       serviceConfig = {
         Type = "simple";
-        ExecStart = "/nix/store/d41pzshfs5al9a1s3mli5gpc58h3p69y-awww-0.11.2-master2/bin/awww-daemon";
+		ExecStart = "${inputs.awww.packages.${pkgs.stdenv.hostPlatform.system}.awww}/bin/awww-daemon";
         Restart = "on-failure";
       };
       path = [ inputs.awww.packages.${pkgs.stdenv.hostPlatform.system}.awww ];
@@ -36,7 +36,7 @@
       description = "Gammastep Service";
       serviceConfig = {
         Type = "simple";
-        ExecStart = "/nix/store/wfarb208xx8bijjqb9l5hv1x2wzkr2dn-gammastep-2.0.11/bin/gammastep -l 50.5:22.0 -t 6500:4500 -m wayland -v";
+        ExecStart = "${pkgs.gammastep}/bin/gammastep -l 50.5:22.0 -t 6500:4500 -m wayland -v";
         Restart = "on-failure";
       };
     };

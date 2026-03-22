@@ -46,11 +46,11 @@
     fishPlugins.sponge
     fragments
     fuzzel
-    fzf
     gammastep
     ghostty
     #  inputs.ghostty.packages.${pkgs.stdenv.hostPlatform.system}.default
     git
+    git-filter-repo
     gnome-calculator
     gnome-calendar
 	gnome-feeds
@@ -97,11 +97,13 @@
 	nushell
     obsidian
     onlyoffice-desktopeditors
+    opencommit
     papers
     pinentry-all
     pinta
     playerctl
     protonup-qt
+	python3
     reaction # for ip46tables command
     reaper
     reaper-reapack-extension
@@ -136,6 +138,11 @@
   ];
 
   programs = {
+	nix-index-database.comma.enable = true;
+	fzf = {
+	  keybindings = true;
+	  fuzzyCompletion = true;
+	};
 	tmux = {
 	  enable = true;
 	  clock24 = true;
@@ -178,10 +185,6 @@
       };
     };
     starship.enable = true;
-    television = {
-      enable = true;
-      enableFishIntegration = true;
-    };
     niri = {
       enable = true;
       package = pkgs.niri-unstable;
