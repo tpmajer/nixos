@@ -148,7 +148,7 @@
 	  baseIndex = 1;
 	  extraConfig = ''
 
-	  	set-option -g default-shell /nix/store/d305s1vfwd777ps7mz9sg1xfa2b82anf-fish-4.5.0/bin/fish
+	  	set-option -g default-shell ${pkgs.fish}/bin/fish
 	    	
 	    # Enable mouse support
 	    set -g mouse on
