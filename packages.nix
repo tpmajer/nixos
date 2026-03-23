@@ -92,8 +92,6 @@
     networkmanager_dmenu
     newsflash
     nixfmt
-    nix-search-tv
-    #  inputs.nix-search-tv.packages.${pkgs.stdenv.hostPlatform.system}.default
 	nushell
     obsidian
     onlyoffice-desktopeditors
