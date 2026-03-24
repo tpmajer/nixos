@@ -91,6 +91,7 @@
     ncdu
     networkmanager_dmenu
     newsflash
+	nfs-utils
     nixfmt
 	nushell
     obsidian

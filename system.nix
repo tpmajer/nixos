@@ -122,7 +122,6 @@
       pd.enable = true;
     };
     fwupd.enable = true;
-    xserver.enable = false;
     xserver.xkb = {
       layout = "pl";
       variant = "";
