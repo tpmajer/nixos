@@ -93,6 +93,7 @@
     newsflash
 	nfs-utils
     nixfmt
+    nodejs
 	nushell
     obsidian
     onlyoffice-desktopeditors
