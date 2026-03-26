@@ -123,6 +123,7 @@
     uxplay
     vulkan-tools
     wayland-utils
+	web-ext
     wgcf
     wget
     #  winbox4
