@@ -93,6 +93,7 @@
     newsflash
 	nfs-utils
     nixfmt
+    nodejs # for CC MCP servers
 	nushell
     obsidian
     onlyoffice-desktopeditors
