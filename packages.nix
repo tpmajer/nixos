@@ -108,6 +108,7 @@
     reaper
     reaper-reapack-extension
     reaper-sws-extension
+    ripgrep
     signal-desktop
     simp1e-cursors
     simple-scan
