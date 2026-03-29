@@ -93,7 +93,6 @@
     newsflash
 	nfs-utils
     nixfmt
-    nodejs
 	nushell
     obsidian
     onlyoffice-desktopeditors
@@ -123,7 +122,6 @@
     uxplay
     vulkan-tools
     wayland-utils
-	web-ext
     wgcf
     wget
     #  winbox4
