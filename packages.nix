@@ -30,6 +30,7 @@
     cliphist
     clock-rs
     coreutils
+    diff-so-fancy
     discord
     distrobox
     distroshelf
