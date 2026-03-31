@@ -44,6 +44,7 @@
     fishPlugins.forgit
     fishPlugins.grc
     fishPlugins.sponge
+    fishPlugins.fzf-fish
     fragments
     fuzzel
     gammastep
