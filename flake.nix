@@ -11,6 +11,7 @@
     awww.url = "git+https://codeberg.org/LGFae/awww";
 	nix-index-database.url = "github:nix-community/nix-index-database";
 	nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
+	claude-code.url = "github:sadjow/claude-code-nix";
     #  ghostty.url = "github:ghostty-org/ghostty";
     #  nix-flatpak.url = "github:gmodena/nix-flatpak";
     #  hypridle.url = "github:hyprwm/hypridle";
@@ -27,6 +28,7 @@
       niri,
       awww,
       nix-index-database,
+      claude-code,
       #  ghostty,
       #  nix-flatpak,
       #  hypridle,

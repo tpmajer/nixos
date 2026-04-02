@@ -1,4 +1,3 @@
-
 # /etc/nixos/packages.nix
 
 {
@@ -25,7 +24,8 @@
     catppuccin-papirus-folders
     cava
     clapgrep
-    claude-code
+    # claude-code
+	inputs.claude-code.packages.${pkgs.stdenv.hostPlatform.system}.default
     clinfo
     cliphist
     clock-rs
@@ -60,6 +60,7 @@
     gnome-logs
     gnome-network-displays
     gnome-tweaks
+    gocryptfs
     google-chrome
     grc
     gst_all_1.gstreamer
@@ -124,6 +125,7 @@
     tuba
     upscaler
     uxplay
+    vaults
     vulkan-tools
     wayland-utils
     wgcf

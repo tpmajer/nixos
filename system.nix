@@ -177,6 +177,7 @@
     config.allowUnfree = true;
 
     overlays = with pkgs; [
+      inputs.claude-code.overlays.default
       inputs.niri.overlays.niri
       (self: super: {
         mpv-unwrapped = super.mpv-unwrapped.override {
@@ -197,11 +198,13 @@
       substituters = [
         "https://niri.cachix.org"
         "https://ghostty.cachix.org"
+        "https://claude-code.cachix.org"
         #  "https://cache.garnix.io"
       ];
       trusted-public-keys = [
         "niri.cachix.org-1:Wv0OmO7PsuocRKzfDoJ3mulSl7Z6oezYhGhR+3W2964="
         "ghostty.cachix.org-1:QB389yTa6gTyneehvqG58y0WnHjQOqgnA+wBnpWWxns="
+        "claude-code.cachix.org-1:YeXf2aNu7UTX8Vwrze0za1WEDS+4DuI2kVeWEE4fsRk="
         #  "cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g="
       ];
     };
