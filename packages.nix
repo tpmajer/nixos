@@ -125,7 +125,7 @@
     tuba
     upscaler
     uxplay
-    vaults
+    # vaults
     vulkan-tools
     wayland-utils
     wgcf
