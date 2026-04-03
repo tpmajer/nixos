@@ -23,7 +23,7 @@
     candy-icons
     catppuccin-papirus-folders
     cava
-    clapgrep
+    # clapgrep
     # claude-code
 	inputs.claude-code.packages.${pkgs.stdenv.hostPlatform.system}.default
     clinfo
