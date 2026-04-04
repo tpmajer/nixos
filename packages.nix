@@ -12,7 +12,7 @@
     inputs.awww.packages.${pkgs.stdenv.hostPlatform.system}.awww
     baobab
     bat
-    bazaar
+    #  bazaar
 	bella
     bluetui
     brightnessctl
@@ -121,8 +121,8 @@
     tree
     tuba
     upscaler
-    uxplay
-    # vaults
+    #  uxplay
+    #  vaults
     vulkan-tools
     wayland-utils
     wgcf
