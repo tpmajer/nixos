@@ -22,10 +22,10 @@
       description = "AWWW Service";
       serviceConfig = {
         Type = "simple";
-		ExecStart = "${inputs.awww.packages.${pkgs.stdenv.hostPlatform.system}.awww}/bin/awww-daemon";
+		ExecStart = "${pkgs.awww}/bin/awww-daemon";
         Restart = "on-failure";
       };
-      path = [ inputs.awww.packages.${pkgs.stdenv.hostPlatform.system}.awww ];
+      path = [ pkgs.awww ];
     };
 
     gammastep = {
