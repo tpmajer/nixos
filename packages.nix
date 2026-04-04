@@ -7,9 +7,11 @@
   ...
 }:
 
+#	For specific versions: inputs.<input_name>.legacyPackages.${pkgs.stdenv.hostPlatform.system}.<package_name>
+
 {
   environment.systemPackages = with pkgs; [
-    inputs.awww.packages.${pkgs.stdenv.hostPlatform.system}.awww
+    awww
     baobab
     bat
     #  bazaar
@@ -103,7 +105,7 @@
     pinta
     playerctl
     protonup-qt
-	python3
+	python314
     reaction # for ip46tables command
     reaper
     reaper-reapack-extension

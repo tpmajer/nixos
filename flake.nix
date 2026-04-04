@@ -8,15 +8,10 @@
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
     musnix.url = "github:musnix/musnix";
     niri.url = "github:sodiboo/niri-flake";
-    awww.url = "git+https://codeberg.org/LGFae/awww";
 	nix-index-database.url = "github:nix-community/nix-index-database";
 	nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
 	claude-code.url = "github:sadjow/claude-code-nix";
-    #  ghostty.url = "github:ghostty-org/ghostty";
-    #  nix-flatpak.url = "github:gmodena/nix-flatpak";
-    #  hypridle.url = "github:hyprwm/hypridle";
-    #  nix-search-tv.url = "github:3timeslazy/nix-search-tv";
-    #  eza.url = "github:eza-community/eza";
+	#  <input_name>.url = "github:NixOS/nixpkgs/<hash_from_nixhub.io>";
   };
 
   outputs =
@@ -26,14 +21,8 @@
       nixos-hardware,
       musnix,
       niri,
-      awww,
       nix-index-database,
       claude-code,
-      #  ghostty,
-      #  nix-flatpak,
-      #  hypridle,
-      #  nix-search-tv,
-      #  eza,
       ...
     }@inputs:
     {
@@ -48,7 +37,6 @@
           musnix.nixosModules.musnix
           niri.nixosModules.niri
           nix-index-database.nixosModules.default
-          #  nix-flatpak.nixosModules.nix-flatpak
         ];
       };
     };
