@@ -23,8 +23,6 @@
     candy-icons
     catppuccin-papirus-folders
     cava
-    # clapgrep
-    # claude-code
 	inputs.claude-code.packages.${pkgs.stdenv.hostPlatform.system}.default
     clinfo
     cliphist
@@ -33,7 +31,6 @@
     diff-so-fancy
     discord
     distrobox
-    distroshelf
     eza
     #  inputs.eza.packages.${pkgs.stdenv.hostPlatform.system}.default
     fastfetch
