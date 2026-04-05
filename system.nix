@@ -13,7 +13,7 @@
     ./network.nix
     ./user-services.nix
     ./gdm.nix
-  #  ./dlna.nix
+    #  ./dlna.nix
   ];
 
   hardware.enableRedistributableFirmware = true;
@@ -52,7 +52,7 @@
       };
       efi.canTouchEfiVariables = true;
     };
-	#  kernelPackages = pkgs.linuxPackages;
+    #  kernelPackages = pkgs.linuxPackages;
     kernelPackages = pkgs.linuxPackages_latest;
     initrd.luks.devices."luks-2388d8ad-9a00-401a-b4b4-8e3582a4ef9f".device =
       "/dev/disk/by-uuid/2388d8ad-9a00-401a-b4b4-8e3582a4ef9f";
@@ -198,12 +198,12 @@
       substituters = [
         "https://niri.cachix.org"
         "https://claude-code.cachix.org"
-      #  "https://ghostty.cachix.org"
+        #  "https://ghostty.cachix.org"
       ];
       trusted-public-keys = [
         "niri.cachix.org-1:Wv0OmO7PsuocRKzfDoJ3mulSl7Z6oezYhGhR+3W2964="
         "claude-code.cachix.org-1:YeXf2aNu7UTX8Vwrze0za1WEDS+4DuI2kVeWEE4fsRk="
-      #  "ghostty.cachix.org-1:QB389yTa6gTyneehvqG58y0WnHjQOqgnA+wBnpWWxns="
+        #  "ghostty.cachix.org-1:QB389yTa6gTyneehvqG58y0WnHjQOqgnA+wBnpWWxns="
       ];
     };
     gc = {

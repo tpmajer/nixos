@@ -22,7 +22,7 @@
       description = "AWWW Service";
       serviceConfig = {
         Type = "simple";
-		ExecStart = "${pkgs.awww}/bin/awww-daemon";
+        ExecStart = "${pkgs.awww}/bin/awww-daemon";
         Restart = "on-failure";
       };
       path = [ pkgs.awww ];

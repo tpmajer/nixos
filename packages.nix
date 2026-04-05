@@ -15,7 +15,7 @@
     baobab
     bat
     #  bazaar
-	bella
+    bella
     bluetui
     brightnessctl
     btop
@@ -25,7 +25,7 @@
     candy-icons
     catppuccin-papirus-folders
     cava
-	inputs.claude-code.packages.${pkgs.stdenv.hostPlatform.system}.default
+    inputs.claude-code.packages.${pkgs.stdenv.hostPlatform.system}.default
     clinfo
     cliphist
     clock-rs
@@ -54,7 +54,7 @@
     git-filter-repo
     gnome-calculator
     gnome-calendar
-	gnome-feeds
+    gnome-feeds
     gnome-font-viewer
     gnome-logs
     gnome-network-displays
@@ -93,10 +93,10 @@
     ncdu
     networkmanager_dmenu
     newsflash
-	nfs-utils
+    nfs-utils
     nixfmt
     nodejs # for CC MCP servers
-	nushell
+    nushell
     obsidian
     onlyoffice-desktopeditors
     opencommit
@@ -105,7 +105,7 @@
     pinta
     playerctl
     protonup-qt
-	python314
+    python314
     reaction # for ip46tables command
     reaper
     reaper-reapack-extension
@@ -138,29 +138,29 @@
     xwayland-satellite
     yt-dlp
     zstd
-	#  zoxide
+    #  zoxide
   ];
 
   programs = {
-	nix-index-database.comma.enable = true;
-	fzf = {
-	  keybindings = true;
-	  fuzzyCompletion = true;
-	};
-	tmux = {
-	  enable = true;
-	  clock24 = true;
-	  aggressiveResize = true;
-	  baseIndex = 1;
-	  extraConfig = ''
+    nix-index-database.comma.enable = true;
+    fzf = {
+      keybindings = true;
+      fuzzyCompletion = true;
+    };
+    tmux = {
+      enable = true;
+      clock24 = true;
+      aggressiveResize = true;
+      baseIndex = 1;
+      extraConfig = ''
 
-	  	set-option -g default-shell ${pkgs.fish}/bin/fish
-	    	
-	    # Enable mouse support
-	    set -g mouse on
+        	  	set-option -g default-shell ${pkgs.fish}/bin/fish
+        	    	
+        	    # Enable mouse support
+        	    set -g mouse on
 
-	  '';
-	};
+        	  '';
+    };
     nh = {
       enable = true;
       clean.enable = true;
