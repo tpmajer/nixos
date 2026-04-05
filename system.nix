@@ -12,7 +12,7 @@
     ./hardware-configuration.nix
     ./network.nix
     ./user-services.nix
-    ./gdm.nix
+    #  ./gdm.nix
     #  ./dlna.nix
   ];
 
