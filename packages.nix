@@ -165,7 +165,7 @@
       enable = true;
       clean.enable = true;
       clean.extraArgs = "--keep-since 14d --keep 50";
-      flake = "/etc/nixos"; # sets NH_OS_FLAKE variable for you
+      flake = "/home/tpmajer/.nixos"; # sets NH_OS_FLAKE variable for you
     };
     yubikey-manager.enable = true;
     yubikey-touch-detector = {
