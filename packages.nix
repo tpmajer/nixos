@@ -33,6 +33,7 @@
     diff-so-fancy
     discord
     distrobox
+	eww
     eza
     #  inputs.eza.packages.${pkgs.stdenv.hostPlatform.system}.default
     fastfetch
