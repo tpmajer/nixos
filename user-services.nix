@@ -26,8 +26,8 @@
   
     awww-daemon = {
       enable = true;
-      after = [ "graphical-session.target" ];
-      wantedBy = [ "niri.service" ];
+      after = [ "niri.service" ];
+      wantedBy = lib.mkForce [ "niri.service" ];
       description = "AWWW Service";
       serviceConfig = {
         Type = "simple";
