@@ -12,9 +12,18 @@
 
   systemd.user.services = {
 
-    waybar.path = lib.mkForce [ ];
-    hypridle.path = lib.mkForce [ ];
+    waybar = {
+      path = lib.mkForce [ ];
+      after = lib.mkForce [ "graphical-session.target" ];
+      wants = lib.mkForce [ "graphical-session.target" ];
+    };
 
+    hypridle = {
+      path = lib.mkForce [ ];
+      after = lib.mkForce [ "graphical-session.target" ];
+      wants = lib.mkForce [ "graphical-session.target" ];
+    };
+  
     awww-daemon = {
       enable = true;
       after = [ "graphical-session.target" ];
