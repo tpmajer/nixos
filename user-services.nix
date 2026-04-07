@@ -14,14 +14,14 @@
 
     waybar = {
       path = lib.mkForce [ ];
-      after = lib.mkForce [ "graphical-session.target" ];
-      wants = lib.mkForce [ "graphical-session.target" ];
+      after = [ "niri.service" ];
+      wantedBy = lib.mkForce [ "niri.service" ];
     };
 
     hypridle = {
       path = lib.mkForce [ ];
-      after = lib.mkForce [ "graphical-session.target" ];
-      wants = lib.mkForce [ "graphical-session.target" ];
+      after = [ "niri.service" ];
+      wantedBy = lib.mkForce [ "niri.service" ];
     };
   
     awww-daemon = {
