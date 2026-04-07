@@ -84,8 +84,8 @@
 
   security.rtkit.enable = true;
   security.polkit.enable = true;
-  security.pam.services.gdm.enableGnomeKeyring = false;
-  security.pam.services.login.enableGnomeKeyring = false;
+  security.pam.services.gdm.enableGnomeKeyring = true;
+  security.pam.services.login.enableGnomeKeyring = true;
   security.pam.services.hyprlock = { };
   security.pam.services.hyprlock.enableGnomeKeyring = true;
   security.sudo.extraConfig = ''
