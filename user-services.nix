@@ -23,7 +23,7 @@
       after = [ "niri.service" ];
       wantedBy = lib.mkForce [ "niri.service" ];
     };
-  
+
     awww-daemon = {
       enable = true;
       after = [ "niri.service" ];
