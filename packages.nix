@@ -30,14 +30,13 @@
     clock-rs
     coreutils
     (diff-so-fancy.overrideAttrs (old: {
-      postPatch = (old.postPatch or "") + ''
-        substituteInPlace lib/diff-so-fancy/.diff-so-fancy-wrapped \
+      postInstall = (old.postInstall or "") + ''
+        substituteInPlace $out/bin/.diff-so-fancy-wrapped \          
           --replace-fail \
             'sub init_diff_highlight_colors {' \
             'sub init_diff_highlight_colors { DiffHighlight::load_color_config();'
       '';
     }))
-    diff-so-fancy
     discord
     distrobox
     eza
