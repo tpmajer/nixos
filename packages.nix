@@ -14,7 +14,6 @@
     awww
     baobab
     bat
-    #  bazaar
     bella
     bluetui
     brightnessctl
@@ -72,7 +71,6 @@
     gthumb
     gtk-layer-shell
     helix
-    #  impala
     inotify-tools # for DLNA
     jq # for niri screencasting
     keepassxc
@@ -121,13 +119,10 @@
     tree
     tuba
     upscaler
-    #  uxplay
-    #  vaults
     vulkan-tools
     wayland-utils
     wgcf
     wget
-    #  winbox4
     wireguard-tools
     wiremix
     wl-clipboard-rs
@@ -136,7 +131,6 @@
     xwayland-satellite
     yt-dlp
     zstd
-    #  zoxide
   ];
 
   programs = {
