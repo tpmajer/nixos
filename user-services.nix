@@ -33,6 +33,7 @@
         Type = "simple";
         ExecStart = "${pkgs.awww}/bin/awww-daemon";
         Restart = "on-failure";
+        RestartSec = "2s";
       };
       path = [ pkgs.awww ];
     };
