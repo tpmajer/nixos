@@ -14,7 +14,7 @@
     enable = true;
     wifi.backend = "wpa_supplicant";
     wifi.powersave = false;
-    wifi.scanRandMacAddress = true;
+    wifi.scanRandMacAddress = false;
     dns = "systemd-resolved"; # 'default' 'systemd-resolved'
   };
   networking.nameservers = [ ];
