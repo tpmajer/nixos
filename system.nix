@@ -4,6 +4,7 @@
   config,
   pkgs,
   inputs,
+  lib,
   ...
 }:
 
@@ -86,6 +87,7 @@
   security.polkit.enable = true;
   security.pam.services.hyprlock = { };
   security.pam.services.hyprlock.enableGnomeKeyring = true;
+  security.pam.services.login.enableGnomeKeyring = lib.mkForce false;
   security.sudo.extraConfig = ''
     Defaults pwfeedback # password input feedback - makes typed password visible as asterisks
     Defaults insults
