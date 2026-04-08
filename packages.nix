@@ -30,8 +30,8 @@
     clock-rs
     coreutils
     (diff-so-fancy.overrideAttrs (old: {
-      postInstall = (old.postInstall or "") + ''
-        substituteInPlace $out/bin/.diff-so-fancy-wrapped \          
+      postPatch = (old.postPatch or "") + ''
+        substituteInPlace diff-so-fancy \
           --replace-fail \
             'sub init_diff_highlight_colors {' \
             'sub init_diff_highlight_colors { DiffHighlight::load_color_config();'
