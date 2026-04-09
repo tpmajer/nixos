@@ -131,31 +131,6 @@
       alsa.enable = true;
       alsa.support32Bit = true;
       pulse.enable = true;
-      wireplumber.extraConfig."10-bluez" = {
-        "monitor.bluez.properties" = {
-          "bluez5.enable-sbc-xq" = true;
-          "bluez5.enable-msbc" = true;
-          "bluez5.enable-hw-volume" = true;
-          "bluez5.headset-roles" = [
-            "hsp_hs"
-            "hsp_ag"
-            "hfp_hf"
-            "hfp_ag"
-          ];
-        };
-      };
-      wireplumber.extraConfig."51-disable-bt-suspend" = {
-        "node.rules" = [
-          {
-            matches = [ { "node.name" = "~bluez_output.*"; } ];
-            actions.update-props."session.suspend-timeout-seconds" = 0;
-          }
-          {
-            matches = [ { "node.name" = "~bluez_input.*"; } ];
-            actions.update-props."session.suspend-timeout-seconds" = 0;
-          }
-        ];
-      };
     };
     libinput.enable = true;
     flatpak.enable = true;
