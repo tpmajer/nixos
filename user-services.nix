@@ -47,7 +47,9 @@
         Type = "simple";
         ExecStart = "${pkgs.gammastep}/bin/gammastep -l 50.5:22.0 -t 6500:4500 -m wayland -v";
         Restart = "on-failure";
+        RestartSec = "2s";
       };
+      path = [ pkgs.gammastep ];
     };
 
   };
