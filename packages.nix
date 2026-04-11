@@ -105,6 +105,7 @@
     nushell
     obsidian
     onlyoffice-desktopeditors
+    ookla-speedtest
     opencommit
     papers
     pinentry-all
