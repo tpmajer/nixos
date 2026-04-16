@@ -52,6 +52,20 @@
       path = [ pkgs.gammastep ];
     };
 
+    "app-com.mitchell.ghostty" = {
+      enable = true;
+      after = [ "graphical-session.target" ];
+      wantedBy = [ "niri.service" ];
+      description = "Ghostty Service";
+      serviceConfig = {
+        Type = "simple";
+        ExecStart = "${pkgs.ghostty}/bin/ghostty --gtk-single-instance=true --initial-window=false";
+        Restart = "on-failure";
+        RestartSec = "2s";
+      };
+      path = lib.mkForce [ ];
+    };
+
   };
 
 }
