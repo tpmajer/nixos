@@ -40,7 +40,7 @@
 
     gammastep = {
       enable = true;
-      after = [ "graphical-session.target" ];
+      after = [ "niri.service" ];
       wantedBy = [ "niri.service" ];
       description = "Gammastep Service";
       serviceConfig = {
