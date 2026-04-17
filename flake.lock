@@ -37,6 +37,19 @@
         "type": "github"
       }
     },
+    "mako-patched": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1776453986,
+        "narHash": "sha256-QOMX4kYY1c7mbOt8sTT6DMGPVWdOem3dYLIzQUaqZx4=",
+        "path": "/home/tpmajer/Claude/mako/.worktrees/ext-background-effect",
+        "type": "path"
+      },
+      "original": {
+        "path": "/home/tpmajer/Claude/mako/.worktrees/ext-background-effect",
+        "type": "path"
+      }
+    },
     "musnix": {
       "inputs": {
         "nixpkgs": "nixpkgs_2"
@@ -230,6 +243,7 @@
     "root": {
       "inputs": {
         "claude-code": "claude-code",
+        "mako-patched": "mako-patched",
         "musnix": "musnix",
         "niri": "niri",
         "nix-index-database": "nix-index-database",
