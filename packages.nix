@@ -153,6 +153,10 @@
         	    set -g mouse on
 
         	  '';
+      plugins = with pkgs; [
+        tmuxPlugins.catppuccin
+        tmuxPlugins.open
+      ];
     };
     nh = {
       enable = true;
