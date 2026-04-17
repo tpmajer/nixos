@@ -11,6 +11,10 @@
     nix-index-database.url = "github:nix-community/nix-index-database";
     nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
     claude-code.url = "github:sadjow/claude-code-nix";
+    mako-patched = {
+      url = "path:/home/tpmajer/Claude/mako/.worktrees/ext-background-effect";
+      flake = false;
+    };
     #  <input_name>.url = "github:NixOS/nixpkgs/<hash_from_nixhub.io>";
   };
 
@@ -23,6 +27,7 @@
       niri,
       nix-index-database,
       claude-code,
+      mako-patched,
       ...
     }@inputs:
     {

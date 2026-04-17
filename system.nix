@@ -173,6 +173,14 @@
           ffmpeg = ffmpeg-full;
         };
       })
+      (self: super: {
+        mako = super.mako.overrideAttrs (old: {
+          src = inputs.mako-patched;
+          postPatch = (old.postPatch or "") + ''
+            rm -rf build
+          '';
+        });
+      })
     ];
 
   };
