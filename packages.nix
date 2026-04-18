@@ -148,11 +148,10 @@
       extraConfig = ''
 
         	  	set-option -g default-shell ${pkgs.fish}/bin/fish
+        	    	
+        	    # Enable mouse support
         	    set -g mouse on
 
-                # pusta linia separatora nad paskiem statusu
-                set -g status 4
-                set -g status-format[0] ""
         	  '';
       plugins = with pkgs; [
         tmuxPlugins.catppuccin
