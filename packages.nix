@@ -148,14 +148,15 @@
       extraConfig = ''
 
         	  	set-option -g default-shell ${pkgs.fish}/bin/fish
-
         	    set -g allow-passthrough on	
-        	    # Enable mouse support
         	    set -g mouse on
-
+        	    set -g default-terminal "tmux-256color"
+                set -g status-style bg=default,fg=green
+        	    set -g status-left ""
+                
         	  '';
       plugins = with pkgs; [
-        tmuxPlugins.catppuccin
+        #  tmuxPlugins.catppuccin
       ];
     };
     nh = {
