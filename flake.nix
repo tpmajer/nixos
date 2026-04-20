@@ -7,12 +7,19 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
     musnix.url = "github:musnix/musnix";
+
+    # niri-src.url = "github:niri-wm/niri";  # main
+    # niri-src.url = "github:niri-wm/niri/refs/pull/3481/head";  # PR
     niri.url = "github:sodiboo/niri-flake";
+    # niri.inputs.niri-unstable.follows = "niri-src"; # podmiana źródła
+
     nix-index-database.url = "github:nix-community/nix-index-database";
     nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
+
     claude-code.url = "github:sadjow/claude-code-nix";
     mako-blur.url = "github:tpmajer/mako/blur";
-    #  <input_name>.url = "github:NixOS/nixpkgs/<hash_from_nixhub.io>";
+
+    # <input_name>.url = "github:NixOS/nixpkgs/<hash_from_nixhub.io>";
   };
 
   outputs =
