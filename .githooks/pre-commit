@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -e
+
+STAGED=$(git diff --cached --name-only --diff-filter=ACM | grep '\.nix$' || true)
+[ -z "$STAGED" ] && exit 0
+
+for f in $STAGED; do
+    nixfmt "$f"
+    git add "$f"
+done
+
+for f in $STAGED; do
+    nix-instantiate --parse "$f" > /dev/null
+done
