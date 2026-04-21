@@ -85,7 +85,9 @@
 
   security.rtkit.enable = true;
   security.polkit.enable = true;
-  security.pam.services.hyprlock = { };
+  security.pam.services.hyprlock = {
+    fprintAuth = false; # wyłącza pam_fprintd.so z PAM dla hyprlock
+  };
   security.pam.services.hyprlock.enableGnomeKeyring = true;
   security.pam.services.login.enableGnomeKeyring = lib.mkForce false;
   security.sudo.extraConfig = ''
