@@ -45,6 +45,10 @@
     options cfg80211 ieee80211_regdom="PL"
   '';
 
+  powerManagement.powerDownCommands = ''
+    ${pkgs.systemd}/bin/systemctl stop fprintd.service 2>/dev/null || true
+  '';
+
   boot = {
     loader = {
       systemd-boot = {
