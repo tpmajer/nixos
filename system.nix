@@ -46,7 +46,19 @@
   '';
 
   powerManagement.powerDownCommands = ''
-    ${pkgs.systemd}/bin/systemctl stop fprintd.service 2>/dev/null || true
+    for dev in /sys/bus/usb/devices/*/idVendor; do
+      if [ "$(cat "$dev" 2>/dev/null)" = "27c6" ]; then
+        echo 0 > "$(dirname "$dev")/authorized"
+      fi
+    done
+  '';
+
+  powerManagement.resumeCommands = ''
+    for dev in /sys/bus/usb/devices/*/idVendor; do
+      if [ "$(cat "$dev" 2>/dev/null)" = "27c6" ]; then
+        echo 1 > "$(dirname "$dev")/authorized"
+      fi
+    done
   '';
 
   boot = {
