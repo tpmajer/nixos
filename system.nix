@@ -45,22 +45,6 @@
     options cfg80211 ieee80211_regdom="PL"
   '';
 
-  powerManagement.powerDownCommands = ''
-    for dev in /sys/bus/usb/devices/*/idVendor; do
-      if [ "$(cat "$dev" 2>/dev/null)" = "27c6" ]; then
-        echo 0 > "$(dirname "$dev")/authorized"
-      fi
-    done
-  '';
-
-  powerManagement.resumeCommands = ''
-    for dev in /sys/bus/usb/devices/*/idVendor; do
-      if [ "$(cat "$dev" 2>/dev/null)" = "27c6" ]; then
-        echo 1 > "$(dirname "$dev")/authorized"
-      fi
-    done
-  '';
-
   boot = {
     loader = {
       systemd-boot = {
