@@ -105,7 +105,7 @@
     pinta
     playerctl
     protonup-qt
-    python314
+    python3
     reaction # for ip46tables command
     ripgrep
     signal-desktop
