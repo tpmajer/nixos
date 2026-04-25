@@ -119,7 +119,7 @@
     timg # for terminal image preview
     tree
     tuba
-    upscaler
+    # upscaler  # pysdl2 test failures with current SDL2_ttf/FreeType
     vulkan-tools
     wayland-utils
     wgcf
