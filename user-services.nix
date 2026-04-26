@@ -60,20 +60,6 @@
       path = [ pkgs.gammastep ];
     };
 
-    nautilus-daemon = {
-      enable = true;
-      after = [ "graphical-session.target" ];
-      wantedBy = [ "niri.service" ];
-      description = "Nautilus file manager daemon";
-      serviceConfig = {
-        Type = "simple";
-        ExecStart = "${pkgs.nautilus}/bin/nautilus --daemon";
-        Restart = "on-failure";
-        RestartSec = "2s";
-      };
-      path = lib.mkForce [ ];
-    };
-
     "app-com.mitchell.ghostty" = {
       enable = true;
       after = [ "graphical-session.target" ];
