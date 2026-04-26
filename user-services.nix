@@ -12,6 +12,14 @@
 
   systemd.user.services = {
 
+    blueman-applet = {
+      after = [ "graphical-session.target" ];
+      serviceConfig.ExecStart = lib.mkForce [
+        ""
+        "${pkgs.blueman}/bin/blueman-applet"
+      ];
+    };
+
     waybar = {
       path = lib.mkForce [ ];
       after = [ "niri.service" ];
