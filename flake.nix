@@ -6,7 +6,6 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
-    musnix.url = "github:musnix/musnix";
 
     # niri-src.url = "github:niri-wm/niri";  # main
     # niri-src.url = "github:niri-wm/niri/refs/pull/3481/head";  # PR
@@ -27,7 +26,6 @@
       self,
       nixpkgs,
       nixos-hardware,
-      musnix,
       niri,
       nix-index-database,
       claude-code,
@@ -43,7 +41,6 @@
           ./packages.nix
           ./fonts.nix
           nixos-hardware.nixosModules.framework-amd-ai-300-series
-          musnix.nixosModules.musnix
           niri.nixosModules.niri
           nix-index-database.nixosModules.default
         ];
