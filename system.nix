@@ -140,13 +140,6 @@
     fprintd.enable = true; # 'sudo fprintd-enroll $USER' to enroll
   };
 
-  # For low latency audio developement
-  #  musnix = {
-  #    enable = true;
-  #    alsaSeq.enable = true;
-  #    rtcqs.enable = true;
-  #  };
-
   users.users.tpmajer = {
     isNormalUser = true;
     description = "Tomasz Majer";
