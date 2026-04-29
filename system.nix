@@ -62,7 +62,6 @@
     kernel.sysctl = {
       "vm.swappiness" = 10;
     };
-    #  kernelParams = [ "preempt=full" "threadirqs" ]; # for low latency audio
   };
 
   time.timeZone = "Europe/Warsaw";
