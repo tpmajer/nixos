@@ -7,7 +7,7 @@
   ...
 }:
 
-#	For specific versions: inputs.<input_name>.legacyPackages.${pkgs.stdenv.hostPlatform.system}.<package_name>
+# For specific versions: inputs.<input_name>.legacyPackages.${pkgs.stdenv.hostPlatform.system}.<package_name>
 
 {
   environment.systemPackages = with pkgs; [
@@ -33,7 +33,7 @@
     discord
     distrobox
     eza
-    #  inputs.eza.packages.${pkgs.stdenv.hostPlatform.system}.default
+    # inputs.eza.packages.${pkgs.stdenv.hostPlatform.system}.default
     fastfetch
     fd
     ffmpeg-full
@@ -48,7 +48,7 @@
     fuzzel
     gammastep
     ghostty
-    #  inputs.ghostty.packages.${pkgs.stdenv.hostPlatform.system}.default
+    # inputs.ghostty.packages.${pkgs.stdenv.hostPlatform.system}.default
     git
     git-filter-repo
     gnome-calculator
@@ -156,7 +156,7 @@
                 
         	  '';
       plugins = with pkgs; [
-        #  tmuxPlugins.catppuccin
+        # tmuxPlugins.catppuccin
       ];
     };
     nh = {
