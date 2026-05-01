@@ -16,6 +16,33 @@
     wifi.powersave = false;
     wifi.scanRandMacAddress = false;
     dns = "systemd-resolved"; # 'default' 'systemd-resolved'
+    dispatcherScripts = [
+      {
+        source = pkgs.writeShellScript "wg-auto" ''
+          ACTION=$2
+
+          trusted_ssid() {
+            case "$1" in
+              "REDACTED-SSID-1"|"REDACTED-SSID-2"|"REDACTED-SSID-3"|"REDACTED-SSID-4")
+                return 0 ;;
+              *)
+                return 1 ;;
+            esac
+          }
+
+          if [ "$ACTION" = "up" ]; then
+            SSID=$(${pkgs.networkmanager}/bin/nmcli -g 802-11-wireless.ssid connection show "$CONNECTION_UUID" 2>/dev/null | tr -d '"')
+            [ -z "$SSID" ] && exit 0
+            if trusted_ssid "$SSID"; then
+              systemctl stop wg-quick-wg0.service 2>/dev/null || true
+            else
+              systemctl start wg-quick-wg0.service
+            fi
+          fi
+        '';
+        type = "basic";
+      }
+    ];
   };
   networking.nameservers = [ ];
   networking.enableIPv6 = true;
