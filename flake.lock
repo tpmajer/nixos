@@ -42,11 +42,11 @@
         "nixpkgs": "nixpkgs_2"
       },
       "locked": {
-        "lastModified": 1777222395,
-        "narHash": "sha256-WiUzw2TVGKu60p3H7PQ8QHwtw+ZCBFriuTHjgw7Kt6w=",
+        "lastModified": 1777750886,
+        "narHash": "sha256-DqKg278WLQ+htJxlnyfZ0VdC7FO6Sksb10Nov4ZVDqE=",
         "owner": "tpmajer",
         "repo": "mako",
-        "rev": "f51f55203088033e309cac8ce258e567d4027317",
+        "rev": "d57976e73197a658866aa5d08b57321795809203",
         "type": "github"
       },
       "original": {
