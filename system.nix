@@ -58,7 +58,10 @@
     initrd.luks.devices."luks-2388d8ad-9a00-401a-b4b4-8e3582a4ef9f".device =
       "/dev/disk/by-uuid/2388d8ad-9a00-401a-b4b4-8e3582a4ef9f";
     initrd.availableKernelModules = [ "usbhid" ];
-    blacklistedKernelModules = [ "ucsi_acpi" ];
+    blacklistedKernelModules = [
+      "ucsi_acpi"
+      "mt7925e"
+    ];
     kernel.sysctl = {
       "vm.swappiness" = 10;
     };
@@ -137,6 +140,22 @@
     flatpak.enable = true;
     envfs.enable = false; # Fuse filesystem that returns symlinks to executables based on the PATH of the requesting process.
     fprintd.enable = true; # 'sudo fprintd-enroll $USER' to enroll
+  };
+
+  systemd.services.mt7925-init = {
+    description = "PCIe FLR reset and driver load for MT7925 WiFi";
+    wantedBy = [ "network-pre.target" ];
+    before = [ "network-pre.target" ];
+    after = [ "systemd-udevd.service" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      ExecStart = pkgs.writeShellScript "mt7925-init" ''
+        echo 1 > /sys/bus/pci/devices/0000:c0:00.0/reset
+        sleep 0.5
+        ${pkgs.kmod}/bin/modprobe mt7925e
+      '';
+    };
   };
 
   users.users.tpmajer = {
