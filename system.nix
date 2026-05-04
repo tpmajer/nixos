@@ -129,7 +129,10 @@
         user = "tpmajer";
       };
     };
-    printing.enable = true;
+    printing = {
+      enable = true;
+      drivers = [ pkgs.samsung-unified-linux-driver ];
+    };
     pulseaudio.enable = false;
     pipewire = {
       enable = true;
