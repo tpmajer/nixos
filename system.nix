@@ -13,6 +13,7 @@
     ./hardware-configuration.nix
     ./network.nix
     ./user-services.nix
+    ./llm.nix
     # ./gdm.nix
     # ./dlna.nix
   ];
