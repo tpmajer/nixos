@@ -63,6 +63,7 @@
     blacklistedKernelModules = [
       "ucsi_acpi"
       "mt7925e"
+      "amdxdna"
     ];
     kernel.sysctl = {
       "vm.swappiness" = 10;
@@ -144,17 +145,19 @@
     fprintd.enable = true; # 'sudo fprintd-enroll $USER' to enroll
   };
 
-  systemd.services.mt7925-init = {
-    description = "PCIe FLR reset and driver load for MT7925 WiFi";
+  systemd.services.pcie-flr-init = {
+    description = "PCIe FLR reset for MT7925 WiFi and AMDXDNA NPU before driver probe";
     wantedBy = [ "network-pre.target" ];
     before = [ "network-pre.target" ];
     after = [ "systemd-udevd.service" ];
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = true;
-      ExecStart = pkgs.writeShellScript "mt7925-init" ''
+      ExecStart = pkgs.writeShellScript "pcie-flr-init" ''
+        echo 1 > /sys/bus/pci/devices/0000:c2:00.1/reset
         echo 1 > /sys/bus/pci/devices/0000:c0:00.0/reset
         sleep 0.5
+        ${pkgs.kmod}/bin/modprobe amdxdna
         ${pkgs.kmod}/bin/modprobe mt7925e
       '';
     };
