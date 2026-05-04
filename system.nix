@@ -129,7 +129,7 @@
         user = "tpmajer";
       };
     };
-    printing.enable = false;
+    printing.enable = true;
     pulseaudio.enable = false;
     pipewire = {
       enable = true;
