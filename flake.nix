@@ -31,8 +31,6 @@
       nixos-hardware,
       niri,
       nix-index-database,
-      claude-code,
-      mako-blur,
       ...
     }@inputs:
     {
