@@ -194,7 +194,7 @@
     hyprlock.enable = true;
     firefox = {
       enable = true;
-      package = pkgs.firefox;
+      package = inputs.firefox-nightly.packages.${pkgs.stdenv.hostPlatform.system}.firefox-nightly-bin;
     };
     steam = {
       enable = true;
