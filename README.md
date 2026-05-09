@@ -2,6 +2,14 @@
 
 Personal NixOS configuration for Framework AMD AI 300 Series (x86\_64-linux).
 
+## Setup
+
+```sh
+cp private.nix.example private.nix
+# Fill in private.nix with your values
+git add --force private.nix  # makes it visible to nix flake (stays gitignored)
+```
+
 ## Structure
 
 ```
@@ -62,7 +70,7 @@ Personal NixOS configuration for Framework AMD AI 300 Series (x86\_64-linux).
 - NetworkManager with wpa\_supplicant backend
 - systemd-resolved for DNS
 - Avahi (mDNS/zeroconf)
-- WireGuard VPN (`wg0`, manual start, endpoint `REDACTED-ENDPOINT:51820`)
+- WireGuard VPN (`wg0`, manual start, endpoint configured in `private.nix`)
 - Spotify LAN sync and Cast ports open in firewall
 
 ## Notable packages

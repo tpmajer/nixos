@@ -8,6 +8,10 @@
   ...
 }:
 
+let
+  private = import ./private.nix;
+in
+
 {
   services.printing = {
     enable = true;
@@ -18,7 +22,7 @@
     ensurePrinters = [
       {
         name = "Xerox-Phaser-3020";
-        deviceUri = "usb://Xerox/Phaser%203020?serial=REDACTED-SERIAL";
+        deviceUri = "usb://Xerox/Phaser%203020?serial=${private.printerSerial}";
         model = "samsung/ML-2160.ppd";
         ppdOptions.PageSize = "A4";
       }
