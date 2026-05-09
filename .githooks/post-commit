@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+if [ -f private.nix ]; then
+  git add --force private.nix
+fi
