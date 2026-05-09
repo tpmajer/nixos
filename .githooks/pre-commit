@@ -2,9 +2,7 @@
 set -e
 
 if git diff --cached --name-only | grep -q '^private\.nix$'; then
-  echo "ERROR: private.nix is staged — unstage it before committing:"
-  echo "  git reset HEAD private.nix"
-  exit 1
+  git reset HEAD private.nix
 fi
 
 STAGED=$(git diff --cached --name-only --diff-filter=ACM | grep '\.nix$' || true)
