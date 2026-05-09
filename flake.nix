@@ -16,7 +16,7 @@
     nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
 
     claude-code.url = "github:sadjow/claude-code-nix";
-    mako-blur.url = "github:tpmajer/mako/blur";
+    mako-blur.url = "github:tpmajer/mako/flake";
 
     firefox-nightly.url = "github:nix-community/flake-firefox-nightly";
     firefox-nightly.inputs.nixpkgs.follows = "nixpkgs";
