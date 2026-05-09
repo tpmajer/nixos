@@ -22,6 +22,10 @@ git add --force private.nix  # makes it visible to nix flake (stays gitignored)
 ├── network.nix                  # Networking, WireGuard VPN, firewall
 ├── user-services.nix            # Systemd user services (Waybar, Hypridle, AWWW, Gammastep)
 ├── hardware-configuration.nix   # Auto-generated hardware config
+├── llm.nix                      # Local AI (Ollama + Open WebUI)
+├── printers.nix                 # Printer config
+├── private.nix.example          # Private config template
+├── private.nix                  # Private values — gitignored, not in repo
 ├── gdm.nix                      # GDM config (currently disabled)
 └── dlna.nix                     # DLNA server config (currently disabled)
 ```
@@ -32,10 +36,11 @@ git add --force private.nix  # makes it visible to nix flake (stays gitignored)
 |---|---|
 | `nixpkgs` (unstable) | Main package set |
 | `nixos-hardware` | Hardware quirks for Framework AMD AI 300 |
-| `musnix` | Low-latency audio (available but disabled) |
 | `niri` | Niri Wayland compositor + overlay |
 | `nix-index-database` | `comma` command runner |
 | `claude-code` | Claude Code CLI via dedicated overlay |
+| `mako-blur` | Custom Mako build with blur support |
+| `firefox-nightly` | Firefox Nightly (Wayland popup rendering fix) |
 
 ## Desktop
 
@@ -44,7 +49,7 @@ git add --force private.nix  # makes it visible to nix flake (stays gitignored)
 - **Idle daemon:** Hypridle + Hyprlock
 - **Wallpaper daemon:** AWWW
 - **Blue-light filter:** Gammastep (Warsaw coordinates, 6500K→4500K)
-- **Notifications:** Mako
+- **Notifications:** Mako (with blur)
 - **Terminal:** Ghostty
 - **Launcher:** Fuzzel
 - **File manager:** Nautilus (opens Ghostty via `nautilus-open-any-terminal`)
@@ -73,6 +78,11 @@ git add --force private.nix  # makes it visible to nix flake (stays gitignored)
 - WireGuard VPN (`wg0`, manual start, endpoint configured in `private.nix`)
 - Spotify LAN sync and Cast ports open in firewall
 
+## Local AI
+
+- Ollama (Vulkan backend) — `http://localhost:11434`
+- Open WebUI — `http://localhost:8080` (no auth, local only)
+
 ## Notable packages
 
 - **Shell:** Fish + Starship + tmux
@@ -83,7 +93,7 @@ git add --force private.nix  # makes it visible to nix flake (stays gitignored)
 - **Containers:** Podman (Docker-compatible)
 - **Gaming:** Steam (with GameScope), Protonup-Qt, Distrobox
 - **Communication:** Signal, Discord, Thunderbird, Tuba
-- **Productivity:** Obsidian, OnlyOffice, Firefox, Google Chrome
+- **Productivity:** Obsidian, OnlyOffice, Firefox Nightly, Google Chrome
 
 ## Applying changes
 
