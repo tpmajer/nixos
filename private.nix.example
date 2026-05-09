@@ -1,0 +1,10 @@
+{
+  trustedSSIDs = [ "HomeNetwork" "Phone-Hotspot" ];
+  wg = {
+    address       = "10.0.0.2/32";
+    dns           = "10.0.0.1";
+    peerPublicKey = "<PEER-PUBLIC-KEY>";
+    endpoint      = "<YOUR-SERVER>:51820";
+  };
+  printerSerial = "<PRINTER-SERIAL>";
+}

@@ -3,9 +3,15 @@
 {
   config,
   pkgs,
+  lib,
   inputs,
   ...
 }:
+
+let
+  private = import ./private.nix;
+  ssidPattern = lib.concatStringsSep "|" (map (s: "\"${s}\"") private.trustedSSIDs);
+in
 
 {
 
@@ -23,7 +29,7 @@
 
           trusted_ssid() {
             case "$1" in
-              "REDACTED-SSID-1"|"REDACTED-SSID-2"|"REDACTED-SSID-3"|"REDACTED-SSID-4")
+              ${ssidPattern})
                 return 0 ;;
               *)
                 return 1 ;;
@@ -65,17 +71,17 @@
   networking.wg-quick.interfaces.wg0 = {
     autostart = false;
     listenPort = 51820;
-    address = [ "REDACTED-WG-ADDR/32" ];
-    dns = [ "REDACTED-WG-DNS" ];
+    address = [ private.wg.address ];
+    dns = [ private.wg.dns ];
     privateKeyFile = "/etc/secrets/wireguard/privateKey";
     peers = [
       {
-        publicKey = "REDACTED-WG-PUBKEY";
+        publicKey = private.wg.peerPublicKey;
         allowedIPs = [
           "0.0.0.0/0"
           "::/0"
         ];
-        endpoint = "REDACTED-ENDPOINT:51820";
+        endpoint = private.wg.endpoint;
         persistentKeepalive = 25;
       }
     ];
