@@ -10,6 +10,8 @@ cp private.nix.example private.nix
 git add --force private.nix  # makes it visible to nix flake (stays gitignored)
 ```
 
+> After the first commit, the post-commit hook keeps `private.nix` staged automatically.
+
 ## Structure
 
 ```
@@ -27,7 +29,10 @@ git add --force private.nix  # makes it visible to nix flake (stays gitignored)
 ├── private.nix.example          # Private config template
 ├── private.nix                  # Private values — gitignored, not in repo
 ├── gdm.nix                      # GDM config (currently disabled)
-└── dlna.nix                     # DLNA server config (currently disabled)
+├── dlna.nix                     # DLNA server config (currently disabled)
+└── .githooks/
+    ├── pre-commit               # Nixfmt + nix-instantiate; auto-unstages private.nix
+    └── post-commit              # Re-stages private.nix so nix flake can find it
 ```
 
 ## Flake inputs
