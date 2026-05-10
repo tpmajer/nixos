@@ -33,9 +33,8 @@
     };
 
     awww-daemon = {
-      enable = true;
       after = [ "niri.service" ];
-      wantedBy = lib.mkForce [ "niri.service" ];
+      wantedBy = [ "niri.service" ];
       description = "AWWW Service";
       serviceConfig = {
         Type = "simple";
@@ -47,7 +46,6 @@
     };
 
     gammastep = {
-      enable = true;
       after = [ "niri.service" ];
       wantedBy = [ "niri.service" ];
       description = "Gammastep Service";
@@ -57,11 +55,9 @@
         Restart = "on-failure";
         RestartSec = "5s";
       };
-      path = [ pkgs.gammastep ];
     };
 
     "app-com.mitchell.ghostty" = {
-      enable = true;
       after = [
         "graphical-session.target"
         "niri.service"
