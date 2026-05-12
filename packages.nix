@@ -115,6 +115,11 @@
     starship
     stow
     superfile
+    (pkgs.writeShellScriptBin "firefox-nightly" ''
+      exec ${
+        inputs.firefox-nightly.packages.${pkgs.stdenv.hostPlatform.system}.firefox-nightly-bin
+      }/bin/firefox-nightly "$@"
+    '')
     thunderbird
     timg # for terminal image preview
     tree
@@ -194,7 +199,6 @@
     hyprlock.enable = true;
     firefox = {
       enable = true;
-      package = inputs.firefox-nightly.packages.${pkgs.stdenv.hostPlatform.system}.firefox-nightly-bin;
     };
     steam = {
       enable = true;
