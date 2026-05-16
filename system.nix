@@ -15,7 +15,6 @@
     ./user-services.nix
     ./llm.nix
     ./printers.nix
-    # ./gdm.nix
     # ./dlna.nix
   ];
 
