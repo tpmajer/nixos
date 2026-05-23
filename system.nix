@@ -115,6 +115,8 @@
     hypridle.enable = true;
     gnome.gnome-keyring.enable = true;
     gnome.core-apps.enable = false;
+    gnome.tinysparql.enable = true;
+    gnome.localsearch.enable = true;
     gvfs.enable = true;
     geoclue2.enable = true;
     power-profiles-daemon.enable = false;
