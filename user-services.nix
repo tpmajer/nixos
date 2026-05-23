@@ -68,6 +68,7 @@
         Type = "simple";
         ExecStart = "${pkgs.ghostty}/bin/ghostty --gtk-single-instance=true --initial-window=false";
         Restart = "on-failure";
+        RestartSec = "2s";
       };
       path = lib.mkForce [ ];
     };
