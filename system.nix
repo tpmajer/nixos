@@ -251,6 +251,10 @@
     NIXOS_OZONE_WL = "1";
   };
 
+  environment.pathsToLink = [
+    "/share/gnome-session" # GDM 50: gdm pkg provides gnome-login.session here; not in default pathsToLink, so it must be added explicitly
+  ];
+
   system.stateVersion = "25.05";
 
 }
