@@ -67,12 +67,6 @@
     kernel.sysctl = {
       "vm.swappiness" = 10;
     };
-    kernelPatches = [
-      {
-        name = "btmtk-fix-func-ctrl-too-short";
-        patch = ./patches/btmtk-fix-func-ctrl-too-short.patch;
-      }
-    ];
   };
 
   time.timeZone = "Europe/Warsaw";
