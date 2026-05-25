@@ -256,6 +256,16 @@
     "d /run/gdm/.local 0700 gdm-greeter gdm -" # GDM 50: wireplumber, keyring state in greeter session
   ];
 
+  powerManagement.powerDownCommands = ''
+    ${pkgs.kmod}/bin/rmmod amdxdna 2>/dev/null || true
+  '';
+
+  powerManagement.resumeCommands = ''
+    echo 1 > /sys/bus/pci/devices/0000:c2:00.1/reset
+    sleep 0.5
+    ${pkgs.kmod}/bin/modprobe amdxdna
+  '';
+
   system.stateVersion = "25.05";
 
 }
