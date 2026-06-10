@@ -57,7 +57,6 @@
     gnome-font-viewer
     gnome-logs
     gnome-network-displays
-    gnome-session # required in PATH by GDM 50 greeter (gnome-greeter.desktop Exec=gnome-session); systemd.packages alone is insufficient
     gnome-tweaks
     gocryptfs
     google-chrome
