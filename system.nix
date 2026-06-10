@@ -271,6 +271,8 @@
         echo 1 > "$(dirname "$dev")/authorized"
       fi
     done
+    sleep 1
+    ${pkgs.systemd}/bin/systemctl restart fprintd
     echo 1 > /sys/bus/pci/devices/0000:c2:00.1/reset
     sleep 0.5
     ${pkgs.kmod}/bin/modprobe amdxdna
