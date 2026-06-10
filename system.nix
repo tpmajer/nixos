@@ -254,6 +254,7 @@
 
   powerManagement.powerDownCommands = ''
     ${pkgs.kmod}/bin/rmmod amdxdna 2>/dev/null || true
+    ${pkgs.systemd}/bin/systemctl stop fprintd
     for dev in /sys/bus/usb/devices/*/idVendor; do
       if [ "$(cat "$dev" 2>/dev/null)" = "27c6" ]; then
         echo 0 > "$(dirname "$dev")/authorized"
@@ -267,8 +268,6 @@
         echo 1 > "$(dirname "$dev")/authorized"
       fi
     done
-    sleep 1
-    ${pkgs.systemd}/bin/systemctl restart fprintd
     echo 1 > /sys/bus/pci/devices/0000:c2:00.1/reset
     sleep 0.5
     ${pkgs.kmod}/bin/modprobe amdxdna
