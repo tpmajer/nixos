@@ -258,9 +258,19 @@
 
   powerManagement.powerDownCommands = ''
     ${pkgs.kmod}/bin/rmmod amdxdna 2>/dev/null || true
+    for dev in /sys/bus/usb/devices/*/idVendor; do
+      if [ "$(cat "$dev" 2>/dev/null)" = "27c6" ]; then
+        echo 0 > "$(dirname "$dev")/authorized"
+      fi
+    done
   '';
 
   powerManagement.resumeCommands = ''
+    for dev in /sys/bus/usb/devices/*/idVendor; do
+      if [ "$(cat "$dev" 2>/dev/null)" = "27c6" ]; then
+        echo 1 > "$(dirname "$dev")/authorized"
+      fi
+    done
     echo 1 > /sys/bus/pci/devices/0000:c2:00.1/reset
     sleep 0.5
     ${pkgs.kmod}/bin/modprobe amdxdna
