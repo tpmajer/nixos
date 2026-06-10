@@ -247,10 +247,6 @@
     NIXOS_OZONE_WL = "1";
   };
 
-  environment.pathsToLink = [
-    "/share/gnome-session" # GDM 50: gdm pkg provides gnome-login.session here; not in default pathsToLink, so it must be added explicitly
-  ];
-
   systemd.tmpfiles.rules = [
     "d /run/gdm/.cache 0700 gdm-greeter gdm -" # GDM 50: greeter runs as gdm-greeter, needs writable cache for gnome-shell shader compilation
     "d /run/gdm/.local 0700 gdm-greeter gdm -" # GDM 50: wireplumber, keyring state in greeter session
