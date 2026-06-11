@@ -1,7 +1,20 @@
-diff -ruN a/src/auth/Fingerprint.cpp b/src/auth/Fingerprint.cpp
---- a/src/auth/Fingerprint.cpp	2026-06-11 19:32:25.200134312 +0200
-+++ b/src/auth/Fingerprint.cpp	2026-06-11 22:25:31.287265616 +0200
-@@ -166,7 +166,11 @@
+--- a/src/auth/Fingerprint.cpp
++++ b/src/auth/Fingerprint.cpp
+@@ -70,8 +70,11 @@
+     m_sDBUSState.login->uponSignal("PrepareForSleep").onInterface(LOGIN_MANAGER).call([this](bool start) {
+         Log::logger->log(Log::INFO, "fprint: PrepareForSleep (start: {})", start);
+         m_sDBUSState.sleeping = start;
+-        if (!m_sDBUSState.sleeping && !m_sDBUSState.verifying)
+-            startVerify();
++        if (m_sDBUSState.sleeping || m_sDBUSState.verifying)
++            return;
++        // Give the reader time to finish booting after a resume-time USB
++        // reset - an Open during firmware boot times out and wedges fprintd.
++        g_pHyprlock->addTimer(std::chrono::milliseconds(3000), [](ASP<CTimer> self, void* data) { ((CFingerprint*)data)->startVerify(); }, this);
+     });
+ }
+ 
+@@ -166,7 +169,11 @@
              break;
          case MATCH_UNKNOWN_ERROR:
              stopVerify();
@@ -14,7 +27,7 @@ diff -ruN a/src/auth/Fingerprint.cpp b/src/auth/Fingerprint.cpp
              break;
          case MATCH_MATCHED:
              stopVerify();
-@@ -204,12 +208,35 @@
+@@ -204,12 +211,41 @@
          m_sDBUSState.done = true;
  }
  
@@ -22,8 +35,14 @@ diff -ruN a/src/auth/Fingerprint.cpp b/src/auth/Fingerprint.cpp
 +    if (m_sDBUSState.sleeping || m_sDBUSState.reinits >= 5)
 +        return false;
 +    m_sDBUSState.reinits++;
-+    Log::logger->log(Log::INFO, "fprint: scheduling device reinit (attempt {})", m_sDBUSState.reinits);
-+    g_pHyprlock->addTimer(std::chrono::milliseconds(3000), [](ASP<CTimer> self, void* data) { ((CFingerprint*)data)->reinitDevice(); }, this);
++    // Quick retries cover the ~5s re-enumeration window after resume. If they
++    // all fail, fprintd itself is likely wedged by a timed-out open ("already
++    // open" on every claim) and only recovers by idle-exiting 30s after our
++    // last D-Bus call - so back off past that, and the next attempt will
++    // D-Bus-activate a fresh fprintd.
++    const auto delay = m_sDBUSState.reinits <= 3 ? 3000 : 40000;
++    Log::logger->log(Log::INFO, "fprint: scheduling device reinit (attempt {}, in {}ms)", m_sDBUSState.reinits, delay);
++    g_pHyprlock->addTimer(std::chrono::milliseconds(delay), [](ASP<CTimer> self, void* data) { ((CFingerprint*)data)->reinitDevice(); }, this);
 +    return true;
 +}
 +
@@ -52,7 +71,7 @@ diff -ruN a/src/auth/Fingerprint.cpp b/src/auth/Fingerprint.cpp
              Log::logger->log(Log::INFO, "fprint: claimed device");
              startVerify();
          }
-@@ -219,8 +246,10 @@
+@@ -219,8 +255,10 @@
  void CFingerprint::startVerify(bool isRetry) {
      m_sDBUSState.verifying = true;
      if (!m_sDBUSState.device) {
@@ -64,7 +83,7 @@ diff -ruN a/src/auth/Fingerprint.cpp b/src/auth/Fingerprint.cpp
  
          claimDevice();
          return;
-@@ -229,11 +258,12 @@
+@@ -229,11 +267,12 @@
      m_sDBUSState.device->callMethodAsync("VerifyStart").onInterface(DEVICE).withArguments(finger).uponReplyInvoke([this, isRetry](std::optional<sdbus::Error> e) {
          if (e) {
              Log::logger->log(Log::WARN, "fprint: could not start verifying, {}", e->what());
@@ -78,9 +97,8 @@ diff -ruN a/src/auth/Fingerprint.cpp b/src/auth/Fingerprint.cpp
              if (isRetry) {
                  m_sDBUSState.retries++;
                  m_sPrompt = "Could not match fingerprint. Try again.";
-diff -ruN a/src/auth/Fingerprint.hpp b/src/auth/Fingerprint.hpp
---- a/src/auth/Fingerprint.hpp	2026-06-11 19:32:25.201758779 +0200
-+++ b/src/auth/Fingerprint.hpp	2026-06-11 19:53:37.482172003 +0200
+--- a/src/auth/Fingerprint.hpp
++++ b/src/auth/Fingerprint.hpp
 @@ -33,6 +33,7 @@
          bool                                abort     = false;
          bool                                done      = false;
