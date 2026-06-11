@@ -90,7 +90,7 @@
   security.rtkit.enable = true;
   security.polkit.enable = true;
   security.pam.services.hyprlock = {
-    fprintAuth = true;
+    fprintAuth = false;
   };
   security.pam.services.hyprlock.enableGnomeKeyring = true;
   security.pam.services.login.enableGnomeKeyring = lib.mkForce false;
@@ -254,24 +254,35 @@
 
   powerManagement.powerDownCommands = ''
     ${pkgs.kmod}/bin/rmmod amdxdna 2>/dev/null || true
-    ${pkgs.systemd}/bin/systemctl stop fprintd
-    for dev in /sys/bus/usb/devices/*/idVendor; do
-      if [ "$(cat "$dev" 2>/dev/null)" = "27c6" ]; then
-        echo 0 > "$(dirname "$dev")/authorized"
-      fi
-    done
   '';
 
-  powerManagement.resumeCommands = ''
-    for dev in /sys/bus/usb/devices/*/idVendor; do
-      if [ "$(cat "$dev" 2>/dev/null)" = "27c6" ]; then
-        echo 1 > "$(dirname "$dev")/authorized"
-      fi
-    done
-    echo 1 > /sys/bus/pci/devices/0000:c2:00.1/reset
-    sleep 0.5
-    ${pkgs.kmod}/bin/modprobe amdxdna
-  '';
+  powerManagement.resumeCommands =
+    let
+      goodixReset = pkgs.writeScript "goodix-usbreset" ''
+        #!${pkgs.python3}/bin/python3
+        import fcntl, os, glob
+        USBDEVFS_RESET = 0x5514
+        for vpath in glob.glob('/sys/bus/usb/devices/*/idVendor'):
+            try:
+                with open(vpath) as f:
+                    if f.read().strip() == '27c6':
+                        d = os.path.dirname(vpath)
+                        bus = int(open(d + '/busnum').read())
+                        dev = int(open(d + '/devnum').read())
+                        path = f'/dev/bus/usb/{bus:03d}/{dev:03d}'
+                        fd = os.open(path, os.O_WRONLY)
+                        fcntl.ioctl(fd, USBDEVFS_RESET, 0)
+                        os.close(fd)
+            except Exception:
+                pass
+      '';
+    in
+    ''
+      ${goodixReset}
+      echo 1 > /sys/bus/pci/devices/0000:c2:00.1/reset
+      sleep 0.5
+      ${pkgs.kmod}/bin/modprobe amdxdna
+    '';
 
   system.stateVersion = "25.05";
 
