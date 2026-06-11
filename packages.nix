@@ -191,7 +191,15 @@
       enable = true;
       package = pkgs.niri-unstable;
     };
-    hyprlock.enable = true;
+    hyprlock = {
+      enable = true;
+      # Reclaim fprintd device after Goodix USB re-enumeration on resume
+      # (debug-session-2026-06-11.md) — upstream hyprlock permanently disables
+      # fingerprint when the fprintd device object disappears.
+      package = pkgs.hyprlock.overrideAttrs (old: {
+        patches = (old.patches or [ ]) ++ [ ./patches/hyprlock-fprint-reinit.patch ];
+      });
+    };
     firefox = {
       enable = true;
     };
