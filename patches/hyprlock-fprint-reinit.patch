@@ -1,6 +1,6 @@
 diff -ruN a/src/auth/Fingerprint.cpp b/src/auth/Fingerprint.cpp
 --- a/src/auth/Fingerprint.cpp	2026-06-11 19:32:25.200134312 +0200
-+++ b/src/auth/Fingerprint.cpp	2026-06-11 19:53:37.407170177 +0200
++++ b/src/auth/Fingerprint.cpp	2026-06-11 22:25:31.287265616 +0200
 @@ -166,7 +166,11 @@
              break;
          case MATCH_UNKNOWN_ERROR:
@@ -14,7 +14,7 @@ diff -ruN a/src/auth/Fingerprint.cpp b/src/auth/Fingerprint.cpp
              break;
          case MATCH_MATCHED:
              stopVerify();
-@@ -204,12 +208,32 @@
+@@ -204,12 +208,35 @@
          m_sDBUSState.done = true;
  }
  
@@ -28,8 +28,11 @@ diff -ruN a/src/auth/Fingerprint.cpp b/src/auth/Fingerprint.cpp
 +}
 +
 +void CFingerprint::reinitDevice() {
-+    // The old proxy points at a device object that no longer exists in fprintd
-+    // (e.g. the reader re-enumerated on the USB bus after resume).
++    // The old device object may be gone from fprintd (reader re-enumerated on
++    // the USB bus after resume) - then Release just fails and is ignored. But
++    // if the object survived, our previous claim is still registered and the
++    // new Claim would be denied with AlreadyInUse, so release it first.
++    releaseDevice();
 +    m_sDBUSState.device.reset();
 +    m_sDBUSState.done      = false;
 +    m_sDBUSState.abort     = false;
@@ -49,7 +52,7 @@ diff -ruN a/src/auth/Fingerprint.cpp b/src/auth/Fingerprint.cpp
              Log::logger->log(Log::INFO, "fprint: claimed device");
              startVerify();
          }
-@@ -219,8 +243,10 @@
+@@ -219,8 +246,10 @@
  void CFingerprint::startVerify(bool isRetry) {
      m_sDBUSState.verifying = true;
      if (!m_sDBUSState.device) {
@@ -61,7 +64,7 @@ diff -ruN a/src/auth/Fingerprint.cpp b/src/auth/Fingerprint.cpp
  
          claimDevice();
          return;
-@@ -229,11 +255,12 @@
+@@ -229,11 +258,12 @@
      m_sDBUSState.device->callMethodAsync("VerifyStart").onInterface(DEVICE).withArguments(finger).uponReplyInvoke([this, isRetry](std::optional<sdbus::Error> e) {
          if (e) {
              Log::logger->log(Log::WARN, "fprint: could not start verifying, {}", e->what());
