@@ -256,33 +256,19 @@
     ${pkgs.kmod}/bin/rmmod amdxdna 2>/dev/null || true
   '';
 
-  powerManagement.resumeCommands =
-    let
-      goodixReset = pkgs.writeScript "goodix-usbreset" ''
-        #!${pkgs.python3}/bin/python3
-        import fcntl, os, glob
-        USBDEVFS_RESET = 0x5514
-        for vpath in glob.glob('/sys/bus/usb/devices/*/idVendor'):
-            try:
-                with open(vpath) as f:
-                    if f.read().strip() == '27c6':
-                        d = os.path.dirname(vpath)
-                        bus = int(open(d + '/busnum').read())
-                        dev = int(open(d + '/devnum').read())
-                        path = f'/dev/bus/usb/{bus:03d}/{dev:03d}'
-                        fd = os.open(path, os.O_WRONLY)
-                        fcntl.ioctl(fd, USBDEVFS_RESET, 0)
-                        os.close(fd)
-            except Exception:
-                pass
-      '';
-    in
-    ''
-      ${goodixReset}
-      echo 1 > /sys/bus/pci/devices/0000:c2:00.1/reset
-      sleep 0.5
-      ${pkgs.kmod}/bin/modprobe amdxdna
-    '';
+  powerManagement.resumeCommands = ''
+    # Power-cycle the Goodix fingerprint reader's USB port (27c6:609c is
+    # permanently at usb 1-1). A bare USBDEVFS_RESET leaves the firmware in a
+    # non-deterministic half-state (claim timeouts, match-on-chip rejecting
+    # enrolled fingers); a full disconnect + re-enumeration is the one resume
+    # path verified to work end-to-end with the hyprlock reinit patch.
+    echo 1 > /sys/bus/usb/devices/usb1/1-0:1.0/usb1-port1/disable
+    sleep 0.5
+    echo 0 > /sys/bus/usb/devices/usb1/1-0:1.0/usb1-port1/disable
+    echo 1 > /sys/bus/pci/devices/0000:c2:00.1/reset
+    sleep 0.5
+    ${pkgs.kmod}/bin/modprobe amdxdna
+  '';
 
   system.stateVersion = "25.05";
 
