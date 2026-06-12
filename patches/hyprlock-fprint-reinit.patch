@@ -14,7 +14,18 @@
      });
  }
  
-@@ -166,7 +169,11 @@
+@@ -155,7 +158,9 @@
+         case MATCH_INVALID: Log::logger->log(Log::WARN, "fprint: unknown status: {}", result); break;
+         case MATCH_NO_MATCH:
+             stopVerify();
+-            if (m_sDBUSState.retries >= 3) {
++            // Freshly re-enumerated firmware rejects the first scans after
++            // resume - 3 attempts is too tight a budget on this hardware.
++            if (m_sDBUSState.retries >= 10) {
+                 m_sFailureReason = "Fingerprint auth disabled (too many failed attempts)";
+             } else {
+                 done                         = false;
+@@ -166,7 +171,11 @@
              break;
          case MATCH_UNKNOWN_ERROR:
              stopVerify();
@@ -27,7 +38,7 @@
              break;
          case MATCH_MATCHED:
              stopVerify();
-@@ -190,8 +197,16 @@
+@@ -190,8 +199,16 @@
              m_sPrompt = "Remove your finger and try again";
              break;
          case MATCH_DISCONNECTED:
@@ -46,7 +57,7 @@
              break;
      }
  
-@@ -204,12 +219,41 @@
+@@ -204,12 +221,41 @@
          m_sDBUSState.done = true;
  }
  
@@ -90,7 +101,7 @@
              Log::logger->log(Log::INFO, "fprint: claimed device");
              startVerify();
          }
-@@ -219,8 +263,10 @@
+@@ -219,8 +265,10 @@
  void CFingerprint::startVerify(bool isRetry) {
      m_sDBUSState.verifying = true;
      if (!m_sDBUSState.device) {
@@ -102,7 +113,7 @@
  
          claimDevice();
          return;
-@@ -229,11 +275,12 @@
+@@ -229,11 +277,12 @@
      m_sDBUSState.device->callMethodAsync("VerifyStart").onInterface(DEVICE).withArguments(finger).uponReplyInvoke([this, isRetry](std::optional<sdbus::Error> e) {
          if (e) {
              Log::logger->log(Log::WARN, "fprint: could not start verifying, {}", e->what());
