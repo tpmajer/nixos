@@ -27,7 +27,26 @@
              break;
          case MATCH_MATCHED:
              stopVerify();
-@@ -204,12 +211,41 @@
+@@ -190,8 +197,16 @@
+             m_sPrompt = "Remove your finger and try again";
+             break;
+         case MATCH_DISCONNECTED:
+-            m_sFailureReason   = "Fingerprint device disconnected";
+-            m_sDBUSState.abort = true;
++            // A claim held across suspend lands here when the reader
++            // re-enumerates on resume - reclaim the new device object
++            // instead of giving up.
++            if (scheduleReinit()) {
++                done             = false;
++                m_sFailureReason = "Fingerprint device disconnected - reinitializing";
++            } else {
++                m_sFailureReason   = "Fingerprint device disconnected";
++                m_sDBUSState.abort = true;
++            }
+             break;
+     }
+ 
+@@ -204,12 +219,41 @@
          m_sDBUSState.done = true;
  }
  
@@ -71,7 +90,7 @@
              Log::logger->log(Log::INFO, "fprint: claimed device");
              startVerify();
          }
-@@ -219,8 +255,10 @@
+@@ -219,8 +263,10 @@
  void CFingerprint::startVerify(bool isRetry) {
      m_sDBUSState.verifying = true;
      if (!m_sDBUSState.device) {
@@ -83,7 +102,7 @@
  
          claimDevice();
          return;
-@@ -229,11 +267,12 @@
+@@ -229,11 +275,12 @@
      m_sDBUSState.device->callMethodAsync("VerifyStart").onInterface(DEVICE).withArguments(finger).uponReplyInvoke([this, isRetry](std::optional<sdbus::Error> e) {
          if (e) {
              Log::logger->log(Log::WARN, "fprint: could not start verifying, {}", e->what());
