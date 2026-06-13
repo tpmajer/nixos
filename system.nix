@@ -257,17 +257,17 @@
   '';
 
   powerManagement.resumeCommands = ''
-    # Power-cycle the Goodix fingerprint reader's USB port (27c6:609c is
-    # permanently at usb 1-1). A bare USBDEVFS_RESET leaves the firmware in a
-    # non-deterministic half-state (claim timeouts, match-on-chip rejecting
-    # enrolled fingers); a full disconnect + re-enumeration is the one resume
-    # path verified to work end-to-end with the hyprlock reinit patch.
-    echo 1 > /sys/bus/usb/devices/usb1/1-0:1.0/usb1-port1/disable
-    sleep 0.5
-    echo 0 > /sys/bus/usb/devices/usb1/1-0:1.0/usb1-port1/disable
-    echo 1 > /sys/bus/pci/devices/0000:c2:00.1/reset
-    sleep 0.5
-    ${pkgs.kmod}/bin/modprobe amdxdna
+        # Power-cycle the Goodix fingerprint reader's USB port (27c6:609c is
+        # permanently at usb 1-1). A bare USBDEVFS_RESET leaves the firmware in a
+        # non-deterministic half-state (claim timeouts, match-on-chip rejecting
+        # enrolled fingers); a full disconnect + re-enumeration is the one resume
+        # path verified to work end-to-end with the hyprlock reinit patch.
+    #    echo 1 > /sys/bus/usb/devices/usb1/1-0:1.0/usb1-port1/disable
+    #    sleep 0.5
+    #    echo 0 > /sys/bus/usb/devices/usb1/1-0:1.0/usb1-port1/disable
+    #    echo 1 > /sys/bus/pci/devices/0000:c2:00.1/reset
+    #    sleep 0.5
+        ${pkgs.kmod}/bin/modprobe amdxdna
   '';
 
   system.stateVersion = "25.05";
