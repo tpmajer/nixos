@@ -1,0 +1,107 @@
+Minimal variant of hyprlock-fprint-reinit.patch — points 4 + 5 only.
+
+Scope (vs. the full patch):
+  KEPT:    MATCH_DISCONNECTED -> scheduleReinit() (point 4) and the
+           scheduleReinit()/reinitDevice() recovery engine (point 5), plus a
+           one-line reset of the reinit counter on a successful VerifyStart so
+           the budget renews after each recovery within a long locked session.
+  DROPPED: point 1 (3s delay on resume — no resume-time USB reset in the
+           current config, so no firmware-boot window to wait out),
+           point 2 (no-match budget 3->10 — fixed by re-enrolling),
+           point 3 (MATCH_UNKNOWN_ERROR -> reinit — 1x ever, during verify),
+           point 6 (reinit on claim/VerifyStart failures).
+
+Behavioural note: because point 6 is dropped, scheduleReinit() is invoked
+exactly once per disconnect (from MATCH_DISCONNECTED). That gives a single
+reinit attempt at +3s — which matches the confirmed 21:08 (2026-06-12)
+recovery for a long-sleep re-enumeration. The multi-attempt 3s/40s backoff
+chain in scheduleReinit() is therefore present but only exercised if a future
+trigger re-invokes it; it will NOT self-heal a wedged fprintd on its own here.
+If that case ever appears in logs, add back the claimDevice/VerifyStart
+failure -> scheduleReinit hooks from the full patch.
+
+Enable by uncommenting the overrideAttrs block in packages.nix and pointing
+it at this file.
+
+--- a/src/auth/Fingerprint.cpp
++++ b/src/auth/Fingerprint.cpp
+@@ -190,8 +190,16 @@
+             m_sPrompt = "Remove your finger and try again";
+             break;
+         case MATCH_DISCONNECTED:
+-            m_sFailureReason   = "Fingerprint device disconnected";
+-            m_sDBUSState.abort = true;
++            // A claim held across suspend lands here when the reader
++            // re-enumerates on resume - reclaim the new device object
++            // instead of giving up.
++            if (scheduleReinit()) {
++                done             = false;
++                m_sFailureReason = "Fingerprint device disconnected - reinitializing";
++            } else {
++                m_sFailureReason   = "Fingerprint device disconnected";
++                m_sDBUSState.abort = true;
++            }
+             break;
+     }
+ 
+@@ -204,6 +212,34 @@
+         m_sDBUSState.done = true;
+ }
+ 
++bool CFingerprint::scheduleReinit() {
++    if (m_sDBUSState.sleeping || m_sDBUSState.reinits >= 5)
++        return false;
++    m_sDBUSState.reinits++;
++    // Quick retries cover the ~5s re-enumeration window after resume. If they
++    // all fail, fprintd itself is likely wedged by a timed-out open ("already
++    // open" on every claim) and only recovers by idle-exiting 30s after our
++    // last D-Bus call - so back off past that, and the next attempt will
++    // D-Bus-activate a fresh fprintd.
++    const auto delay = m_sDBUSState.reinits <= 3 ? 3000 : 40000;
++    Log::logger->log(Log::INFO, "fprint: scheduling device reinit (attempt {}, in {}ms)", m_sDBUSState.reinits, delay);
++    g_pHyprlock->addTimer(std::chrono::milliseconds(delay), [](ASP<CTimer> self, void* data) { ((CFingerprint*)data)->reinitDevice(); }, this);
++    return true;
++}
++
++void CFingerprint::reinitDevice() {
++    // The old device object may be gone from fprintd (reader re-enumerated on
++    // the USB bus after resume) - then Release just fails and is ignored. But
++    // if the object survived, our previous claim is still registered and the
++    // new Claim would be denied with AlreadyInUse, so release it first.
++    releaseDevice();
++    m_sDBUSState.device.reset();
++    m_sDBUSState.done      = false;
++    m_sDBUSState.abort     = false;
++    m_sDBUSState.verifying = false;
++    startVerify();
++}
++
+ void CFingerprint::claimDevice() {
+     const auto currentUser = ""; // Empty string means use the caller's id.
+     m_sDBUSState.device->callMethodAsync("Claim").onInterface(DEVICE).withArguments(currentUser).uponReplyInvoke([this](std::optional<sdbus::Error> e) {
+@@ -235,5 +270,6 @@
+         } else {
+             Log::logger->log(Log::INFO, "fprint: started verifying");
++            m_sDBUSState.reinits = 0;
+             if (isRetry) {
+                 m_sDBUSState.retries++;
+                 m_sPrompt = "Could not match fingerprint. Try again.";
+--- a/src/auth/Fingerprint.hpp
++++ b/src/auth/Fingerprint.hpp
+@@ -33,6 +33,7 @@
+         bool                                abort     = false;
+         bool                                done      = false;
+         int                                 retries   = 0;
++        int                                 reinits   = 0;
+         bool                                sleeping  = false;
+         bool                                verifying = false;
+     } m_sDBUSState;
+@@ -47,6 +48,8 @@
+ 
+     bool        createDeviceProxy();
+     void        claimDevice();
++    bool        scheduleReinit();
++    void        reinitDevice();
+     void        startVerify(bool isRetry = false);
+     bool        stopVerify();
+     bool        releaseDevice();
