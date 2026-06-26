@@ -61,7 +61,6 @@
     initrd.availableKernelModules = [ "usbhid" ];
     blacklistedKernelModules = [
       "ucsi_acpi"
-      "mt7925e"
       "amdxdna"
     ];
     kernel.sysctl = {
@@ -147,7 +146,7 @@
   };
 
   systemd.services.pcie-flr-init = {
-    description = "PCIe FLR reset for MT7925 WiFi and AMDXDNA NPU before driver probe";
+    description = "PCIe FLR reset for AMDXDNA NPU before driver probe";
     wantedBy = [ "network-pre.target" ];
     before = [ "network-pre.target" ];
     after = [ "systemd-udevd.service" ];
@@ -156,10 +155,8 @@
       RemainAfterExit = true;
       ExecStart = pkgs.writeShellScript "pcie-flr-init" ''
         echo 1 > /sys/bus/pci/devices/0000:c2:00.1/reset
-        echo 1 > /sys/bus/pci/devices/0000:c0:00.0/reset
         sleep 0.5
         ${pkgs.kmod}/bin/modprobe amdxdna
-        ${pkgs.kmod}/bin/modprobe mt7925e
       '';
     };
   };
