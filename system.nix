@@ -252,12 +252,10 @@
 
   powerManagement.powerDownCommands = ''
     ${pkgs.kmod}/bin/rmmod amdxdna 2>/dev/null || true
-    ${pkgs.kmod}/bin/rmmod mt7925e 2>/dev/null || true
   '';
 
   powerManagement.resumeCommands = ''
     ${pkgs.kmod}/bin/modprobe amdxdna
-    ${pkgs.kmod}/bin/modprobe mt7925e
   '';
 
   system.stateVersion = "25.05";
