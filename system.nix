@@ -56,6 +56,11 @@
     };
     kernelPackages = pkgs.linuxPackages; # 6.18.36: off 7.1.x, avoid amdgpu DCN 3.5 hard hangs
     # kernelPackages = pkgs.linuxPackages_latest;   # 7.1.1: silent DCN display hangs on Strix
+    kernelParams = [
+      # workaround amdgpu MES ring buffer wedge on gfx1150/DCN 3.5 (gitlab drm/amd#4749).
+      # fix only in 6.19.10+/mainline, NOT backported to 6.18.y, so disable CWSR explicitly.
+      "amdgpu.cwsr_enable=0"
+    ];
     initrd.luks.devices."luks-2388d8ad-9a00-401a-b4b4-8e3582a4ef9f".device =
       "/dev/disk/by-uuid/2388d8ad-9a00-401a-b4b4-8e3582a4ef9f";
     initrd.availableKernelModules = [ "usbhid" ];
