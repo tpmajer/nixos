@@ -65,9 +65,11 @@
       "/dev/disk/by-uuid/2388d8ad-9a00-401a-b4b4-8e3582a4ef9f";
     initrd.availableKernelModules = [ "usbhid" ];
     blacklistedKernelModules = [
-      # "ucsi_acpi" unblacklisted 2026-06-28: restore USB-C/PD port management to
-      # diagnose/fix a USB-C port that does not charge. Original blacklist (commit
-      # 74d7323) had no rationale; watch for log spam/instability and re-add if it returns.
+      # ucsi_acpi is broken on this Strix Point HW: once loaded it spams
+      # "ucsi_acpi USBC000:00: unknown error 256". Re-enable test (2026-06-28) did
+      # NOT fix the dead USB-C port (charging is EC-driven, independent of UCSI) and
+      # only reintroduced the error 256 spam, confirming the original blacklist reason.
+      "ucsi_acpi"
       "mt7925e"
       "amdxdna"
     ];
