@@ -65,7 +65,9 @@
       "/dev/disk/by-uuid/2388d8ad-9a00-401a-b4b4-8e3582a4ef9f";
     initrd.availableKernelModules = [ "usbhid" ];
     blacklistedKernelModules = [
-      "ucsi_acpi"
+      # "ucsi_acpi" unblacklisted 2026-06-28: restore USB-C/PD port management to
+      # diagnose/fix a USB-C port that does not charge. Original blacklist (commit
+      # 74d7323) had no rationale; watch for log spam/instability and re-add if it returns.
       "mt7925e"
       "amdxdna"
     ];
