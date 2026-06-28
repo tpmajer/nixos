@@ -54,8 +54,8 @@
       };
       efi.canTouchEfiVariables = true;
     };
-    # kernelPackages = pkgs.linuxPackages;
-    kernelPackages = pkgs.linuxPackages_latest;
+    kernelPackages = pkgs.linuxPackages; # 6.18.36: off 7.1.x, avoid amdgpu DCN 3.5 hard hangs
+    # kernelPackages = pkgs.linuxPackages_latest;   # 7.1.1: silent DCN display hangs on Strix
     initrd.luks.devices."luks-2388d8ad-9a00-401a-b4b4-8e3582a4ef9f".device =
       "/dev/disk/by-uuid/2388d8ad-9a00-401a-b4b4-8e3582a4ef9f";
     initrd.availableKernelModules = [ "usbhid" ];
