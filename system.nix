@@ -254,11 +254,6 @@
     NIXOS_OZONE_WL = "1";
   };
 
-  systemd.tmpfiles.rules = [
-    "d /run/gdm/.cache 0700 gdm-greeter gdm -" # GDM 50: greeter runs as gdm-greeter, needs writable cache for gnome-shell shader compilation
-    "d /run/gdm/.local 0700 gdm-greeter gdm -" # GDM 50: wireplumber, keyring state in greeter session
-  ];
-
   powerManagement.powerDownCommands = ''
     ${pkgs.kmod}/bin/rmmod amdxdna 2>/dev/null || true
   '';
