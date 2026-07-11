@@ -155,6 +155,27 @@
     fprintd.enable = true; # 'sudo fprintd-enroll $USER' to enroll
   };
 
+  # GDM 50: gnome-shell of the greeter (libgvc) segfaults in
+  # _pa_context_get_card_info_by_index_cb when the greeter's own pipewire-pulse exposes an
+  # HDA card whose profile enumeration is not finished yet ("card 52 port N profiles
+  # inconsistent (0 < 3)"). The greeter has no use for audio, so don't start pipewire for it.
+  systemd.user =
+    let
+      skipGreeter = {
+        unitConfig.ConditionUser = map (u: "!${u}") [
+          "gdm-greeter"
+          "gdm-greeter-2"
+          "gdm-greeter-3"
+          "gdm-greeter-4"
+          "gdm-greeter-5"
+        ];
+      };
+    in
+    {
+      services = lib.genAttrs [ "pipewire" "pipewire-pulse" "wireplumber" ] (_: skipGreeter);
+      sockets = lib.genAttrs [ "pipewire" "pipewire-pulse" ] (_: skipGreeter);
+    };
+
   systemd.services.pcie-flr-init = {
     description = "PCIe FLR reset for MT7925 WiFi and AMDXDNA NPU before driver probe";
     wantedBy = [ "network-pre.target" ];
