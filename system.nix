@@ -13,7 +13,7 @@
     ./hardware-configuration.nix
     ./network.nix
     ./user-services.nix
-    ./llm.nix
+    # ./llm.nix
     ./printers.nix
     # ./dlna.nix
   ];
