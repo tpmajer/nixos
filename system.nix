@@ -54,11 +54,16 @@
       };
       efi.canTouchEfiVariables = true;
     };
-    kernelPackages = pkgs.linuxPackages; # 6.18.36: off 7.1.x, avoid amdgpu DCN 3.5 hard hangs
-    # kernelPackages = pkgs.linuxPackages_latest;   # 7.1.1: silent DCN display hangs on Strix
+    kernelPackages = pkgs.linuxPackages; # 6.18.x LTS: off 7.1.x, avoid amdgpu DCN 3.5 hard hangs
+    # kernelPackages = pkgs.linuxPackages_latest;   # 7.1.x: silent DCN display hangs on Strix.
+    # Checked 2026-07-12 (7.1.3 / 7.2-rc2): the DCN 3.5 / SMU deadlock regression on gfx1150 is
+    # still unfixed — dcn35_smu.c untouched since 2026-03, nothing queued in linux-next either.
     kernelParams = [
-      # workaround amdgpu MES ring buffer wedge on gfx1150/DCN 3.5 (gitlab drm/amd#4749).
-      # fix only in 6.19.10+/mainline, NOT backported to 6.18.y, so disable CWSR explicitly.
+      # Belt and braces against the amdgpu MES ring buffer wedge on gfx1150 (gitlab drm/amd#4749).
+      # The actual fix (e9f58ff991dd "drm/amdgpu: rework how we handle TLB fences") landed in
+      # 6.18.32, so this kernel already has it and the param is likely redundant for that bug.
+      # Kept because broken CWSR is reported to saturate the MES ring on its own, and it costs
+      # nothing here (no compute wave save/restore workloads on this machine).
       "amdgpu.cwsr_enable=0"
     ];
     initrd.luks.devices."luks-2388d8ad-9a00-401a-b4b4-8e3582a4ef9f".device =
@@ -69,7 +74,14 @@
       # "ucsi_acpi USBC000:00: unknown error 256". Re-enable test (2026-06-28) did
       # NOT fix the dead USB-C port (charging is EC-driven, independent of UCSI) and
       # only reintroduced the error 256 spam, confirming the original blacklist reason.
+      # The dead port itself turned out to be an EC wedge and cleared on a reboot, so it
+      # was never a UCSI problem — no reason to revisit this blacklist over it.
       "ucsi_acpi"
+      # Not blacklisted for good: both are modprobed by pcie-flr-init below, after their PCI
+      # function has been reset. Blacklisting only keeps udev from probing them too early.
+      # This is kernel-version-conditional: needed again since the pin to 6.18, where the
+      # MT7925 co-processor comes up dirty ("driver own failed" / -5 + DFSF crash loops).
+      # 7.1.x did not need it — drop this if the pin above is ever lifted.
       "mt7925e"
       "amdxdna"
     ];
@@ -176,6 +188,9 @@
       sockets = lib.genAttrs [ "pipewire" "pipewire-pulse" ] (_: skipGreeter);
     };
 
+  # Both devices are blacklisted above so that udev cannot probe them; here they get a function
+  # level reset first and are loaded only afterwards. Without it the MT7925 firmware handshake
+  # races the dirty co-processor state and the machine ends up in a DFSF crash loop at boot.
   systemd.services.pcie-flr-init = {
     description = "PCIe FLR reset for MT7925 WiFi and AMDXDNA NPU before driver probe";
     wantedBy = [ "network-pre.target" ];
