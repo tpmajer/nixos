@@ -30,6 +30,9 @@
     ];
   };
   hardware.steam-hardware.enable = true;
+  # xone driver for Xbox controllers over USB and the official Xbox Wireless
+  # Adapter (dongle); full GIP protocol, e.g. Elite 2 paddles over cable.
+  hardware.xone.enable = true;
   hardware.bluetooth = {
     enable = true;
     powerOnBoot = true;
