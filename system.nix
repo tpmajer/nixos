@@ -57,10 +57,30 @@
       };
       efi.canTouchEfiVariables = true;
     };
-    kernelPackages = pkgs.linuxPackages; # 6.18.x LTS: off 7.1.x, avoid amdgpu DCN 3.5 hard hangs
-    # kernelPackages = pkgs.linuxPackages_latest;   # 7.1.x: silent DCN display hangs on Strix.
-    # Checked 2026-07-12 (7.1.3 / 7.2-rc2): the DCN 3.5 / SMU deadlock regression on gfx1150 is
-    # still unfixed — dcn35_smu.c untouched since 2026-03, nothing queued in linux-next either.
+    # 7.1.4 carrying the DCN 3.5 periodic-detection revert below. Unpatched 7.0/7.1.x kill the
+    # display engine on Strix Point (eDP-1 dies, CPUs stay alive, journal ends clean, no oops);
+    # 6.18.x LTS stayed usable only because the regression never landed there.
+    kernelPackages = pkgs.linuxPackages_latest;
+    # kernelPackages = pkgs.linuxPackages; # 6.18.x LTS — known-good fallback, revert to this
+    # if the patched 7.1.4 still hangs. That outcome would point at the other open suspect: the
+    # DCN 3.5 / SMU deadlock on gfx1150, still unfixed as of the 2026-07-12 check (dcn35_smu.c
+    # untouched since 2026-03, nothing queued in linux-next). This patch does not address it —
+    # it touches dcn35_clk_mgr.c, a different path.
+    kernelPatches = [
+      {
+        # Upstream 5cc0f35d83e2 "drm/amd/display: Restore periodic detection for DCN35", which
+        # reverts 3f6c060846be. That commit dropped the periodic detection calls to raise IPS
+        # residency; without them a monitor bouncing HPD ~1.2s after link training leaves the
+        # system in IPS with no mechanism to wake and rediscover the panel, so the display never
+        # recovers from DPMS sleep. Verified by ancestry against torvalds/linux: present in
+        # v7.2-rc1..rc4, absent from v7.1, so 7.1.4 needs it applied by hand. Applies clean to
+        # the 7.1.4 tree nixpkgs fetches (6/6 hunks, offsets -3..-14, no fuzz).
+        # Cost: this forces a local kernel build on every nixpkgs kernel bump, not just once.
+        # Drop the whole block once we are on 7.2 final, where the fix is upstream.
+        name = "amdgpu-dcn35-restore-periodic-detection";
+        patch = ./patches/amdgpu-dcn35-restore-periodic-detection.patch;
+      }
+    ];
     kernelParams = [
       # Belt and braces against the amdgpu MES ring buffer wedge on gfx1150 (gitlab drm/amd#4749).
       # The actual fix (e9f58ff991dd "drm/amdgpu: rework how we handle TLB fences") landed in
@@ -82,9 +102,11 @@
       "ucsi_acpi"
       # Not blacklisted for good: both are modprobed by pcie-flr-init below, after their PCI
       # function has been reset. Blacklisting only keeps udev from probing them too early.
-      # This is kernel-version-conditional: needed again since the pin to 6.18, where the
-      # MT7925 co-processor comes up dirty ("driver own failed" / -5 + DFSF crash loops).
-      # 7.1.x did not need it — drop this if the pin above is ever lifted.
+      # This is kernel-version-conditional: it was needed under the 6.18 pin, where the MT7925
+      # co-processor comes up dirty ("driver own failed" / -5 + DFSF crash loops). 7.1.x did not
+      # need it. Deliberately kept across the move to patched 7.1.4 so the DCN35 patch is the
+      # only variable being tested; it is harmless if redundant. Drop it once the display engine
+      # is confirmed stable.
       "mt7925e"
       "amdxdna"
     ];
