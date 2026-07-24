@@ -37,6 +37,11 @@ in
           }
 
           if [ "$ACTION" = "up" ]; then
+            # Respect a manual override: `touch /var/lib/wg-auto-disabled`
+            # keeps wg off despite dispatcher up-events (rm to re-enable).
+            if [ -e /var/lib/wg-auto-disabled ]; then
+              exit 0
+            fi
             SSID=$(${pkgs.networkmanager}/bin/nmcli -g 802-11-wireless.ssid connection show "$CONNECTION_UUID" 2>/dev/null | tr -d '"')
             [ -z "$SSID" ] && exit 0
             if trusted_ssid "$SSID"; then
