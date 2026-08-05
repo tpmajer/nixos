@@ -203,6 +203,18 @@
     };
     firefox = {
       enable = true;
+      # Firefox 153 enables Local Network Access by default. unifi.ui.com is
+      # controlled by a service worker, and LNA loses the address-space
+      # classification for requests forwarded through it, so every call to the
+      # console at *.id.ui.direct dies with no response — the Network app never
+      # loads. The LNA gate itself logs "auto_allow"; the request is killed
+      # anyway. Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=2056851
+      # Exempt the target domain; the source-domain side of SkipDomains is
+      # broken (https://bugzilla.mozilla.org/show_bug.cgi?id=2058449).
+      policies.LocalNetworkAccess = {
+        Enabled = true;
+        SkipDomains = [ "*.id.ui.direct" ];
+      };
     };
     steam = {
       enable = true;
