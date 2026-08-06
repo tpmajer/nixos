@@ -61,17 +61,18 @@
     kernelParams = [
       # Belt and braces against the amdgpu MES ring buffer wedge on gfx1150 (gitlab drm/amd#4749).
       # The actual fix (e9f58ff991dd "drm/amdgpu: rework how we handle TLB fences") landed in
-      # 6.18.32 and is long since in mainline, so 7.1.4 has it too and the param is likely
+      # 6.18.32 and is long since in mainline, so 7.1.x has it too and the param is likely
       # redundant for that bug. Kept because broken CWSR is reported to saturate the MES ring on
       # its own, and it costs nothing here (no compute wave save/restore workloads on this
       # machine).
       "amdgpu.cwsr_enable=0"
-      # TEMPORARY, for the patched-7.1.4 trial only. Lets amdgpu attempt a GPU reset instead of
-      # wedging outright, so a display-engine failure has a chance to end as a recovered hang
-      # with something in the journal rather than the usual silent death that leaves nothing to
-      # debug. It is a safety net for diagnosis, not a fix, and it does not mask the DCN35 bug:
-      # if periodic detection were still missing the panel would stay dark regardless.
-      # Remove once 7.1.4 is judged stable, or when moving to 7.2 final.
+      # Diagnostic net for the hang that is still open. Lets amdgpu attempt a GPU reset instead
+      # of wedging outright, so a display-engine failure has a chance to end as a recovered hang
+      # with something in the journal rather than the silent death that leaves nothing to debug.
+      # On 2026-08-06 19:16 the machine died in the s2idle path anyway (black screen on wake,
+      # hard reset; journal ends at "PM: suspend entry", pstore empty, no amdgpu reset logged),
+      # which is itself a data point: the failure sits below the level where amdgpu can react.
+      # Do not remove until that is explained — see debug-session-2026-08-06.2.md.
       "amdgpu.gpu_recovery=1"
     ];
     initrd.luks.devices."luks-2388d8ad-9a00-401a-b4b4-8e3582a4ef9f".device =
