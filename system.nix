@@ -85,15 +85,6 @@
       # The dead port itself turned out to be an EC wedge and cleared on a reboot, so it
       # was never a UCSI problem — no reason to revisit this blacklist over it.
       "ucsi_acpi"
-      # Not blacklisted for good: both are modprobed by pcie-flr-init below, after their PCI
-      # function has been reset. Blacklisting only keeps udev from probing them too early.
-      # This is kernel-version-conditional: it was needed under the 6.18 pin, where the MT7925
-      # co-processor comes up dirty ("driver own failed" / -5 + DFSF crash loops). 7.1.x did not
-      # need it. Deliberately kept across the move to patched 7.1.4 so the DCN35 patch is the
-      # only variable being tested; it is harmless if redundant. Drop it once the display engine
-      # is confirmed stable.
-      "mt7925e"
-      "amdxdna"
     ];
     kernel.sysctl = {
       "vm.swappiness" = 10;
@@ -197,27 +188,6 @@
       services = lib.genAttrs [ "pipewire" "pipewire-pulse" "wireplumber" ] (_: skipGreeter);
       sockets = lib.genAttrs [ "pipewire" "pipewire-pulse" ] (_: skipGreeter);
     };
-
-  # Both devices are blacklisted above so that udev cannot probe them; here they get a function
-  # level reset first and are loaded only afterwards. Without it the MT7925 firmware handshake
-  # races the dirty co-processor state and the machine ends up in a DFSF crash loop at boot.
-  systemd.services.pcie-flr-init = {
-    description = "PCIe FLR reset for MT7925 WiFi and AMDXDNA NPU before driver probe";
-    wantedBy = [ "network-pre.target" ];
-    before = [ "network-pre.target" ];
-    after = [ "systemd-udevd.service" ];
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-      ExecStart = pkgs.writeShellScript "pcie-flr-init" ''
-        echo 1 > /sys/bus/pci/devices/0000:c2:00.1/reset
-        echo 1 > /sys/bus/pci/devices/0000:c0:00.0/reset
-        sleep 0.5
-        ${pkgs.kmod}/bin/modprobe amdxdna
-        ${pkgs.kmod}/bin/modprobe mt7925e
-      '';
-    };
-  };
 
   users.users.tpmajer = {
     isNormalUser = true;
