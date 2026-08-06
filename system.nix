@@ -271,12 +271,23 @@
     NIXOS_OZONE_WL = "1";
   };
 
+  # Both modules are taken out of the s2idle path before suspend and restored on resume.
+  # amdxdna: since 2026-05-25 (22723ff), against a PSP hang on wake.
+  # mt7925e: same trick, added 2026-06-26 (c650b16) after a suspend froze with the journal ending
+  # at "PM: suspend entry (s2idle)" right after the WiFi teardown, then reverted the same day
+  # (e614221) to see whether 7.1.1 handled it, leaving the note "restore if a suspend hang with
+  # WiFi teardown recurs". It recurred on 2026-08-06 19:16 with that exact signature, so it is
+  # back — as a test, not a known fix. Caveat: the WiFi teardown precedes every suspend, including
+  # the 51 that resumed fine, so its presence in the failing one proves nothing on its own.
+  # Drop it again if a hang recurs with it active. See debug-session-2026-08-06.2.md.
   powerManagement.powerDownCommands = ''
     ${pkgs.kmod}/bin/rmmod amdxdna 2>/dev/null || true
+    ${pkgs.kmod}/bin/rmmod mt7925e 2>/dev/null || true
   '';
 
   powerManagement.resumeCommands = ''
     ${pkgs.kmod}/bin/modprobe amdxdna
+    ${pkgs.kmod}/bin/modprobe mt7925e
   '';
 
   system.stateVersion = "25.05";
