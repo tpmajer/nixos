@@ -9,8 +9,7 @@
 
     # niri-src.url = "github:niri-wm/niri";  # main
     # niri-src.url = "github:niri-wm/niri/refs/pull/3481/head";  # PR
-    # PR #1850 (libdisplay-info_0_2 removed from nixpkgs); back to main once merged
-    niri.url = "github:sodiboo/niri-flake/refs/pull/1850/head";
+    niri.url = "github:epireyn/niri-flake";
     # niri.inputs.niri-unstable.follows = "niri-src"; # override source
 
     nix-index-database.url = "github:nix-community/nix-index-database";
