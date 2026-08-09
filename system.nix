@@ -112,6 +112,14 @@
       # The dead port itself turned out to be an EC wedge and cleared on a reboot, so it
       # was never a UCSI problem — no reason to revisit this blacklist over it.
       "ucsi_acpi"
+      # Not blacklisted for good: mt7925-init below modprobes it after an FLR on the PCI function.
+      # The blacklist only keeps udev from probing it too early. Dropped in 14b4b43 (2026-08-07)
+      # on the theory that this failure belonged to the 6.18 pin — "not a single hit on any 7.1.x
+      # boot". Disproved on 2026-08-09: a boot died 20s in, inside the mt7925e probe window, the
+      # next boot reported a data fabric sync flood as its reset reason, and the two after it hit
+      # 'driver own failed' / -5 on 7.1.6 — the first such hits on 7.1.x. Only mt7925e: the NPU at
+      # c2:00.1 exposes no reset attribute at all, so its half of the old service never ran.
+      "mt7925e"
     ];
     kernel.sysctl = {
       "vm.swappiness" = 10;
@@ -215,6 +223,32 @@
       services = lib.genAttrs [ "pipewire" "pipewire-pulse" "wireplumber" ] (_: skipGreeter);
       sockets = lib.genAttrs [ "pipewire" "pipewire-pulse" ] (_: skipGreeter);
     };
+
+  # The MT7925E gets a function level reset before the driver attempts 'driver own'. Without it the
+  # handshake against a co-processor left in an undefined state stalls on the PCIe bus and trips a
+  # hardware-level data fabric sync flood, below the level any software can intercept (which is why
+  # pci=noaer never helped). Every probe afterwards then fails with -5 until the machine is fully
+  # power-cycled — a warm reboot does not clear it. See debug-session-2026-08-09.md.
+  # Order: systemd-udevd → FLR + modprobe → network-pre.target.
+  # Note this does not prevent the first sync flood, only the loop that follows it: the FLR runs at
+  # boot, and the 2026-08-09 event happened on a cold boot after a clean poweroff. 14b4b43 likewise
+  # recorded short sync floods on 7.0.8..7.0.11 with the FLR active, so it reduces rather than
+  # eliminates them. The first event is still unexplained.
+  systemd.services.mt7925-init = {
+    description = "PCIe FLR reset for MT7925 WiFi before driver probe";
+    wantedBy = [ "network-pre.target" ];
+    before = [ "network-pre.target" ];
+    after = [ "systemd-udevd.service" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      ExecStart = pkgs.writeShellScript "mt7925-init" ''
+        echo 1 > /sys/bus/pci/devices/0000:c0:00.0/reset
+        sleep 0.5
+        ${pkgs.kmod}/bin/modprobe mt7925e
+      '';
+    };
+  };
 
   users.users.tpmajer = {
     isNormalUser = true;
