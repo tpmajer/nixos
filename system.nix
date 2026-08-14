@@ -58,32 +58,6 @@
       efi.canTouchEfiVariables = true;
     };
     kernelPackages = pkgs.linuxPackages_latest;
-    # Both patches are queued for stable 7.1.8. Drop them together with the flake.lock bump
-    # that brings 7.1.8 in, never separately: on 7.1.8 they are already applied and the build
-    # fails with "Reversed (or previously applied) patch detected", and dropping them while
-    # still on 7.1.6 puts the corruption back. Same rule as the DCN35 patch in 0805e26/75627ee.
-    kernelPatches = [
-      {
-        # Upstream 48ab86360af1. Since the interrupt consolidation that landed in 7.1.6
-        # (9a5a582ad96a, "consolidate DCN vblank/flip handling onto vupdate_no_lock"), flip
-        # completion on DCN comes from VUPDATE_NO_LOCK, which fires every frame whether or not
-        # a flip has latched. A flip event could therefore reach userspace before the hardware
-        # switched buffers, so the compositor would render into the buffer still being scanned
-        # out - visible as artifacts at the moment the screen content changes. Panel Replay is
-        # on by default on DCN 3.5 and widens the window; amdgpu.dcdebugmask=0x10, set by the
-        # nixos-hardware framework module, only disables PSR, not Replay.
-        name = "amdgpu-check-grph-flip-status";
-        patch = ./patches/amdgpu-01-check-grph-flip-status-before-sending-event.patch;
-      }
-      {
-        # Upstream 8419331e64d9, Fixes: 48ab86360af1. The patch above detects flip-pending by
-        # reading HUBP status, which is only correct once PSR/IPS have been exited; this
-        # restores that ordering by splitting the vblank_get() out of dm_arm_vblank_event()
-        # and calling it before the vblank_control_workqueue flush. Must come second.
-        name = "amdgpu-exit-idle-optimizations-before-programming";
-        patch = ./patches/amdgpu-02-exit-idle-optimizations-before-programming.patch;
-      }
-    ];
     kernelParams = [
       # Belt and braces against the amdgpu MES ring buffer wedge on gfx1150 (gitlab drm/amd#4749).
       # The actual fix (e9f58ff991dd "drm/amdgpu: rework how we handle TLB fences") landed in
