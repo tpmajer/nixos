@@ -18,6 +18,9 @@
     claude-code.url = "github:sadjow/claude-code-nix";
     mako-blur.url = "github:tpmajer/mako/flake";
 
+    littlesnitch.url = "github:noblepayne/littlesnitch-linux-flake";
+    littlesnitch.inputs.nixpkgs.follows = "nixpkgs";
+
     # <input_name>.url = "github:NixOS/nixpkgs/<hash_from_nixhub.io>";
   };
 
@@ -41,6 +44,8 @@
           nixos-hardware.nixosModules.framework-amd-ai-300-series
           niri.nixosModules.niri
           nix-index-database.nixosModules.default
+          inputs.littlesnitch.nixosModules.default
+          ./littlesnitch.nix
         ];
       };
     };
