@@ -19,6 +19,26 @@
         "type": "github"
       }
     },
+    "littlesnitch": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1783951778,
+        "narHash": "sha256-WbLv9cZDTdyjfo4dmRI6HQI6giH+3iRZ5UESirM87Vk=",
+        "owner": "noblepayne",
+        "repo": "littlesnitch-linux-flake",
+        "rev": "d337d3f5b6f992bc70a273011ed1d8ba4c256580",
+        "type": "github"
+      },
+      "original": {
+        "owner": "noblepayne",
+        "repo": "littlesnitch-linux-flake",
+        "type": "github"
+      }
+    },
     "mako-blur": {
       "inputs": {
         "nixpkgs": "nixpkgs_2"
@@ -229,6 +249,7 @@
     "root": {
       "inputs": {
         "claude-code": "claude-code",
+        "littlesnitch": "littlesnitch",
         "mako-blur": "mako-blur",
         "niri": "niri",
         "nix-index-database": "nix-index-database",
