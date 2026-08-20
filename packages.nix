@@ -40,7 +40,6 @@
     ffmpegthumbnailer
     file-roller
     fishPlugins.done
-    fishPlugins.forgit
     fishPlugins.grc
     fishPlugins.sponge
     fishPlugins.fzf-fish
