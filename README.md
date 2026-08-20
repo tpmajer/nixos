@@ -5,10 +5,16 @@ Personal NixOS configuration for Framework AMD AI 300 Series (x86\_64-linux).
 ## Setup
 
 ```sh
+git config core.hooksPath .githooks  # do this first — see the warning below
 cp private.nix.example private.nix
 # Fill in private.nix with your values
 git add --force private.nix  # makes it visible to nix flake (stays gitignored)
 ```
+
+> **Set `core.hooksPath` before the first commit.** It lives in `.git/config`, which is
+> never tracked or pushed, so a fresh clone starts with the hooks disabled. The
+> force-added `private.nix` is kept out of history by the pre-commit hook alone — without
+> it, the next commit publishes the file and everything in it.
 
 > After the first commit, the post-commit hook keeps `private.nix` staged automatically.
 
