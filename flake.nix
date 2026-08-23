@@ -31,6 +31,7 @@
       nixos-hardware,
       niri,
       nix-index-database,
+      littlesnitch,
       ...
     }@inputs:
     {
@@ -44,7 +45,7 @@
           nixos-hardware.nixosModules.framework-amd-ai-300-series
           niri.nixosModules.niri
           nix-index-database.nixosModules.default
-          inputs.littlesnitch.nixosModules.default
+          littlesnitch.nixosModules.default
           ./littlesnitch.nix
         ];
       };
