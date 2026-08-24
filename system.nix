@@ -172,6 +172,11 @@
       pulse.enable = true;
     };
     libinput.enable = true;
+    # openlogi ships uaccess rules for Logitech HID++ hidraw/event nodes in
+    # lib/udev/rules.d — environment.systemPackages does not install those, so
+    # without this the mouse's hidraw node stays root:root 0600 and every
+    # openlogi HID++ open fails with EACCES ("No Logitech HID++ devices found").
+    udev.packages = [ pkgs.openlogi ];
     flatpak.enable = true;
     envfs.enable = false; # Fuse filesystem that returns symlinks to executables based on the PATH of the requesting process.
     fprintd.enable = true; # 'sudo fprintd-enroll $USER' to enroll
