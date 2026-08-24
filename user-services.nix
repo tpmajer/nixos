@@ -49,6 +49,25 @@
       };
     };
 
+    # The packaged unit ships in $out/share/systemd/user, but NixOS's
+    # systemd.packages only scans etc/systemd/user and lib/systemd/user
+    # (nixos/lib/systemd-lib.nix:441), so adding the package there would be a
+    # no-op — define the unit here instead. Bound to niri.service like the rest
+    # of the session services, not to the upstream graphical-session.target.
+    # The agent takes ~/.config/openlogi/agent.lock and exits 0 if another
+    # instance already holds it, so Restart=on-failure won't fight the GUI.
+    openlogi-agent = {
+      after = [ "niri.service" ];
+      wantedBy = [ "niri.service" ];
+      description = "OpenLogi background agent (Logitech HID++ device control)";
+      serviceConfig = {
+        Type = "simple";
+        ExecStart = "${pkgs.openlogi}/bin/openlogi-agent";
+        Restart = "on-failure";
+        RestartSec = "5s";
+      };
+    };
+
     "app-com.mitchell.ghostty" = {
       after = [
         "graphical-session.target"
