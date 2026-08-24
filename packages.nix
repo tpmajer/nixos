@@ -100,6 +100,7 @@
     onlyoffice-desktopeditors
     ookla-speedtest
     opencommit
+    openlogi
     papers
     pinentry-all
     pinta
