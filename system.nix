@@ -75,8 +75,20 @@
       # Do not remove until that is explained — see debug-session-2026-08-06.2.md.
       "amdgpu.gpu_recovery=1"
     ];
-    initrd.luks.devices."luks-2388d8ad-9a00-401a-b4b4-8e3582a4ef9f".device =
-      "/dev/disk/by-uuid/2388d8ad-9a00-401a-b4b4-8e3582a4ef9f";
+    initrd.luks.devices = {
+      # dm-crypt drops discards unless told otherwise, which silently reduces fstrim to a no-op on
+      # everything under LUKS — /boot, the one filesystem outside the crypt layer, is then the only
+      # thing that ever gets trimmed. Without TRIM the controller goes on preserving and relocating
+      # blocks the filesystem freed long ago, paying for it in write throughput and erase cycles.
+      # The cost of allowing discards: freed extents read back as zeros rather than ciphertext
+      # noise, so the map of free space is no longer secret. Contents, names and keys stay
+      # unreadable.
+      "luks-175275f3-e11c-4a06-b71a-7050baff3149".allowDiscards = true; # /
+      "luks-2388d8ad-9a00-401a-b4b4-8e3582a4ef9f" = {
+        device = "/dev/disk/by-uuid/2388d8ad-9a00-401a-b4b4-8e3582a4ef9f";
+        allowDiscards = true; # swap
+      };
+    };
     initrd.availableKernelModules = [ "usbhid" ];
     blacklistedKernelModules = [
       # ucsi_acpi is broken on this Strix Point HW: once loaded it spams
