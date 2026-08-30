@@ -249,13 +249,13 @@
 
     config.allowUnfree = true;
 
-    overlays = with pkgs; [
+    overlays = [
       inputs.mako-blur.overlays.default
       inputs.claude-code.overlays.default
       inputs.niri.overlays.niri
       (self: super: {
         mpv-unwrapped = super.mpv-unwrapped.override {
-          ffmpeg = ffmpeg-full;
+          ffmpeg = super.ffmpeg-full;
         };
       })
     ];
