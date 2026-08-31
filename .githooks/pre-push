@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+set -e
+
+# Last line of defence for secrets. pre-commit unstages private.nix, but it is
+# skipped by --no-verify and never runs during a rebase, where post-commit can
+# re-stage the file into a replayed commit. This inspects the objects a push
+# would actually transmit, so no local mishap can reach the network.
+
+SECRETS='(^|/)private\.nix$'
+REMOTE="$1"
+ZERO=0000000000000000000000000000000000000000
+FAILED=0
+
+refuse() {
+  echo "pre-push: refusing to push $1" >&2
+  FAILED=1
+}
+
+while read -r _local_ref local_sha _remote_ref remote_sha; do
+  # Branch deletion sends no objects.
+  [ "$local_sha" = "$ZERO" ] && continue
+
+  # Prefer the exact range. A remote head we do not have locally (new ref, or a
+  # force-push over unfetched work) falls back to "everything not already on
+  # this remote", which errs towards inspecting too much rather than too little.
+  if [ "$remote_sha" != "$ZERO" ] && git cat-file -e "$remote_sha^{commit}" 2>/dev/null; then
+    RANGE=("$remote_sha..$local_sha")
+  else
+    RANGE=("$local_sha" --not --remotes="$REMOTE")
+  fi
+
+  # rev-list --objects enumerates exactly what push sends, printing the path of
+  # every blob, so a secret is caught in any commit and any directory. Failing
+  # to enumerate means we cannot vouch for the push, so refuse it.
+  if ! OBJECTS=$(git rev-list --objects "${RANGE[@]}" 2>/dev/null); then
+    refuse "(cannot enumerate outgoing objects, so cannot verify it is clean)"
+    continue
+  fi
+
+  HITS=$(printf '%s\n' "$OBJECTS" | cut -d' ' -f2- | grep -E "$SECRETS" | sort -u || true)
+  if [ -n "$HITS" ]; then
+    refuse "secret found in outgoing commits:"
+    printf '%s\n' "$HITS" | sed 's/^/  /' >&2
+  fi
+done
+
+if [ "$FAILED" -ne 0 ]; then
+  echo >&2
+  echo "Remove it from history before pushing, e.g. for the tip commit:" >&2
+  echo "  git rm --cached private.nix && git commit --amend --no-verify --no-edit" >&2
+  exit 1
+fi
