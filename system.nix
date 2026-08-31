@@ -18,7 +18,6 @@
     # ./dlna.nix
   ];
 
-  hardware.enableRedistributableFirmware = true;
   hardware.enableAllFirmware = true;
   hardware.graphics = {
     enable = true;
