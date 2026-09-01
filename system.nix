@@ -280,12 +280,8 @@
         "nix-command"
         "flakes"
       ];
-      substituters = [
-        "https://niri-epireyn.cachix.org"
-        "https://claude-code.cachix.org"
-      ];
+      substituters = [ "https://claude-code.cachix.org" ];
       trusted-public-keys = [
-        "niri-epireyn.cachix.org-1:tlVyFN7CtsDT+ZcLPS+ekFWeT1X6X4OqvWqbBMyIzFA="
         "claude-code.cachix.org-1:YeXf2aNu7UTX8Vwrze0za1WEDS+4DuI2kVeWEE4fsRk="
       ];
     };
