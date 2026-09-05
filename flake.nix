@@ -21,6 +21,8 @@
     littlesnitch.url = "github:noblepayne/littlesnitch-linux-flake";
     littlesnitch.inputs.nixpkgs.follows = "nixpkgs";
 
+    chaotic.url = "github:chaotic-cx/nyx/nyxpkgs-unstable";
+
     # <input_name>.url = "github:NixOS/nixpkgs/<hash_from_nixhub.io>";
   };
 
@@ -32,6 +34,7 @@
       niri,
       nix-index-database,
       littlesnitch,
+      chaotic,
       ...
     }@inputs:
     {
@@ -47,6 +50,7 @@
           nix-index-database.nixosModules.default
           littlesnitch.nixosModules.default
           ./littlesnitch.nix
+          chaotic.nixosModules.default
         ];
       };
     };
