@@ -160,6 +160,14 @@
       enable = true;
       pd.enable = true;
     };
+    # sched_ext scheduler in userspace (CONFIG_SCHED_CLASS_EXT=y in the mainline
+    # kernel, so no patched kernel needed). scx_lavd is latency/burst oriented
+    # and power-aware — the closest thing to CachyOS's BORE without leaving
+    # linuxPackages_latest. Swap live with 'systemctl restart scx'.
+    scx = {
+      enable = true;
+      scheduler = "scx_lavd";
+    };
     fwupd.enable = true;
     xserver.xkb = {
       layout = "pl";
