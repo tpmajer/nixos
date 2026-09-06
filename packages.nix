@@ -105,7 +105,6 @@
     pinentry-all
     pinta
     playerctl
-    protonup-qt
     python3
     reaction # for ip46tables command
     ripgrep
@@ -222,6 +221,12 @@
       dedicatedServer.openFirewall = true; # Open ports in the firewall for Source Dedicated Server
       localNetworkGameTransfers.openFirewall = true; # Open ports in the firewall for Steam Local Network Game Transfers
       gamescopeSession.enable = true;
+      # Declarative Proton, replacing hand-installed builds in
+      # ~/.steam/root/compatibilitytools.d (protonup-qt, dropped above).
+      # chaotic pins toolTitle to "Proton-CachyOS x86-64-v3", so the name Steam
+      # sees is stable across updates and the per-game CompatToolMapping entries
+      # in config.vdf survive a rebuild. _v3 variant: Zen 5 (HX 370) has x86-64-v3.
+      extraCompatPackages = [ pkgs.proton-cachyos_x86_64_v3 ];
     };
     dconf.profiles.user = {
       databases = [
