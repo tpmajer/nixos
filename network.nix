@@ -59,6 +59,9 @@ in
   networking.enableIPv6 = true;
 
   services.resolved.enable = true; # systemd-resolved
+  # Nothing here resolves bare hostnames: no samba/cifs client, wsdd is not installed
+  # and mDNS already covers the LAN. Off to avoid LLMNR poisoning on untrusted networks.
+  services.resolved.settings.Resolve.LLMNR = false;
 
   services.avahi = {
     enable = true;
