@@ -114,8 +114,6 @@ in
       # 7000
       # 7001
     ]; # Spotify - local files sync with mobile devices, 7100, 7000, 7001 for uxplay -p
-
-    trustedInterfaces = [ "p2p-wl+" ];
   };
 
 }
