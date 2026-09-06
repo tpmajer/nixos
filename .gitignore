@@ -1,5 +1,5 @@
 .claude/
 CLAUDE.md
-result/
+result
 docs/
 private.nix
