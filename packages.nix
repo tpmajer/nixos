@@ -98,7 +98,6 @@
     nushell
     obsidian
     onlyoffice-desktopeditors
-    ookla-speedtest
     opencommit
     openlogi
     papers
