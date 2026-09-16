@@ -134,8 +134,10 @@
   security.pam.services.hyprlock = {
     fprintAuth = false;
   };
-  security.pam.services.hyprlock.enableGnomeKeyring = true;
-  security.pam.services.login.enableGnomeKeyring = lib.mkForce false;
+  security.pam.services.hyprlock.oo7.enable = true;
+  # services.oo7 already turns pam_oo7 on for the login stack, which gdm-password
+  # substacks — so the keyring unlocks with the GDM password. Left at the module
+  # default on purpose; set it to lib.mkForce false to go back to no auto-unlock.
   security.sudo.extraConfig = ''
     Defaults pwfeedback # password input feedback - makes typed password visible as asterisks
     Defaults insults
@@ -148,8 +150,19 @@
 
   services = {
     dbus.implementation = "broker";
+    # gcr_3 ships gcr-prompter, which owns org.gnome.keyring.SystemPrompter — the
+    # prompter oo7 calls for unlock dialogs. The oo7 module does not pull it in and
+    # gcr_4 dropped the prompter, so without this there is no unlock prompt at all.
+    dbus.packages = [ pkgs.gcr_3 ];
     hypridle.enable = true;
-    gnome.gnome-keyring.enable = true;
+    oo7.enable = true; # Secret Service provider, replaces gnome-keyring
+    # niri-flake hardcodes this to true, which would put a second
+    # org.freedesktop.secrets provider next to oo7 — hence mkForce.
+    gnome.gnome-keyring.enable = lib.mkForce false;
+    # gcr-ssh-agent defaults to gnome-keyring.enable, so the line above would
+    # silently take the SSH agent (SSH_AUTH_SOCK=/run/user/$UID/gcr/ssh) with
+    # it. It is gcr_4 and independent of the Secret Service — keep it on.
+    gnome.gcr-ssh-agent.enable = true;
     gnome.core-apps.enable = false;
     gnome.tinysparql.enable = true;
     gnome.localsearch.enable = true;
@@ -306,7 +319,6 @@
     extraPortals = with pkgs; [
       xdg-desktop-portal-gnome
       xdg-desktop-portal-gtk
-      gnome-keyring
     ];
   };
   xdg.terminal-exec.enable = true; # Makes nautilus open ghostty insted of kgx
