@@ -235,6 +235,19 @@
       sockets = lib.genAttrs [ "pipewire" "pipewire-pulse" ] (_: skipGreeter);
     };
 
+  # oo7-daemon calls mlockall(MCL_CURRENT | MCL_FUTURE) so secrets never reach swap. The kernel
+  # grants that only when the process's ENTIRE address space (VmSize) fits in RLIMIT_MEMLOCK --
+  # not just the pages it would actually pin. Measured on this machine: VmSize 1662.7 MiB, of
+  # which 1596.9 MiB is untouched PROT_NONE reservation (25 glibc malloc arenas, 63.87 MiB each,
+  # one per thread), against an RSS of ~10 MiB. Hence 2G; it is a ceiling, not a reservation, so
+  # only the resident pages get pinned. Verified: mlockall succeeds at VmSize 241.6 MiB under a
+  # 256 MiB limit and fails at 261.6 MiB. cap_ipc_lock cannot lift the limit either, because the
+  # upstream unit sets PrivateUsers=yes and the capability then only counts inside the daemon's
+  # own user namespace. A user unit cannot exceed the hard limit of user@.service, hence this.
+  # The matching DefaultLimitMEMLOCK and the oo7-daemon override live in user-services.nix,
+  # because systemd.user is assigned as a whole above and Nix forbids extending it here.
+  systemd.services."user@".serviceConfig.LimitMEMLOCK = "2G";
+
   # The MT7925E gets a function level reset before the driver attempts 'driver own'. Without it the
   # handshake against a co-processor left in an undefined state stalls on the PCIe bus and trips a
   # hardware-level data fabric sync flood, below the level any software can intercept (which is why
