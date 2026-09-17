@@ -56,7 +56,10 @@
       };
       efi.canTouchEfiVariables = true;
     };
-    kernelPackages = pkgs.linuxPackages_latest;
+    # Pinned to 7.2.5: 7.2.6 hit three data fabric sync floods in a row early in boot (2026-09-17).
+    # No single 7.2.6 commit explains it, so this is also the test: a DFSF on 7.2.5 clears the kernel.
+    # Drop when 7.2.7+ is out and its changelog has been checked. See debug-session-2026-09-17.md.
+    kernelPackages = inputs.nixpkgs-kernel.legacyPackages.x86_64-linux.linuxPackages_latest;
     kernelParams = [
       # Belt and braces against the amdgpu MES ring buffer wedge on gfx1150 (gitlab drm/amd#4749).
       # The actual fix (e9f58ff991dd "drm/amdgpu: rework how we handle TLB fences") landed in
