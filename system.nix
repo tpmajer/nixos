@@ -155,6 +155,7 @@
   };
 
   services = {
+    userborn.enable = true;
     dbus.implementation = "broker";
     # gcr_3 ships gcr-prompter, which owns org.gnome.keyring.SystemPrompter — the
     # prompter oo7 calls for unlock dialogs. The oo7 module does not pull it in and
