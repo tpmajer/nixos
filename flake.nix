@@ -6,6 +6,7 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
+    nixos-hardware.inputs.nixpkgs.follows = "nixpkgs";
 
     # niri-src.url = "github:niri-wm/niri";  # main
     # niri-src.url = "github:niri-wm/niri/refs/pull/3481/head";  # PR
@@ -17,6 +18,7 @@
 
     claude-code.url = "github:sadjow/claude-code-nix";
     mako-blur.url = "github:tpmajer/mako/flake";
+    mako-blur.inputs.nixpkgs.follows = "nixpkgs";
 
     littlesnitch.url = "github:noblepayne/littlesnitch-linux-flake";
     littlesnitch.inputs.nixpkgs.follows = "nixpkgs";
