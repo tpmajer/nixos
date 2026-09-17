@@ -23,8 +23,6 @@
 
     chaotic.url = "github:chaotic-cx/nyx/nyxpkgs-unstable";
 
-    nixpkgs-kernel.url = "github:NixOS/nixpkgs/ef34387ddd751e1ab8857adf4676492d32eb24ec"; # linux 7.2.5, pinned: DFSF on 7.2.6
-
     # <input_name>.url = "github:NixOS/nixpkgs/<hash_from_nixhub.io>";
   };
 
