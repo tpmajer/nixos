@@ -119,7 +119,9 @@
     "niri": {
       "inputs": {
         "niri-stable": "niri-stable",
-        "niri-unstable": "niri-unstable",
+        "niri-unstable": [
+          "niri-src"
+        ],
         "nixpkgs": "nixpkgs_3",
         "nixpkgs-stable": "nixpkgs-stable",
         "xwayland-satellite-stable": "xwayland-satellite-stable",
@@ -139,6 +141,25 @@
         "type": "github"
       }
     },
+    "niri-src": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_4"
+      },
+      "locked": {
+        "lastModified": 1789828849,
+        "narHash": "sha256-HB++9TgfL4sxj7Bhb9fcX/Pgz/mMKd0Y9qMvtK0p+us=",
+        "owner": "niri-wm",
+        "repo": "niri",
+        "rev": "448edd29f9ced0590a90cddb60507753524a6a4a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "niri-wm",
+        "ref": "refs/pull/3481/head",
+        "repo": "niri",
+        "type": "github"
+      }
+    },
     "niri-stable": {
       "flake": false,
       "locked": {
@@ -152,22 +173,6 @@
       "original": {
         "owner": "niri-wm",
         "ref": "v26.04",
-        "repo": "niri",
-        "type": "github"
-      }
-    },
-    "niri-unstable": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1789804278,
-        "narHash": "sha256-HDn3PxxIuHSxkC+BRna4x7WxE4nhD58qNCYP6sT9ryo=",
-        "owner": "niri-wm",
-        "repo": "niri",
-        "rev": "62c230a662ac913a54fc49c86fda0406da3f3ba9",
-        "type": "github"
-      },
-      "original": {
-        "owner": "niri-wm",
         "repo": "niri",
         "type": "github"
       }
@@ -276,6 +281,22 @@
     },
     "nixpkgs_4": {
       "locked": {
+        "lastModified": 1785110946,
+        "narHash": "sha256-WWuWxmXKzGZWryswWlijP3Mjp6aGy4Ngmeil5nGMMjk=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "d3498f786f97ac0bded21b34bae0bf3809b45aa3",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixpkgs-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_5": {
+      "locked": {
         "lastModified": 1789785513,
         "narHash": "sha256-B44WL6h0XoLjJ41bUPJk0X5SDinLCII//6EcBLXKiJ0=",
         "owner": "NixOS",
@@ -297,9 +318,10 @@
         "littlesnitch": "littlesnitch",
         "mako-blur": "mako-blur",
         "niri": "niri",
+        "niri-src": "niri-src",
         "nix-index-database": "nix-index-database",
         "nixos-hardware": "nixos-hardware",
-        "nixpkgs": "nixpkgs_4"
+        "nixpkgs": "nixpkgs_5"
       }
     },
     "systems": {
