@@ -1,0 +1,208 @@
+--- a/src/layer/mapped.rs
++++ b/src/layer/mapped.rs
+@@ -369,7 +369,7 @@
+ 
+     pub fn render_normal<R: NiriRenderer>(
+         &self,
+-        ctx: RenderCtx<R>,
++        mut ctx: RenderCtx<R>,
+         ns: Option<usize>,
+         location: Point<f64, Logical>,
+         xray_pos: XrayPos,
+@@ -382,6 +382,10 @@
+         let xray_pos = xray_pos.offset(bob_offset);
+         let should_block_out = ctx.target.should_block_out(self.rules.block_out_from);
+ 
++        // Mirrors SurfaceBackgroundEffect::update_render_elements: an unset xray defaults
++        // to on, because it is the cheaper of the two implementations.
++        let uses_xray = self.rules.background_effect.xray.unwrap_or(true);
++
+         self.set_offscreen_data(None);
+ 
+         // When should_block_out (screencast privacy), skip the open animation
+@@ -389,7 +393,7 @@
+         // solid-color block-out instead of real surface contents.
+         if let Some(open) = &self.open_animation {
+             if !should_block_out {
+-                let mut elements: Vec<WaylandSurfaceRenderElement<GlesRenderer>> = Vec::new();
++                let mut elements: Vec<LayerSurfaceRenderElement<GlesRenderer>> = Vec::new();
+                 push_elements_from_surface_tree(
+                     ctx.renderer.as_gles_renderer(),
+                     self.surface.wl_surface(),
+@@ -397,7 +401,7 @@
+                     scale,
+                     alpha,
+                     Kind::ScanoutCandidate,
+-                    &mut |elem| elements.push(elem),
++                    &mut |elem| elements.push(elem.into()),
+                 );
+ 
+                 // Collect popup elements so they animate together with the
+@@ -423,7 +427,7 @@
+                         scale,
+                         popup_alpha,
+                         Kind::ScanoutCandidate,
+-                        &mut |elem| elements.push(elem),
++                        &mut |elem| elements.push(elem.into()),
+                     );
+                 }
+ 
+@@ -436,6 +440,38 @@
+                         .to_logical(scale);
+ 
+                     if geo_size.w > 0. && geo_size.h > 0. {
++                        // Bake the shadow into the same offscreen as the surface
++                        // contents, after computing geo_size so that the shader
++                        // geometry still describes the surface alone. Tile::render_inner
++                        // does the same for windows; pushed separately, the shadow
++                        // would appear at its final size on the first frame.
++                        self.push_shadow(
++                            ctx.as_gles(),
++                            Point::from((0., 0.)),
++                            &mut |elem| elements.push(elem),
++                        );
++
++                        // The xray variant of the background effect samples a stored
++                        // backdrop rather than the framebuffer it is drawn into, so it
++                        // can be baked into the offscreen and fade in with the contents.
++                        // xray_pos stays in backdrop coordinates and is not affected by
++                        // rendering at the origin, the same as in Tile::render_inner.
++                        //
++                        // The non-xray variant captures the framebuffer it is drawn into,
++                        // and the offscreen is cleared to transparent, so it would have
++                        // nothing to blur. That one is pushed to the output below.
++                        if uses_xray {
++                            self.push_background_effect(
++                                ctx.as_gles(),
++                                ns,
++                                Point::from((0., 0.)),
++                                1.,
++                                xray_pos,
++                                should_block_out,
++                                &mut |elem| elements.push(elem),
++                            );
++                        }
++
+                         // `alpha` is already baked into `elements` above, so pass 1.
+                         // here: applying it a second time would render the surface
+                         // at alpha^2 for the duration of the animation, and make it
+@@ -454,17 +490,19 @@
+                             Ok((elem, data)) => {
+                                 self.set_offscreen_data(Some(data));
+                                 push(elem.into());
+-                                // Push shadow and background_effect during the
+-                                // open animation so they don't snap in when the
+-                                // anim ends.
+-                                self.push_shadow_and_background_effect(
+-                                    ctx,
+-                                    ns,
+-                                    location,
+-                                    xray_pos,
+-                                    should_block_out,
+-                                    push,
+-                                );
++                                if !uses_xray {
++                                    // Drawn to the output, behind the animated
++                                    // contents, following the animation's scale.
++                                    self.push_background_effect(
++                                        ctx,
++                                        ns,
++                                        location,
++                                        open.contents_scale(),
++                                        xray_pos,
++                                        should_block_out,
++                                        push,
++                                    );
++                                }
+                                 return;
+                             }
+                             Err(err) => {
+@@ -530,16 +568,61 @@
+         should_block_out: bool,
+         push: &mut dyn FnMut(LayerSurfaceRenderElement<R>),
+     ) {
+-        let scale = Scale::from(self.scale);
+-        let surface = self.surface.wl_surface();
++        self.push_shadow(ctx.r(), location, push);
++        self.push_background_effect(ctx, ns, location, 1., xray_pos, should_block_out, push);
++    }
+ 
++    /// Push the shadow element for this layer surface.
++    fn push_shadow<R: NiriRenderer>(
++        &self,
++        ctx: RenderCtx<R>,
++        location: Point<f64, Logical>,
++        push: &mut dyn FnMut(LayerSurfaceRenderElement<R>),
++    ) {
++        let scale = Scale::from(self.scale);
+         let location = location.to_physical_precise_round(scale).to_logical(scale);
+         self.shadow
+             .render(ctx.renderer, location, &mut |elem| push(elem.into()));
++    }
++
++    /// Push the background_effect element for this layer surface.
++    ///
++    /// `contents_scale` shrinks the effect geometry around its center, so that the effect can
++    /// follow an open animation. It cannot be baked into the animation's offscreen, because the
++    /// effect captures the framebuffer it is drawn into, and the offscreen is cleared to
++    /// transparent before the contents are rendered into it.
++    #[allow(clippy::too_many_arguments)]
++    fn push_background_effect<R: NiriRenderer>(
++        &self,
++        mut ctx: RenderCtx<R>,
++        ns: Option<usize>,
++        location: Point<f64, Logical>,
++        contents_scale: f64,
++        xray_pos: XrayPos,
++        should_block_out: bool,
++        push: &mut dyn FnMut(LayerSurfaceRenderElement<R>),
++    ) {
++        let scale = Scale::from(self.scale);
++        let surface = self.surface.wl_surface();
++
++        let location = location.to_physical_precise_round(scale).to_logical(scale);
++
++        let size = self.block_out_buffer.size();
++        let scaled_size = size.upscale(contents_scale);
++        let centering = Point::from((
++            (size.w - scaled_size.w) / 2.,
++            (size.h - scaled_size.h) / 2.,
++        ));
++        let geometry = Rectangle::new(location + centering, scaled_size);
++
++        // The xray path samples the backdrop at xray_pos, sized after the effect geometry
++        // (see Xray::render). Shrinking the geometry around its center moves the rect but
++        // not the sampled region, which makes the backdrop drift into place over the course
++        // of the animation, so move the sample along with it.
++        let xray_pos = xray_pos.offset(centering);
+ 
+-        let geometry = Rectangle::new(location, self.block_out_buffer.size());
+         let surface_off = Point::new(0., 0.); // No geometry on layer surfaces.
+-        let surface_anim_scale = Scale::from(1.);
++        let surface_anim_scale = Scale::from(contents_scale);
+         let radius = self.rules.geometry_corner_radius.unwrap_or_default();
+         background_effect::render_for_tile(
+             ctx.as_gles(),
+--- a/src/layer/opening_layer.rs
++++ b/src/layer/opening_layer.rs
+@@ -49,6 +49,20 @@
+         self.anim.is_done()
+     }
+ 
++    /// Scale that the offscreen contents are currently drawn at.
++    ///
++    /// Effects that sample the output framebuffer, like the background effect, cannot be baked
++    /// into the offscreen, so they are drawn separately and need to follow this scale to stay
++    /// aligned with the surface. A custom shader can transform the contents arbitrarily, so
++    /// there is nothing meaningful to follow and this reports 1.
++    pub fn contents_scale(&self) -> f64 {
++        if self.custom_shader.is_some() {
++            return 1.;
++        }
++
++        (self.anim.value() / 2. + 0.5).max(0.)
++    }
++
+     // We can't depend on view_rect here, because the result of window opening can be snapshot and
+     // then rendered elsewhere.
+     pub fn render(
