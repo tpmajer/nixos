@@ -199,6 +199,14 @@
           # animating and snaps to the right opacity when the animation ends.
           # Windows get this right: Tile::render passes the separate tile alpha.
           ./patches/niri-layer-open-alpha.patch
+          # The layer pre-commit hook also snapshots on content commits, and
+          # the snapshot holds render elements referencing the client's
+          # wl_buffer for as long as the surface stays mapped, so that buffer is
+          # never released. mako, with its two-buffer pool, stalls on its third
+          # draw with "no buffer available". Snapshot only at unmap, the way
+          # niri does for toplevels, at the cost of the close animation for
+          # clients that destroy the surface without a null commit.
+          ./patches/niri-layer-snapshot-buffer-pin.patch
         ];
       });
     };
