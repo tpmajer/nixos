@@ -207,6 +207,15 @@
           # niri does for toplevels, at the cost of the close animation for
           # clients that destroy the surface without a null commit.
           ./patches/niri-layer-snapshot-buffer-pin.patch
+          # The open animation renders only the client surface into the
+          # offscreen and pushes the shadow and the background effect beside it
+          # at their final geometry, so both appear full-size on the first
+          # frame. Bake the shadow in, the way Tile::render_inner does for
+          # windows, and the xray background effect with it; the non-xray one
+          # captures the framebuffer it is drawn into, so it stays outside and
+          # follows the animation's scale instead. Applies on top of
+          # niri-layer-open-alpha.patch.
+          ./patches/niri-layer-open-shadow-blur.patch
         ];
       });
     };
