@@ -188,7 +188,19 @@
     starship.enable = true;
     niri = {
       enable = true;
-      package = pkgs.niri-unstable;
+      # Testing niri PR #3481 (layer animations), pinned in flake.nix. These
+      # patches fix bugs found while testing it and should be dropped once the
+      # PR is fixed upstream. List order matters.
+      package = pkgs.niri-unstable.overrideAttrs (old: {
+        patches = (old.patches or [ ]) ++ [
+          # The open-animation path passes the layer-rule opacity to
+          # OpeningLayer::render even though the same alpha is already baked
+          # into the offscreen texture, so a surface renders at alpha^2 while
+          # animating and snaps to the right opacity when the animation ends.
+          # Windows get this right: Tile::render passes the separate tile alpha.
+          ./patches/niri-layer-open-alpha.patch
+        ];
+      });
     };
     hyprlock = {
       enable = true;
