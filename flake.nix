@@ -9,9 +9,9 @@
     nixos-hardware.inputs.nixpkgs.follows = "nixpkgs";
 
     # niri-src.url = "github:niri-wm/niri";  # main
-    # niri-src.url = "github:niri-wm/niri/refs/pull/3481/head";  # PR
+    niri-src.url = "github:niri-wm/niri/refs/pull/3481/head"; # PR
     niri.url = "github:epireyn/niri-flake";
-    # niri.inputs.niri-unstable.follows = "niri-src"; # override source
+    niri.inputs.niri-unstable.follows = "niri-src"; # override source
 
     nix-index-database.url = "github:nix-community/nix-index-database";
     nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
