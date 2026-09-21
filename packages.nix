@@ -188,36 +188,7 @@
     starship.enable = true;
     niri = {
       enable = true;
-      # Testing niri PR #3481 (layer animations), pinned in flake.nix. These
-      # patches fix bugs found while testing it and should be dropped once the
-      # PR is fixed upstream. List order matters.
-      package = pkgs.niri-unstable.overrideAttrs (old: {
-        patches = (old.patches or [ ]) ++ [
-          # The open-animation path passes the layer-rule opacity to
-          # OpeningLayer::render even though the same alpha is already baked
-          # into the offscreen texture, so a surface renders at alpha^2 while
-          # animating and snaps to the right opacity when the animation ends.
-          # Windows get this right: Tile::render passes the separate tile alpha.
-          ./patches/niri-layer-open-alpha.patch
-          # The layer pre-commit hook also snapshots on content commits, and
-          # the snapshot holds render elements referencing the client's
-          # wl_buffer for as long as the surface stays mapped, so that buffer is
-          # never released. mako, with its two-buffer pool, stalls on its third
-          # draw with "no buffer available". Snapshot only at unmap, the way
-          # niri does for toplevels, at the cost of the close animation for
-          # clients that destroy the surface without a null commit.
-          ./patches/niri-layer-snapshot-buffer-pin.patch
-          # The open animation renders only the client surface into the
-          # offscreen and pushes the shadow and the background effect beside it
-          # at their final geometry, so both appear full-size on the first
-          # frame. Bake the shadow in, the way Tile::render_inner does for
-          # windows, and the xray background effect with it; the non-xray one
-          # captures the framebuffer it is drawn into, so it stays outside and
-          # follows the animation's scale instead. Applies on top of
-          # niri-layer-open-alpha.patch.
-          ./patches/niri-layer-open-shadow-blur.patch
-        ];
-      });
+      package = pkgs.niri-unstable;
     };
     hyprlock = {
       enable = true;
