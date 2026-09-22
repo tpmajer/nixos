@@ -82,6 +82,7 @@
     mesa
     micro
     millisecond
+    miru # Wayland screen magnifier / cursor spotlight
     (mpv.override {
       scripts = [
         mpvScripts.uosc
