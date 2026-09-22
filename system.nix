@@ -216,6 +216,21 @@
     # without this the mouse's hidraw node stays root:root 0600 and every
     # openlogi HID++ open fails with EACCES ("No Logitech HID++ devices found").
     udev.packages = [ pkgs.openlogi ];
+    # The Framework 2.5G Ethernet card (Realtek RTL8156, 0bda:8156 on the xHCI at
+    # 0000:c3:00.4) resumes the machine ~1 s into s2idle, but only with a cable
+    # attached: the port loses power, the PHY sees the link change and signals a USB
+    # remote wakeup, which surfaces as a PCIe PME on 0000:00:08.3 (IRQ 40). With the
+    # lid shut logind adds its 30 s HoldoffTimeoutSec on top and the two turn into a
+    # suspend/resume loop — 928 cycles over the night of 2026-09-21.
+    # Wake-on-LAN is a red herring here: TLP already ships WOL_DISABLE=Y and it was in
+    # force through every one of those 928 wakeups. The wakeup is the USB one, so the
+    # USB flag is what has to go. Verified live on 2026-09-22 08:58: with the cable up
+    # and power/wakeup set to disabled, a suspend held 121.7 s and ended on IRQ 9 (ACPI,
+    # i.e. the user) instead of IRQ 40. See debug-session-2026-09-22.md.
+    # Cost: the laptop can no longer be woken over Ethernet, which is not a feature in use.
+    udev.extraRules = ''
+      ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="0bda", ATTR{idProduct}=="8156", ATTR{power/wakeup}="disabled"
+    '';
     flatpak.enable = true;
     envfs.enable = false; # Fuse filesystem that returns symlinks to executables based on the PATH of the requesting process.
     fprintd.enable = true; # 'sudo fprintd-enroll $USER' to enroll
