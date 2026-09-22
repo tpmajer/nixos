@@ -105,12 +105,6 @@
       # 'driver own failed' / -5 on 7.1.6 — the first such hits on 7.1.x. Only mt7925e: the NPU at
       # c2:00.1 exposes no reset attribute at all, so its half of the old service never ran.
       "mt7925e"
-      # Test (2026-09-17): 16 of 151 boots since May died in a data fabric sync flood 15-20s in.
-      # In all four where the NPU probe reached the journal, it logged "enabling device" and the
-      # machine died inside the ~140 ms firmware start via PSP, before "Initialized". The NPU is
-      # unused. Drop this if a boot-time sync flood recurs with it blacklisted.
-      # See debug-session-2026-09-17.md.
-      "amdxdna"
     ];
     kernel.sysctl = {
       "vm.swappiness" = 10;
@@ -371,10 +365,11 @@
     NIXOS_OZONE_WL = "1";
   };
 
-  # mt7925e is taken out of the s2idle path before suspend and restored on resume. amdxdna used to
-  # get the same treatment (since 2026-05-25, 22723ff, against a PSP hang on wake); it is now
-  # blacklisted outright, so it never loads and needs no handling here.
-  # mt7925e: added 2026-06-26 (c650b16) after a suspend froze with the journal ending
+  # Both modules are taken out of the s2idle path before suspend and restored on resume.
+  # amdxdna: since 2026-05-25 (22723ff), against a PSP hang on wake. Blacklisting it outright
+  # (65b3c61) as a suspect for the boot-time sync floods was disproved on 2026-09-22: the 10th boot
+  # with it blacklisted died the same way, with no amdxdna in the journal. See debug-session-2026-09-17.md.
+  # mt7925e: same trick, added 2026-06-26 (c650b16) after a suspend froze with the journal ending
   # at "PM: suspend entry (s2idle)" right after the WiFi teardown, then reverted the same day
   # (e614221) to see whether 7.1.1 handled it, leaving the note "restore if a suspend hang with
   # WiFi teardown recurs". It recurred on 2026-08-06 19:16 with that exact signature, so it is
@@ -382,10 +377,12 @@
   # the 51 that resumed fine, so its presence in the failing one proves nothing on its own.
   # Drop it again if a hang recurs with it active. See debug-session-2026-08-06.2.md.
   powerManagement.powerDownCommands = ''
+    ${pkgs.kmod}/bin/rmmod amdxdna 2>/dev/null || true
     ${pkgs.kmod}/bin/rmmod mt7925e 2>/dev/null || true
   '';
 
   powerManagement.resumeCommands = ''
+    ${pkgs.kmod}/bin/modprobe amdxdna
     ${pkgs.kmod}/bin/modprobe mt7925e
   '';
 
