@@ -167,6 +167,7 @@
     gnome.core-apps.enable = false;
     gnome.tinysparql.enable = true;
     gnome.localsearch.enable = true;
+    gnome.sushi.enable = true; # Nautilus quick preview (Space); also registers its D-Bus service
     gvfs.enable = true;
     geoclue2.enable = true;
     power-profiles-daemon.enable = false;
