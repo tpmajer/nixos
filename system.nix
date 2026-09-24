@@ -174,6 +174,10 @@
     tlp = {
       enable = true;
       pd.enable = true;
+      # TLP's default WIFI_PWR_ON_BAT=on overrode networkmanager.wifi.powersave = false
+      # (iw showed "Power save: on" on battery). 802.11 power save adds latency spikes,
+      # which matters for game streaming (GeForce Now).
+      settings.WIFI_PWR_ON_BAT = "off";
     };
     # sched_ext scheduler in userspace (CONFIG_SCHED_CLASS_EXT=y in the mainline
     # kernel, so no patched kernel needed). scx_lavd is latency/burst oriented
