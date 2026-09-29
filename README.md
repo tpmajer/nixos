@@ -29,7 +29,7 @@ git add --force private.nix  # makes it visible to nix flake (stays gitignored)
 ├── fonts.nix                    # Fonts
 ├── littlesnitch.nix             # Little Snitch application firewall
 ├── network.nix                  # Networking, WireGuard VPN, firewall
-├── user-services.nix            # Systemd user services (Waybar, Hypridle, AWWW, Gammastep)
+├── user-services.nix            # Systemd user services (Quickshell, Hypridle, AWWW, Gammastep)
 ├── hardware-configuration.nix   # Auto-generated hardware config
 ├── printers.nix                 # Printer config
 ├── llm.nix                      # Local AI (Ollama + Open WebUI) — import commented out

@@ -106,6 +106,7 @@
     pinta
     playerctl
     python3
+    quickshell # the bar, config in ~/.dotfiles/.config/quickshell (replaces waybar + wlogout)
     reaction # for ip46tables command
     ripgrep
     signal-desktop
@@ -128,7 +129,6 @@
     wiremix
     wl-clipboard-rs
     wl-mirror
-    wlogout
     xwayland-satellite
     yt-dlp
     zstd
@@ -171,7 +171,6 @@
       libnotify = true;
     };
     gnome-disks.enable = true;
-    waybar.enable = true;
     localsend = {
       enable = true;
       openFirewall = true;
