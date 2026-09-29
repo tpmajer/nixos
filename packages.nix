@@ -106,7 +106,7 @@
     pinta
     playerctl
     python3
-    quickshell # the bar, config in ~/.dotfiles/.config/quickshell (replaces waybar + wlogout)
+    quickshell # the bar, config in ~/.dotfiles/.config/quickshell
     reaction # for ip46tables command
     ripgrep
     signal-desktop

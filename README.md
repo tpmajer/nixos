@@ -63,7 +63,7 @@ git add --force private.nix  # makes it visible to nix flake (stays gitignored)
 ## Desktop
 
 - **Compositor:** [niri](https://github.com/YaLTeR/niri) (Wayland, scrolling tiling)
-- **Status bar:** Waybar
+- **Status bar:** Quickshell (config in `~/.dotfiles/.config/quickshell`)
 - **Idle daemon:** Hypridle + Hyprlock
 - **Wallpaper daemon:** AWWW
 - **Blue-light filter:** Gammastep (`-l 50.5:22.0`, 6500K→4500K)

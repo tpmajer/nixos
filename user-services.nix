@@ -20,9 +20,9 @@
     # to fit under RLIMIT_MEMLOCK, not just the ~10 MiB it pins. See the comment in system.nix.
     oo7-daemon.serviceConfig.LimitMEMLOCK = "2G";
 
-    # Replaces waybar. path = [ ] keeps the session PATH (from niri) instead of a
-    # Nix-built one, like waybar had, so the bar's scripts and click commands
-    # (nmcli, wpctl, ghostty, niri msg, ...) resolve as in the shell.
+    # path = [ ] keeps the session PATH (from niri) instead of a Nix-built one, so
+    # the bar's scripts and click commands (nmcli, wpctl, ghostty, niri msg, ...)
+    # resolve as in the shell.
     quickshell = {
       after = [ "niri.service" ];
       wantedBy = [ "niri.service" ];
