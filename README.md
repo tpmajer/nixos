@@ -57,7 +57,6 @@ git add --force private.nix  # makes it visible to nix flake (stays gitignored)
 | `niri` | Niri compositor module + overlay, from `epireyn/niri-flake` |
 | `nix-index-database` | `comma` command runner |
 | `claude-code` | Claude Code CLI via dedicated overlay |
-| `mako-blur` | Mako with blur support, own fork (`tpmajer/mako`) |
 | `littlesnitch` | Little Snitch application firewall for Linux |
 
 ## Desktop
@@ -67,7 +66,7 @@ git add --force private.nix  # makes it visible to nix flake (stays gitignored)
 - **Idle daemon:** Hypridle + Hyprlock
 - **Wallpaper daemon:** AWWW
 - **Blue-light filter:** Gammastep (`-l 50.5:22.0`, 6500K→4500K)
-- **Notifications:** Mako (with blur)
+- **Notifications:** Quickshell (same config as the status bar)
 - **Terminal:** Ghostty
 - **Launcher:** Fuzzel
 - **File manager:** Nautilus (opens Ghostty via `nautilus-open-any-terminal`)

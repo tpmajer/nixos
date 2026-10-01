@@ -17,8 +17,6 @@
     nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
 
     claude-code.url = "github:sadjow/claude-code-nix";
-    mako-blur.url = "github:tpmajer/mako/flake";
-    mako-blur.inputs.nixpkgs.follows = "nixpkgs";
 
     littlesnitch.url = "github:noblepayne/littlesnitch-linux-flake";
     littlesnitch.inputs.nixpkgs.follows = "nixpkgs";

@@ -78,7 +78,6 @@
     libnotify
     libsecret
     loupe
-    mako
     mesa
     micro
     millisecond

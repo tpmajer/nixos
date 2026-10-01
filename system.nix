@@ -319,7 +319,6 @@
     config.allowUnfree = true;
 
     overlays = [
-      inputs.mako-blur.overlays.default
       inputs.claude-code.overlays.default
       inputs.niri.overlays.niri
       (self: super: {
