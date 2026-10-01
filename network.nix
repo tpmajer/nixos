@@ -96,6 +96,10 @@ in
     # postUp = " ";
   };
 
+  # wg-auto comes back on every boot: the manual override (see the dispatcher
+  # script above) holds for the session, not across a restart.
+  systemd.tmpfiles.rules = [ "r! /var/lib/wg-auto-disabled" ];
+
   networking.firewall = {
     checkReversePath = "loose";
     logReversePathDrops = true;
