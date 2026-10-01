@@ -95,27 +95,6 @@
         "type": "github"
       }
     },
-    "mako-blur": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1783256449,
-        "narHash": "sha256-AabEGw7x9vTD/Oil381BIlmMJ+vT3i/vgYhRAvsQYY4=",
-        "owner": "tpmajer",
-        "repo": "mako",
-        "rev": "d2d7f0816d641ac963b652628165e24e4dcfa9e8",
-        "type": "github"
-      },
-      "original": {
-        "owner": "tpmajer",
-        "ref": "flake",
-        "repo": "mako",
-        "type": "github"
-      }
-    },
     "niri": {
       "inputs": {
         "niri-stable": "niri-stable",
@@ -295,7 +274,6 @@
         "chaotic": "chaotic",
         "claude-code": "claude-code",
         "littlesnitch": "littlesnitch",
-        "mako-blur": "mako-blur",
         "niri": "niri",
         "nix-index-database": "nix-index-database",
         "nixos-hardware": "nixos-hardware",
