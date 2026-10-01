@@ -141,6 +141,9 @@
   security.sudo.extraConfig = ''
     Defaults pwfeedback # password input feedback - makes typed password visible as asterisks
     Defaults insults
+    # wgauto (fish function) re-enables the wg-auto dispatcher without a password;
+    # disabling it (touch + stopping wg0) still asks for one on purpose.
+    tpmajer ALL=(root) NOPASSWD: /run/current-system/sw/bin/rm -f /var/lib/wg-auto-disabled
   '';
 
   virtualisation.podman = {
