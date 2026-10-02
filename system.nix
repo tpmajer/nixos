@@ -131,6 +131,7 @@
 
   security.rtkit.enable = true;
   security.polkit.enable = true;
+  # Also the Quickshell lock's password check: keep it if hyprlock goes.
   security.pam.services.hyprlock = {
     fprintAuth = false;
   };
