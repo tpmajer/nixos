@@ -36,9 +36,6 @@ git add --force private.nix  # makes it visible to nix flake (stays gitignored)
 ├── dlna.nix                     # DLNA server config — import commented out
 ├── private.nix.example          # Private config template
 ├── private.nix                  # Private values — gitignored, not in repo
-├── patches/                     # Local patches, all currently commented out
-│   ├── hyprlock-fprint-reinit.patch
-│   └── hyprlock-fprint-reinit-minimal.patch
 └── .githooks/
     ├── pre-commit               # Nixfmt + nix-instantiate; auto-unstages private.nix
     └── post-commit              # Re-stages private.nix so nix flake can find it
