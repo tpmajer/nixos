@@ -131,7 +131,8 @@
 
   security.rtkit.enable = true;
   security.polkit.enable = true;
-  # Also the Quickshell lock's password check: keep it if hyprlock goes.
+  # The Quickshell lock's password check (~/.dotfiles, Lock.qml). The service keeps the name
+  # of hyprlock, which it was set up for and which is gone.
   security.pam.services.hyprlock = {
     fprintAuth = false;
   };
