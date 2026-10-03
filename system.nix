@@ -98,7 +98,7 @@
       # was never a UCSI problem — no reason to revisit this blacklist over it.
       "ucsi_acpi"
       # Not blacklisted for good: mt7925-init below modprobes it after an FLR on the PCI function.
-      # The blacklist only keeps udev from probing it too early. Dropped in 14b4b43 (2026-08-07)
+      # The blacklist only keeps udev from probing it too early. Dropped in 4296e72 (2026-08-07)
       # on the theory that this failure belonged to the 6.18 pin — "not a single hit on any 7.1.x
       # boot". Disproved on 2026-08-09: a boot died 20s in, inside the mt7925e probe window, the
       # next boot reported a data fabric sync flood as its reset reason, and the two after it hit
@@ -281,7 +281,7 @@
   # power-cycled — a warm reboot does not clear it. See debug-session-2026-08-09.md.
   # Order: systemd-udevd → FLR + modprobe → network-pre.target.
   # Note this does not prevent the first sync flood, only the loop that follows it: the FLR runs at
-  # boot, and the 2026-08-09 event happened on a cold boot after a clean poweroff. 14b4b43 likewise
+  # boot, and the 2026-08-09 event happened on a cold boot after a clean poweroff. 4296e72 likewise
   # recorded short sync floods on 7.0.8..7.0.11 with the FLR active, so it reduces rather than
   # eliminates them. The first event is still unexplained.
   systemd.services.mt7925-init = {
@@ -375,12 +375,12 @@
   };
 
   # Both modules are taken out of the s2idle path before suspend and restored on resume.
-  # amdxdna: since 2026-05-25 (22723ff), against a PSP hang on wake. Blacklisting it outright
-  # (65b3c61) as a suspect for the boot-time sync floods was disproved on 2026-09-22: the 10th boot
+  # amdxdna: since 2026-05-25 (ab60e32), against a PSP hang on wake. Blacklisting it outright
+  # (7ca267a) as a suspect for the boot-time sync floods was disproved on 2026-09-22: the 10th boot
   # with it blacklisted died the same way, with no amdxdna in the journal. See debug-session-2026-09-17.md.
-  # mt7925e: same trick, added 2026-06-26 (c650b16) after a suspend froze with the journal ending
+  # mt7925e: same trick, added 2026-06-26 (131e1f7) after a suspend froze with the journal ending
   # at "PM: suspend entry (s2idle)" right after the WiFi teardown, then reverted the same day
-  # (e614221) to see whether 7.1.1 handled it, leaving the note "restore if a suspend hang with
+  # (7aef90e) to see whether 7.1.1 handled it, leaving the note "restore if a suspend hang with
   # WiFi teardown recurs". It recurred on 2026-08-06 19:16 with that exact signature, so it is
   # back — as a test, not a known fix. Caveat: the WiFi teardown precedes every suspend, including
   # the 51 that resumed fine, so its presence in the failing one proves nothing on its own.
