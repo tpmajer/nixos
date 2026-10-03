@@ -30,7 +30,11 @@
       serviceConfig = {
         Type = "simple";
         ExecStart = "${pkgs.quickshell}/bin/quickshell";
-        Restart = "on-failure";
+        # always, not on-failure: it is the session lock too. If it goes while
+        # the session is locked, even cleanly (qs kill, SIGTERM), niri keeps the
+        # session locked with nothing to unlock it; the next process locks
+        # again by its marker. systemctl stop still stops it.
+        Restart = "always";
         RestartSec = "2s";
       };
       path = lib.mkForce [ ];
