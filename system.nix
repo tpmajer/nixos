@@ -390,6 +390,11 @@
   '';
 
   powerManagement.resumeCommands = ''
+    # fprintd 1.94.5: a Release during PrepareForSleep drops its session but leaves the
+    # device open, and every Claim fails until the daemon restarts. D-Bus starts a new one.
+    # Safe now that the lock goes through pam_fprintd, which claims anew each time; hyprlock
+    # did not (debug-session-2026-06-10.md). See debug-session-2026-10-03.md.
+    ${pkgs.systemd}/bin/systemctl stop fprintd.service || true
     ${pkgs.kmod}/bin/modprobe amdxdna
     ${pkgs.kmod}/bin/modprobe mt7925e
   '';
