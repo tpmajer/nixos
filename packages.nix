@@ -32,6 +32,7 @@
     diff-so-fancy
     discord
     distrobox
+    editorconfig-core-c # for micro's editorconfig plugin (~/.dotfiles)
     eza
     # inputs.eza.packages.${pkgs.stdenv.hostPlatform.system}.default
     fastfetch
