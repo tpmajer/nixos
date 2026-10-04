@@ -179,10 +179,10 @@
     tlp = {
       enable = true;
       pd.enable = true;
-      # TLP's default WIFI_PWR_ON_BAT=on overrode networkmanager.wifi.powersave = false
-      # (iw showed "Power save: on" on battery). 802.11 power save adds latency spikes,
-      # which matters for game streaming (GeForce Now).
-      settings.WIFI_PWR_ON_BAT = "off";
+      # TLP's default WIFI_PWR_ON_BAT=on overrides networkmanager.wifi.powersave = false
+      # (iw shows "Power save: on" on battery). Left at that default: the latency spikes
+      # of 802.11 power save only matter for game streaming, and wifi-nopowersave.service
+      # below turns it off for as long as GeForce NOW runs.
     };
     # sched_ext scheduler in userspace (CONFIG_SCHED_CLASS_EXT=y in the mainline
     # kernel, so no patched kernel needed). scx_lavd is latency/burst oriented
@@ -299,6 +299,43 @@
       '';
     };
   };
+
+  # 802.11 power save off for as long as the unit is active. The geforcenow wrapper
+  # starts it before the flatpak and stops it on exit; the polkit rule lets it do so
+  # without a password. TLP re-applies its own setting on every AC/battery switch, so
+  # unplugging mid-game turns power save back on until the next launch.
+  systemd.services.wifi-nopowersave = {
+    description = "Keep WiFi power save off";
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      ExecStart = "${pkgs.iw}/bin/iw dev wlp192s0 set power_save off";
+      # Back to what TLP would have set: on on battery, off on AC.
+      ExecStop = pkgs.writeShellScript "wifi-powersave-restore" ''
+        if [ "$(cat /sys/class/power_supply/ACAD/online)" = 0 ]; then
+          ${pkgs.iw}/bin/iw dev wlp192s0 set power_save on
+        fi
+      '';
+    };
+  };
+  security.polkit.extraConfig = ''
+    polkit.addRule(function(action, subject) {
+      if (action.id == "org.freedesktop.systemd1.manage-units" &&
+          action.lookup("unit") == "wifi-nopowersave.service" &&
+          subject.user == "tpmajer") {
+        return polkit.Result.YES;
+      }
+    });
+  '';
+  # ~/.local/share/applications/com.nvidia.geforcenow.desktop points the launcher
+  # entry at this instead of the flatpak's own Exec line.
+  environment.systemPackages = [
+    (pkgs.writeShellScriptBin "geforcenow" ''
+      systemctl start wifi-nopowersave.service
+      trap 'systemctl stop wifi-nopowersave.service' EXIT
+      flatpak run --branch=master --arch=x86_64 --command=GeForceNOW com.nvidia.geforcenow "$@"
+    '')
+  ];
 
   users.users.tpmajer = {
     isNormalUser = true;
