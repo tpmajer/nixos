@@ -28,6 +28,19 @@
       rocmPackages.rocminfo
     ];
   };
+  # Puts amdgpu.dcdebugmask=0x10 on the kernel command line, which is otherwise the only
+  # kernel parameter that this repo does not account for: nixos-hardware's Framework module
+  # sets the same thing with mkDefault, as a workaround for hangs with panel self-refresh
+  # (gitlab drm/amd#3647, FrameworkComputer/SoftwareFirmwareIssueTracker#110 — open for this
+  # model as of 2026-10-04). Stated here so that it is visible and stays put if the module
+  # drops it.
+  # It is not free: debugfs on 2026-10-04 showed the panel supporting PSR (sink 0x03) with
+  # driver support off, and no Panel Replay to fall back on, so the panel never self-refreshes.
+  # What that costs in watts is unmeasured, and with VRR on the driver may not enter PSR anyway.
+  # Do not turn it off while the s2idle hang is open (see amdgpu.gpu_recovery below): it would
+  # be a new variable in the display engine. To try it later: set to false, reboot, read
+  # /sys/kernel/debug/dri/*/eDP-1/psr_state, and compare battery draw against 11.4 W idle.
+  hardware.amdgpu.dcDebugMask.disablePsr = true;
   hardware.steam-hardware.enable = true;
   # xone driver for Xbox controllers over USB and the official Xbox Wireless
   # Adapter (dongle); full GIP protocol, e.g. Elite 2 paddles over cable.
