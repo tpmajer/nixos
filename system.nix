@@ -331,10 +331,31 @@
       '';
     };
   };
+  # The battery's charge limit, which only root can write: 80 is what it is kept at,
+  # 100 charges it full, e.g. before a day away from a socket. The switch in
+  # Quickshell's battery popup starts the instance for the limit it wants; the polkit
+  # rule lets it do so without a password. Nothing sets it at boot.
+  systemd.services."battery-charge-limit@" = {
+    description = "Set the battery's charge limit to %i%%";
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.writeShellScript "battery-charge-limit" ''
+        case "$1" in
+          80 | 100) echo "$1" > /sys/class/power_supply/BAT1/charge_control_end_threshold ;;
+          *) echo "charge limit must be 80 or 100, not $1" >&2; exit 1 ;;
+        esac
+      ''} %i";
+    };
+  };
   security.polkit.extraConfig = ''
     polkit.addRule(function(action, subject) {
+      var units = [
+        "wifi-nopowersave.service",
+        "battery-charge-limit@80.service",
+        "battery-charge-limit@100.service"
+      ];
       if (action.id == "org.freedesktop.systemd1.manage-units" &&
-          action.lookup("unit") == "wifi-nopowersave.service" &&
+          units.indexOf(action.lookup("unit")) >= 0 &&
           subject.user == "tpmajer") {
         return polkit.Result.YES;
       }
