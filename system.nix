@@ -334,7 +334,9 @@
   # The battery's charge limit, which only root can write: 80 is what it is kept at,
   # 100 charges it full, e.g. before a day away from a socket. The switch in
   # Quickshell's battery popup starts the instance for the limit it wants; the polkit
-  # rule lets it do so without a password. Nothing sets it at boot.
+  # rule lets it do so without a password. Nothing sets it at boot: the firmware is
+  # back at 80 after a restart (seen on 2026-10-04), which is wanted, so 100 lasts
+  # until the next boot or the next click.
   systemd.services."battery-charge-limit@" = {
     description = "Set the battery's charge limit to %i%%";
     serviceConfig = {
