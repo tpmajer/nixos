@@ -106,6 +106,53 @@
       path = lib.mkForce [ ];
     };
 
+    # Thunderbird without a window, so that new mail is notified of while the
+    # client is closed. The account is under Google's Advanced Protection: no
+    # app passwords, and only a few clients are let at the mail at all, so a
+    # small IMAP watcher is not an option, while Thunderbird is signed in
+    # already. Measured on 2026-10-04: about 330 MiB, and a notification with
+    # "Mark as Read" and "Delete".
+    # Thunderbird runs one instance per profile, so the thunderbird wrapper
+    # below stops this before the window comes up and starts it again once
+    # the window is closed. The condition is for a start with the window up.
+    thunderbird-headless = {
+      after = [
+        "niri.service"
+        "quickshell.service"
+      ];
+      wantedBy = [ "niri.service" ];
+      description = "Thunderbird without a window, for new mail notifications";
+      serviceConfig = {
+        Type = "simple";
+        ExecCondition = pkgs.writeShellScript "thunderbird-no-window-up" ''
+          ! ${pkgs.procps}/bin/pgrep -u "$(${pkgs.coreutils}/bin/id -u)" -f 'bin/\.thunderbird-wrapped_' > /dev/null
+        '';
+        ExecStart = "${pkgs.thunderbird}/bin/thunderbird --headless";
+        Restart = "on-failure";
+        RestartSec = "30s";
+      };
+    };
+
   };
+
+  # Over the package's own bin/thunderbird, which the launcher entry, mailto
+  # links and the shell all run: the window in place of the instance without
+  # one. With a window up already this is only a message to it.
+  environment.systemPackages = [
+    (lib.hiPrio (
+      pkgs.writeShellScriptBin "thunderbird" ''
+        unit=thunderbird-headless.service
+        if ! systemctl --user is-active --quiet "$unit" \
+          && pgrep -u "$(id -u)" -f 'bin/\.thunderbird-wrapped_' > /dev/null; then
+          exec ${pkgs.thunderbird}/bin/thunderbird "$@"
+        fi
+        systemctl --user stop "$unit"
+        ${pkgs.thunderbird}/bin/thunderbird "$@"
+        status=$?
+        systemctl --user start "$unit"
+        exit $status
+      ''
+    ))
+  ];
 
 }
