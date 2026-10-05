@@ -147,6 +147,21 @@
           exec ${pkgs.thunderbird}/bin/thunderbird "$@"
         fi
         systemctl --user stop "$unit"
+        # Thunderbird has no setting for the folder to start in: the first
+        # tab comes back from session.json with the folder it was closed on.
+        # Point that tab at the Inbox of the same account and select it; the
+        # other tabs stay as they were.
+        for session in "$HOME"/.thunderbird/*/session.json; do
+          [ -f "$session" ] || continue
+          ${pkgs.jq}/bin/jq -c '
+            (.windows[]?.tabs | select(.tabs | any(.state.firstTab == true))) |= (
+              .selectedIndex = (.tabs | map(.state.firstTab == true) | index(true))
+              | (.tabs[] | select(.state.firstTab == true) | .state.folderURI)
+                |= sub("^(?<server>imap://[^/]+)/.*$"; "\(.server)/INBOX")
+            )' "$session" > "$session.inbox" \
+            && mv "$session.inbox" "$session" \
+            || rm -f "$session.inbox"
+        done
         ${pkgs.thunderbird}/bin/thunderbird "$@"
         status=$?
         systemctl --user start "$unit"
