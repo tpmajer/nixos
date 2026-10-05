@@ -133,6 +133,36 @@
       };
     };
 
+    # Signal without a window, so that messages are notified of while it is
+    # closed. Unlike Thunderbird it needs no swapping for the window: started
+    # in the tray it shows none, running it again brings up the window of
+    # the instance there is, and closing that leaves it running. Checked on
+    # 8.28.0 with no tray in the bar, 2026-10-05; about 500 MiB.
+    # Not next to a Signal started some other way: as its second instance
+    # this would only bring that one's window up and end. Signal is slow to
+    # go on SIGTERM, hence the short stop timeout.
+    signal-background = {
+      after = [
+        "niri.service"
+        "quickshell.service"
+      ];
+      wantedBy = [ "niri.service" ];
+      description = "Signal without a window, for message notifications";
+      serviceConfig = {
+        Type = "simple";
+        ExecCondition = pkgs.writeShellScript "signal-not-running" ''
+          lock=$(${pkgs.coreutils}/bin/readlink "$HOME/.config/Signal/SingletonLock") || exit 0
+          ! ${pkgs.gnugrep}/bin/grep -qs signal-desktop "/proc/''${lock##*-}/cmdline"
+        '';
+        ExecStart = "${pkgs.signal-desktop}/bin/signal-desktop --start-in-tray";
+        Restart = "on-failure";
+        RestartSec = "30s";
+        TimeoutStopSec = "10s";
+      };
+      # The session's PATH, as for quickshell: Signal opens links with it.
+      path = lib.mkForce [ ];
+    };
+
   };
 
   # Over the package's own bin/thunderbird, which the launcher entry, mailto
@@ -166,6 +196,28 @@
         status=$?
         systemctl --user start "$unit"
         exit $status
+      ''
+    ))
+    # Over the package's own bin/signal-desktop, which the launcher entry
+    # runs. With no Signal running the unit above is started first, so that
+    # the one whose window comes up is the one that stays when the window is
+    # closed; then, as with one running, this is only a message to it.
+    (lib.hiPrio (
+      pkgs.writeShellScriptBin "signal-desktop" ''
+        running() {
+          lock=$(readlink "$HOME/.config/Signal/SingletonLock" 2> /dev/null) \
+            && grep -qs signal-desktop "/proc/''${lock##*-}/cmdline"
+        }
+        if ! running; then
+          systemctl --user start signal-background.service
+          # A second instance that comes before the lock is taken would be
+          # the first, and stay.
+          for _ in $(seq 50); do
+            running && break
+            sleep 0.1
+          done
+        fi
+        exec ${pkgs.signal-desktop}/bin/signal-desktop "$@"
       ''
     ))
   ];
