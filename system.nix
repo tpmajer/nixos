@@ -461,6 +461,15 @@
   powerManagement.powerDownCommands = ''
     ${pkgs.kmod}/bin/rmmod amdxdna 2>/dev/null || true
     ${pkgs.kmod}/bin/rmmod mt7925e 2>/dev/null || true
+    # RTL8156 (Framework 2.5G Ethernet card): r8152 sets power/wakeup on the USB device
+    # itself — at probe from the chip's WoL bits, and to "enabled" on every runtime suspend
+    # whatever WoL says — so a udev rule cannot hold it. Turning WoL off here clears the flag
+    # until the next autosuspend, 20 s away; getting to sleep takes 0.5-10 s. TLP's
+    # WOL_DISABLE only covers PCI NICs. See debug-session-2026-10-06.2.md.
+    for n in /sys/class/net/*; do
+      [ "$(basename "$(readlink -f "$n/device/driver")")" = r8152 ] || continue
+      ${pkgs.ethtool}/bin/ethtool -s "''${n##*/}" wol d || true
+    done
   '';
 
   powerManagement.resumeCommands = ''
