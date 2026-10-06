@@ -22,9 +22,12 @@ let
   wgMark = 51820;
 
   # The kill switch: nothing leaves through a Wi-Fi, wired or modem interface but the
-  # tunnel's own packets and what it takes to get an address. Its own table, next to
-  # the firewall's, so that taking it away is one command. Traffic through wg0, lo and
-  # the containers' bridges is not looked at; what containers send out is, as forwarded.
+  # tunnel's own packets and what it takes to get an address, and nothing comes in
+  # through one but the answers to what was sent, so that the ports the firewall has
+  # open (Steam, localsend, Miracast, mDNS) are open to trusted networks only. Its own
+  # table, next to the firewall's, so that taking it away is one command. Traffic
+  # through wg0, lo and the containers' bridges is not looked at; what containers send
+  # out is, as forwarded.
   # `bootstrap` also lets systemd-resolved ask the network's DNS, and nothing else does:
   # the endpoint in private.nix is a name, which wg-quick has to resolve before there is
   # a tunnel to ask through. The names programs look up in that moment are seen by the
@@ -51,6 +54,14 @@ let
           oifname "usb*" jump physical
           oifname "ww*" jump physical
         }
+        chain input {
+          type filter hook input priority filter; policy accept;
+          iifname "wl*" jump arriving
+          iifname "en*" jump arriving
+          iifname "eth*" jump arriving
+          iifname "usb*" jump arriving
+          iifname "ww*" jump arriving
+        }
         chain physical {
           meta mark ${toString wgMark} accept
           udp sport 68 udp dport 67 accept
@@ -58,6 +69,13 @@ let
           icmpv6 type { nd-router-solicit, nd-neighbor-solicit, nd-neighbor-advert, mld-listener-report, mld2-listener-report } accept
           ${lib.optionalString bootstrap ''meta skuid "systemd-resolve" meta l4proto { tcp, udp } th dport 53 accept''}
           counter reject with icmpx admin-prohibited
+        }
+        chain arriving {
+          ct state established,related accept
+          udp sport 67 udp dport 68 accept
+          udp sport 547 udp dport 546 accept
+          icmpv6 type { nd-router-advert, nd-neighbor-solicit, nd-neighbor-advert, mld-listener-query } accept
+          counter drop
         }
       }
     '';
