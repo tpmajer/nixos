@@ -27,32 +27,36 @@ let
   # open (Steam, localsend, Miracast, mDNS) are open to trusted networks only. Its own
   # table, next to the firewall's, so that taking it away is one command. Traffic
   # through wg0, lo and the containers' bridges is not looked at; what containers send
-  # out is, as forwarded.
-  # `bootstrap` also lets systemd-resolved ask the network's DNS, and nothing else does:
-  # the endpoint in private.nix is a name, which wg-quick has to resolve before there is
-  # a tunnel to ask through. The names programs look up in that moment are seen by the
-  # network; their traffic is not.
+  # out is, as forwarded. In three forms:
+  #   - strict: all of the above;
+  #   - bootstrap: systemd-resolved may ask the network's DNS as well, and nothing else
+  #     does. The endpoint in private.nix is a name, which wg-quick has to resolve
+  #     before there is a tunnel to ask through. The names programs look up in that
+  #     moment are seen by the network; their traffic is not;
+  #   - inbound: for a foreign network with the override set. Everything may leave,
+  #     but for mDNS, with which Avahi would announce this host; nothing comes in.
   killSwitch =
-    bootstrap:
-    pkgs.writeText "wg-killswitch-${if bootstrap then "bootstrap" else "strict"}.nft" ''
+    mode:
+    let
+      physical = chain: ''
+        oifname "wl*" jump ${chain}
+        oifname "en*" jump ${chain}
+        oifname "eth*" jump ${chain}
+        oifname "usb*" jump ${chain}
+        oifname "ww*" jump ${chain}
+      '';
+    in
+    pkgs.writeText "wg-killswitch-${mode}.nft" ''
       table inet wg_killswitch
       delete table inet wg_killswitch
       table inet wg_killswitch {
         chain output {
           type filter hook output priority filter; policy accept;
-          oifname "wl*" jump physical
-          oifname "en*" jump physical
-          oifname "eth*" jump physical
-          oifname "usb*" jump physical
-          oifname "ww*" jump physical
+          ${physical "leaving"}
         }
         chain forward {
           type filter hook forward priority filter; policy accept;
-          oifname "wl*" jump physical
-          oifname "en*" jump physical
-          oifname "eth*" jump physical
-          oifname "usb*" jump physical
-          oifname "ww*" jump physical
+          ${physical "leaving"}
         }
         chain input {
           type filter hook input priority filter; policy accept;
@@ -62,13 +66,24 @@ let
           iifname "usb*" jump arriving
           iifname "ww*" jump arriving
         }
-        chain physical {
-          meta mark ${toString wgMark} accept
-          udp sport 68 udp dport 67 accept
-          udp sport 546 udp dport 547 accept
-          icmpv6 type { nd-router-solicit, nd-neighbor-solicit, nd-neighbor-advert, mld-listener-report, mld2-listener-report } accept
-          ${lib.optionalString bootstrap ''meta skuid "systemd-resolve" meta l4proto { tcp, udp } th dport 53 accept''}
-          counter reject with icmpx admin-prohibited
+        chain leaving {
+          ${
+            if mode == "inbound" then
+              ''
+                udp dport 5353 counter drop
+              ''
+            else
+              ''
+                meta mark ${toString wgMark} accept
+                udp sport 68 udp dport 67 accept
+                udp sport 546 udp dport 547 accept
+                icmpv6 type { nd-router-solicit, nd-neighbor-solicit, nd-neighbor-advert, mld-listener-report, mld2-listener-report } accept
+                ${lib.optionalString (
+                  mode == "bootstrap"
+                ) ''meta skuid "systemd-resolve" meta l4proto { tcp, udp } th dport 53 accept''}
+                counter reject with icmpx admin-prohibited
+              ''
+          }
         }
         chain arriving {
           ct state established,related accept
@@ -83,11 +98,13 @@ let
   # Decides, from the connections that are up, whether the tunnel and the kill switch
   # are on. Run by the NetworkManager dispatcher on every up and down, at boot, and
   # when /var/lib/wg-auto-disabled comes or goes (wg-auto.path).
-  #   - the override file is there: no kill switch, the tunnel is left as it is;
+  #   - every network is trusted: neither, override or not;
   #   - nothing is up (boot, between networks, asleep): the kill switch alone, so that
   #     whatever comes up next starts out closed, with no gap before this runs again;
-  #   - every network is trusted: neither;
-  #   - any is not: both. The kill switch first, and it stays if the tunnel fails.
+  #   - any network is foreign: both. The kill switch first, and it stays if the
+  #     tunnel fails;
+  #   - the override file is there and not every network is trusted: the tunnel is
+  #     left as it is, and of the kill switch only what keeps others out stays.
   wgAuto = pkgs.writeShellScript "wg-auto" ''
     PATH=${
       lib.makeBinPath (
@@ -131,17 +148,12 @@ let
     kill_switch() {
       case "$1" in
         off) nft delete table inet wg_killswitch 2> /dev/null || true ;;
-        bootstrap) nft -f ${killSwitch true} ;;
-        strict) nft -f ${killSwitch false} ;;
-      esac || echo "wg-auto: cannot set the kill switch to $1" >&2
+        *) nft -f "$1" ;;
+      esac || echo "wg-auto: cannot set the kill switch to ''${1##*-}" >&2
     }
-
-    # Respect a manual override: `touch /var/lib/wg-auto-disabled` keeps all of
-    # this off (rm to re-enable).
-    if [ -e /var/lib/wg-auto-disabled ]; then
-      kill_switch off
-      exit 0
-    fi
+    strict=${killSwitch "strict"}
+    bootstrap=${killSwitch "bootstrap"}
+    inbound=${killSwitch "inbound"}
 
     up=0
     foreign=0
@@ -163,17 +175,28 @@ let
       esac
     done < <(nmcli -t -f TYPE,UUID,DEVICE connection show --active 2> /dev/null)
 
+    # Respect a manual override: `touch /var/lib/wg-auto-disabled` leaves the
+    # tunnel to whoever set it and lets everything out (rm to re-enable).
+    if [ -e /var/lib/wg-auto-disabled ]; then
+      if [ "$up" = 1 ] && [ "$foreign" = 0 ]; then
+        kill_switch off
+      else
+        kill_switch "$inbound"
+      fi
+      exit 0
+    fi
+
     if [ "$up" = 0 ]; then
-      kill_switch strict
+      kill_switch "$strict"
     elif [ "$foreign" = 0 ]; then
       systemctl stop wg-quick-wg0.service 2> /dev/null || true
       kill_switch off
     elif systemctl is-active --quiet wg-quick-wg0.service; then
-      kill_switch strict
+      kill_switch "$strict"
     else
-      kill_switch bootstrap
+      kill_switch "$bootstrap"
       if systemctl start wg-quick-wg0.service; then
-        kill_switch strict
+        kill_switch "$strict"
       else
         echo "wg-auto: wg0 did not come up, the kill switch stays on" >&2
       fi
@@ -261,7 +284,7 @@ in
     };
   };
   # The override takes effect when it is set or removed, not at the next change of
-  # network: with only the tunnel stopped, the kill switch would leave no network at all.
+  # network: with only the tunnel stopped, the kill switch would let nothing out.
   systemd.paths.wg-auto = {
     wantedBy = [ "multi-user.target" ];
     pathConfig.PathChanged = "/var/lib/wg-auto-disabled";
