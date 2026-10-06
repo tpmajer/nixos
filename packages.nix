@@ -28,7 +28,6 @@
     clinfo
     cliphist
     clock-rs
-    coreutils
     diff-so-fancy
     discord
     distrobox
@@ -79,7 +78,6 @@
     libnotify
     libsecret
     loupe
-    mesa
     micro
     millisecond
     miru # Wayland screen magnifier / cursor spotlight
