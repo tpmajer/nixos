@@ -1,12 +1,6 @@
-# ~/.nixos/llm.nix
+# Ollama and Open WebUI, on localhost only. Not imported by default.
 
-{
-  config,
-  pkgs,
-  inputs,
-  lib,
-  ...
-}:
+{ pkgs, ... }:
 
 {
   services.ollama = {
@@ -29,6 +23,6 @@
     };
   };
 
-  # Dostęp do GPU przez render group
+  # GPU access through the render group
   users.users.tpmajer.extraGroups = [ "render" ];
 }

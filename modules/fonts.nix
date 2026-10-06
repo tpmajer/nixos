@@ -1,11 +1,4 @@
-# /etc/nixos/fonts.nix
-
-{
-  config,
-  pkgs,
-  inputs,
-  ...
-}:
+{ pkgs, ... }:
 
 {
   fonts.packages = with pkgs; [

@@ -1,13 +1,7 @@
-# /etc/nixos/packages.nix
+# Packages and the programs configured through NixOS.
+# A specific version: inputs.<name>.legacyPackages.${pkgs.stdenv.hostPlatform.system}.<package>
 
-{
-  config,
-  pkgs,
-  inputs,
-  ...
-}:
-
-# For specific versions: inputs.<input_name>.legacyPackages.${pkgs.stdenv.hostPlatform.system}.<package_name>
+{ pkgs, inputs, ... }:
 
 {
   environment.systemPackages = with pkgs; [
@@ -189,14 +183,7 @@
     };
     firefox = {
       enable = true;
-      # Firefox 153 enables Local Network Access by default. unifi.ui.com is
-      # controlled by a service worker, and LNA loses the address-space
-      # classification for requests forwarded through it, so every call to the
-      # console at *.id.ui.direct dies with no response — the Network app never
-      # loads. The LNA gate itself logs "auto_allow"; the request is killed
-      # anyway. Upstream: https://bugzilla.mozilla.org/show_bug.cgi?id=2056851
-      # Exempt the target domain; the source-domain side of SkipDomains is
-      # broken (https://bugzilla.mozilla.org/show_bug.cgi?id=2058449).
+      # Local Network Access breaks unifi.ui.com's console (notes/desktop.md).
       policies.LocalNetworkAccess = {
         Enabled = true;
         SkipDomains = [ "*.id.ui.direct" ];
@@ -204,14 +191,10 @@
     };
     steam = {
       enable = true;
-      remotePlay.openFirewall = true; # Open ports in the firewall for Steam Remote Play
-      localNetworkGameTransfers.openFirewall = true; # Open ports in the firewall for Steam Local Network Game Transfers
+      remotePlay.openFirewall = true;
+      localNetworkGameTransfers.openFirewall = true;
       gamescopeSession.enable = true;
-      # Declarative Proton, replacing hand-installed builds in
-      # ~/.steam/root/compatibilitytools.d (protonup-qt, dropped above).
-      # chaotic pins toolTitle to "Proton-CachyOS x86-64-v3", so the name Steam
-      # sees is stable across updates and the per-game CompatToolMapping entries
-      # in config.vdf survive a rebuild. _v3 variant: Zen 5 (HX 370) has x86-64-v3.
+      # Proton from chaotic: its name in Steam stays the same across updates.
       extraCompatPackages = [ pkgs.proton-cachyos_x86_64_v3 ];
     };
     dconf.profiles.user = {

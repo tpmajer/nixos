@@ -1,13 +1,6 @@
-# ~/.nixos/printers.nix
+# Printing: the Xerox Phaser 3020, with Samsung's driver.
 
-{
-  config,
-  pkgs,
-  inputs,
-  lib,
-  private,
-  ...
-}:
+{ pkgs, private, ... }:
 
 {
   services.printing = {

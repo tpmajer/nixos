@@ -1,10 +1,6 @@
-{
-  config,
-  pkgs,
-  inputs,
-  lib,
-  ...
-}:
+# MiniDLNA serving ~/Videos and ~/Music. Not imported by default.
+
+{ lib, ... }:
 
 {
   systemd.services.minidlna.serviceConfig.ProtectHome = lib.mkForce "read-only";
