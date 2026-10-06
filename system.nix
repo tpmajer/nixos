@@ -467,17 +467,23 @@
     # - power/control=on keeps the card from autosuspending between here and the suspend,
     #   which would set the flag again; resumeCommands puts it back to auto. That used to
     #   rest on the 20 s autosuspend delay, which is nixos-hardware's and not this repo's.
+    # - What fails is said in the journal (sleep-actions.service), as is a flag that is not
+    #   "disabled" in the end: the udev rule was dead for two weeks with nothing to show it.
     # Cost: the laptop can no longer be woken over Ethernet, which is not a feature in use.
     for dev in /sys/bus/usb/devices/*; do
       [ "$(cat "$dev/idVendor" 2>/dev/null):$(cat "$dev/idProduct" 2>/dev/null)" = 0bda:8156 ] || continue
       for net in "$dev"/*/net/*; do
         [ "$(cat "$net/carrier" 2>/dev/null)" = 1 ] || continue
-        echo on > "$dev/power/control" || true
+        echo on > "$dev/power/control" || echo "rtl8156: cannot keep ''${dev##*/} from autosuspending" >&2
         driver=$(basename "$(readlink -f "$net/device/driver")")
         if [ "$driver" = r8152 ]; then
-          ${pkgs.ethtool}/bin/ethtool -s "''${net##*/}" wol d || true
+          ${pkgs.ethtool}/bin/ethtool -s "''${net##*/}" wol d || echo "rtl8156: cannot turn WoL off on ''${net##*/}" >&2
+        else
+          echo "rtl8156: ''${net##*/} is driven by $driver, not r8152: no WoL to turn off" >&2
         fi
         echo disabled > "$dev/power/wakeup" || true
+        wakeup=$(cat "$dev/power/wakeup" 2>/dev/null || true)
+        [ "$wakeup" = disabled ] || echo "rtl8156: power/wakeup of ''${dev##*/} is '$wakeup': it can wake the laptop" >&2
       done
     done
   '';
