@@ -18,7 +18,9 @@ The title says what changes — no "tweaks", "review fixes", "cleanups".
 
 Scopes, one per area:
 
-- the module name: `system`, `packages`, `network`, `user-services`, …
+- the module name: `core`, `hardware`, `power`, `desktop`, `session`,
+  `background-apps`, `network`, `wireguard`, `packages`, …
+- `scripts` and `notes` for those directories, when a change is theirs alone
 - `docs:` without a scope for the README
 - no comma-joined scopes and no one-off ones
 
