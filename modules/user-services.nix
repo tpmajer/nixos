@@ -10,15 +10,9 @@
 
 {
 
-  # Keep every other user service at the 8 MiB default; only oo7-daemon needs the raised
-  # ceiling that user@.service now provides (see the mlock comment in system.nix).
-  systemd.user.settings.Manager.DefaultLimitMEMLOCK = "8M";
+  services.hypridle.enable = true;
 
   systemd.user.services = {
-
-    # mlockall needs the whole address space (VmSize ~1.66 GiB, mostly PROT_NONE malloc arenas)
-    # to fit under RLIMIT_MEMLOCK, not just the ~10 MiB it pins. See the comment in system.nix.
-    oo7-daemon.serviceConfig.LimitMEMLOCK = "2G";
 
     # path = [ ] keeps the session PATH (from niri) instead of a Nix-built one, so
     # the bar's scripts and click commands (nmcli, wpctl, ghostty, niri msg, ...)

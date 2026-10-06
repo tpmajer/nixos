@@ -2,7 +2,10 @@
 
 {
   imports = [
-    ./system.nix
+    ./core.nix
+    ./hardware.nix
+    ./power.nix
+    ./desktop.nix
     ./packages.nix
     ./fonts.nix
     inputs.nixos-hardware.nixosModules.framework-amd-ai-300-series
