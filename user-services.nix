@@ -129,9 +129,28 @@
         '';
         # Logging in can come before the Wi-Fi is up, and the first mail
         # check then fails with a notification; the next is 10 minutes
-        # later. Wait for a connection, but start without one after 60 s.
-        # The same goes for the restart hypridle does after a suspend.
-        ExecStartPre = "-${pkgs.networkmanager}/bin/nm-online -q -t 60";
+        # later. Wait for the mail server to answer, but start without it
+        # after 60 s. The same goes for the restart hypridle does after a
+        # suspend.
+        # Not nm-online: it is done when NetworkManager has any connection,
+        # which is before DNS works (2 s later on 2026-10-06) and before
+        # wg-auto has brought wg0 up on an untrusted network. Hence the
+        # server itself, twice 2 s apart, and not while wg0 is coming up.
+        ExecStartPre = "-${pkgs.writeShellScript "thunderbird-wait-for-mail-server" ''
+          answers=0
+          while [ "$SECONDS" -lt 60 ]; do
+            if [ "$(${pkgs.systemd}/bin/systemctl is-active wg-quick-wg0.service)" != activating ] \
+              && ${pkgs.coreutils}/bin/timeout 3 ${pkgs.bash}/bin/bash -c ': < /dev/tcp/imap.gmail.com/993' 2> /dev/null; then
+              answers=$((answers + 1))
+              [ "$answers" -ge 2 ] && exit 0
+            else
+              answers=0
+            fi
+            ${pkgs.coreutils}/bin/sleep 2
+          done
+          echo "imap.gmail.com did not answer within 60 s: starting without it" >&2
+          exit 1
+        ''}";
         ExecStart = "${pkgs.thunderbird}/bin/thunderbird --headless";
         Restart = "on-failure";
         RestartSec = "30s";
