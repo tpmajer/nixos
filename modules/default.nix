@@ -17,7 +17,8 @@
 
     ../hardware-configuration.nix
     ./network.nix
-    ./user-services.nix
+    ./session.nix
+    ./background-apps.nix
     # ./optional/llm.nix
     ./printers.nix
     # ./optional/dlna.nix
