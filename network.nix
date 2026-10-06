@@ -297,21 +297,22 @@ in
   networking.firewall = {
     checkReversePath = "loose";
     logReversePathDrops = true;
+    # Open on trusted networks only: on the others wg-auto's kill switch lets nothing in.
+    # mDNS (5353) is not listed, services.avahi.openFirewall opens it.
     allowedUDPPorts = [
-      5353
-      7236
+      7236 # Miracast (gnome-network-displays)
       # 7011
       # 6001
       # 6000
-    ]; # SpotifyConnect, 7011, 6001, 6000 for uxplay -p
+    ]; # 7011, 6001, 6000 for uxplay -p
     allowedTCPPorts = [
-      57621
-      7236
-      7250
+      57621 # Spotify, local files sync with mobile devices
+      7236 # Miracast (gnome-network-displays)
+      7250 # Miracast (gnome-network-displays)
       # 7100
       # 7000
       # 7001
-    ]; # Spotify - local files sync with mobile devices, 7100, 7000, 7001 for uxplay -p
+    ]; # 7100, 7000, 7001 for uxplay -p
   };
 
 }
