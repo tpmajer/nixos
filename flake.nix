@@ -29,7 +29,11 @@
     {
       nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        specialArgs = { inherit inputs; };
+        specialArgs = {
+          inherit inputs;
+          # Secrets, kept out of the repo: see private.nix.example.
+          private = import ./private.nix;
+        };
         modules = [ ./modules ];
       };
     };

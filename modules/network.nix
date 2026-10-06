@@ -5,11 +5,11 @@
   pkgs,
   lib,
   inputs,
+  private,
   ...
 }:
 
 let
-  private = import ../private.nix;
   ssidPattern = lib.concatStringsSep "|" (map (s: "\"${s}\"") private.trustedSSIDs);
   # A wired network has no name to go by: it is trusted when the MAC address of its
   # default gateway is listed in private.nix. With none listed, every one is foreign.

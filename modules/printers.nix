@@ -5,12 +5,9 @@
   pkgs,
   inputs,
   lib,
+  private,
   ...
 }:
-
-let
-  private = import ../private.nix;
-in
 
 {
   services.printing = {
