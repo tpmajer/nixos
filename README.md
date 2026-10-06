@@ -22,28 +22,42 @@ git add --force private.nix  # makes it visible to nix flake (stays gitignored)
 
 ```
 ~/.nixos/
-├── flake.nix                    # Flake inputs and system definition
+├── flake.nix                    # Flake inputs; loads ./modules
 ├── flake.lock
-├── system.nix                   # Boot, hardware, services, users, Nix settings
-├── packages.nix                 # System packages and programs
-├── fonts.nix                    # Fonts
-├── littlesnitch.nix             # Little Snitch application firewall
-├── network.nix                  # Networking, WireGuard VPN, firewall
-├── user-services.nix            # Systemd user services (Quickshell, Hypridle, AWWW, Gammastep)
 ├── hardware-configuration.nix   # Auto-generated hardware config
-├── printers.nix                 # Printer config
-├── llm.nix                      # Local AI (Ollama + Open WebUI) — import commented out
-├── dlna.nix                     # DLNA server config — import commented out
 ├── private.nix.example          # Private config template
 ├── private.nix                  # Private values — gitignored, not in repo
+├── modules/
+│   ├── default.nix              # The one list of imports
+│   ├── core.nix                 # Locale, user, sudo, Nix settings
+│   ├── hardware.nix             # Graphics, radios, kernel, LUKS
+│   ├── power.nix                # TLP, scx, suspend hooks, battery, Wi-Fi power save
+│   ├── desktop.nix              # GDM, PipeWire, portals, oo7, desktop services
+│   ├── session.nix              # User services of the niri session (Quickshell, hypridle, …)
+│   ├── background-apps.nix      # Thunderbird and Signal without a window
+│   ├── network.nix              # NetworkManager, resolved, Avahi, firewall
+│   ├── wireguard.nix            # wg0, wg-auto and its kill switch
+│   ├── packages.nix             # System packages and programs
+│   ├── fonts.nix
+│   ├── printers.nix
+│   ├── littlesnitch.nix         # Little Snitch application firewall
+│   ├── script.nix               # Helper: a file from scripts/ as a command
+│   └── optional/                # Not imported: llm.nix, dlna.nix
+├── scripts/                     # Shell scripts the modules install, shellchecked at build
+├── notes/                       # Why things are the way they are, one file per topic
 └── .githooks/
     ├── pre-commit               # Nixfmt on what is staged; auto-unstages private.nix
     └── post-commit              # Re-stages private.nix so nix flake can find it
 ```
 
-`flake.nix` loads only `system.nix`, `packages.nix`, `fonts.nix` and
-`littlesnitch.nix`. Everything else is pulled in through `imports` in
-`system.nix`, which is also where `llm.nix` and `dlna.nix` sit commented out.
+`flake.nix` loads `./modules`, and `modules/default.nix` is the only list of
+imports, the flake inputs' modules included; `optional/llm.nix` and
+`optional/dlna.nix` sit there commented out. The order of that list is the
+order lists are merged in (packages on the path, tmpfiles rules). `private.nix` is read once, in
+`flake.nix`, and reaches the modules as the `private` argument.
+
+Comments in the modules are kept to a line or two. The history behind a
+setting, with dates and measurements, is in `notes/`.
 
 ## Flake inputs
 
@@ -91,11 +105,11 @@ git add --force private.nix  # makes it visible to nix flake (stays gitignored)
 - Avahi (mDNS/zeroconf)
 - WireGuard VPN (`wg0`, endpoint configured in `private.nix`): brought up on every network that is not trusted in `private.nix`, with a kill switch
 - Spotify LAN sync and Cast ports open in firewall
-- Little Snitch outbound application firewall (`littlesnitch.nix`)
+- Little Snitch outbound application firewall (`modules/littlesnitch.nix`)
 
 ## Local AI
 
-> Currently disabled — the `./llm.nix` import is commented out in `system.nix`.
+> Currently disabled — the `./optional/llm.nix` import is commented out in `modules/default.nix`.
 
 - Ollama (Vulkan backend) — `http://localhost:11434`
 - Open WebUI — `http://localhost:8080` (no auth, local only)
@@ -122,4 +136,4 @@ nh os switch
 sudo nixos-rebuild switch --flake ~/.nixos#nixos
 ```
 
-Flake path is set via `programs.nh.flake` in `packages.nix`, so `NH_OS_FLAKE` is configured automatically.
+Flake path is set via `programs.nh.flake` in `modules/packages.nix`, so `NH_OS_FLAKE` is configured automatically.
