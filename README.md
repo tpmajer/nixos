@@ -37,7 +37,7 @@ git add --force private.nix  # makes it visible to nix flake (stays gitignored)
 ├── private.nix.example          # Private config template
 ├── private.nix                  # Private values — gitignored, not in repo
 └── .githooks/
-    ├── pre-commit               # Nixfmt + nix-instantiate; auto-unstages private.nix
+    ├── pre-commit               # Nixfmt on what is staged; auto-unstages private.nix
     └── post-commit              # Re-stages private.nix so nix flake can find it
 ```
 
