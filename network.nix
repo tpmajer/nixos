@@ -11,6 +11,90 @@
 let
   private = import ./private.nix;
   ssidPattern = lib.concatStringsSep "|" (map (s: "\"${s}\"") private.trustedSSIDs);
+  # A wired network has no name to go by: it is trusted when the MAC address of its
+  # default gateway is listed in private.nix. With none listed, every one is foreign.
+  trustedGateways = pkgs.writeText "wg-auto-trusted-gateways" (
+    lib.concatMapStrings (mac: "${lib.toLower mac}\n") (private.trustedGatewayMACs or [ ])
+  );
+
+  # Decides, from the connections that are up, whether the tunnel is on. Run by the
+  # NetworkManager dispatcher on every up and down.
+  #   - the override file is there, or nothing is up: the tunnel is left as it is;
+  #   - every network is trusted: off;
+  #   - any is not: on.
+  wgAuto = pkgs.writeShellScript "wg-auto" ''
+    PATH=${
+      lib.makeBinPath (
+        with pkgs;
+        [
+          coreutils
+          gawk
+          gnugrep
+          gnused
+          iproute2
+          iputils
+          networkmanager
+          systemd
+          util-linux
+        ]
+      )
+    }
+
+    # One at a time: two events can get here at once.
+    exec 9> /run/wg-auto.lock
+    flock 9
+
+    trusted_ssid() {
+      case "$1" in
+        ${ssidPattern})
+          return 0 ;;
+        *)
+          return 1 ;;
+      esac
+    }
+
+    # By the MAC address its default gateway answers ARP with.
+    trusted_gateway() {
+      gateway=$(ip -4 route show default dev "$1" | awk '/via/ { print $3; exit }')
+      [ -n "$gateway" ] || return 1
+      mac=$(arping -c 1 -w 2 -I "$1" "$gateway" | sed -n 's/.*\[\(.*\)\].*/\1/p' | head -n 1 | tr A-F a-f)
+      [ -n "$mac" ] && grep -Fxq -- "$mac" ${trustedGateways}
+    }
+
+    # Respect a manual override: `touch /var/lib/wg-auto-disabled` keeps all of
+    # this off (rm to re-enable).
+    if [ -e /var/lib/wg-auto-disabled ]; then
+      exit 0
+    fi
+
+    up=0
+    foreign=0
+    while IFS=: read -r type uuid device; do
+      case "$type" in
+        802-11-wireless)
+          up=1
+          ssid=$(nmcli -g 802-11-wireless.ssid connection show "$uuid" 2> /dev/null | tr -d '"')
+          trusted_ssid "$ssid" || foreign=1
+          ;;
+        802-3-ethernet)
+          up=1
+          trusted_gateway "$device" || foreign=1
+          ;;
+        gsm | cdma | bluetooth)
+          up=1
+          foreign=1
+          ;;
+      esac
+    done < <(nmcli -t -f TYPE,UUID,DEVICE connection show --active 2> /dev/null)
+
+    if [ "$up" = 0 ]; then
+      exit 0
+    elif [ "$foreign" = 0 ]; then
+      systemctl stop wg-quick-wg0.service 2> /dev/null || true
+    else
+      systemctl start wg-quick-wg0.service
+    fi
+  '';
 in
 
 {
@@ -24,32 +108,14 @@ in
     dns = "systemd-resolved"; # 'default' 'systemd-resolved'
     dispatcherScripts = [
       {
-        source = pkgs.writeShellScript "wg-auto" ''
-          ACTION=$2
-
-          trusted_ssid() {
-            case "$1" in
-              ${ssidPattern})
-                return 0 ;;
-              *)
-                return 1 ;;
-            esac
-          }
-
-          if [ "$ACTION" = "up" ]; then
-            # Respect a manual override: `touch /var/lib/wg-auto-disabled`
-            # keeps wg off despite dispatcher up-events (rm to re-enable).
-            if [ -e /var/lib/wg-auto-disabled ]; then
-              exit 0
-            fi
-            SSID=$(${pkgs.networkmanager}/bin/nmcli -g 802-11-wireless.ssid connection show "$CONNECTION_UUID" 2>/dev/null | tr -d '"')
-            [ -z "$SSID" ] && exit 0
-            if trusted_ssid "$SSID"; then
-              systemctl stop wg-quick-wg0.service 2>/dev/null || true
-            else
-              systemctl start wg-quick-wg0.service
-            fi
-          fi
+        # Not for wg0 itself or the containers' interfaces: they change nothing here.
+        source = pkgs.writeShellScript "wg-auto-dispatch" ''
+          case "$1" in
+            wg0 | lo | podman* | veth*) exit 0 ;;
+          esac
+          case "$2" in
+            up | down) exec ${wgAuto} ;;
+          esac
         '';
         type = "basic";
       }
@@ -96,8 +162,8 @@ in
     # postUp = " ";
   };
 
-  # wg-auto comes back on every boot: the manual override (see the dispatcher
-  # script above) holds for the session, not across a restart.
+  # wg-auto comes back on every boot: the manual override (see wgAuto above) holds
+  # for the session, not across a restart.
   systemd.tmpfiles.rules = [ "r! /var/lib/wg-auto-disabled" ];
 
   networking.firewall = {

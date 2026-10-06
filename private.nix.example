@@ -1,5 +1,8 @@
 {
   trustedSSIDs = [ "HomeNetwork" "Phone-Hotspot" ];
+  # Wired networks to trust, by the MAC address of their default gateway:
+  #   ip neigh show "$(ip -4 route show default | awk '{ print $3; exit }')"
+  trustedGatewayMACs = [ "aa:bb:cc:dd:ee:ff" ];
   wg = {
     address       = "10.0.0.2/32";
     dns           = "10.0.0.1";
