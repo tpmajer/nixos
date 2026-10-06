@@ -9,7 +9,7 @@
 }:
 
 let
-  private = import ./private.nix;
+  private = import ../private.nix;
 in
 
 {

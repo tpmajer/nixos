@@ -1,5 +1,3 @@
-# /etc/nixos/flake.nix
-
 {
   description = "My NixOS configuration";
 
@@ -27,30 +25,12 @@
   };
 
   outputs =
-    {
-      nixpkgs,
-      nixos-hardware,
-      niri,
-      nix-index-database,
-      littlesnitch,
-      chaotic,
-      ...
-    }@inputs:
+    { nixpkgs, ... }@inputs:
     {
       nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         specialArgs = { inherit inputs; };
-        modules = [
-          ./system.nix
-          ./packages.nix
-          ./fonts.nix
-          nixos-hardware.nixosModules.framework-amd-ai-300-series
-          niri.nixosModules.niri
-          nix-index-database.nixosModules.default
-          littlesnitch.nixosModules.default
-          ./littlesnitch.nix
-          chaotic.nixosModules.default
-        ];
+        modules = [ ./modules ];
       };
     };
 }

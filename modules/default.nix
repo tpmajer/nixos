@@ -1,0 +1,22 @@
+{ inputs, ... }:
+
+{
+  imports = [
+    ./system.nix
+    ./packages.nix
+    ./fonts.nix
+    inputs.nixos-hardware.nixosModules.framework-amd-ai-300-series
+    inputs.niri.nixosModules.niri
+    inputs.nix-index-database.nixosModules.default
+    inputs.littlesnitch.nixosModules.default
+    ./littlesnitch.nix
+    inputs.chaotic.nixosModules.default
+
+    ../hardware-configuration.nix
+    ./network.nix
+    ./user-services.nix
+    # ./optional/llm.nix
+    ./printers.nix
+    # ./optional/dlna.nix
+  ];
+}

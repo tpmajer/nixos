@@ -9,15 +9,6 @@
 }:
 
 {
-  imports = [
-    ./hardware-configuration.nix
-    ./network.nix
-    ./user-services.nix
-    # ./llm.nix
-    ./printers.nix
-    # ./dlna.nix
-  ];
-
   hardware.enableAllFirmware = true;
   hardware.graphics = {
     enable = true;
