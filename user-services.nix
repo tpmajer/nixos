@@ -127,6 +127,11 @@
         ExecCondition = pkgs.writeShellScript "thunderbird-no-window-up" ''
           ! ${pkgs.procps}/bin/pgrep -u "$(${pkgs.coreutils}/bin/id -u)" -f 'bin/\.thunderbird-wrapped_' > /dev/null
         '';
+        # Logging in can come before the Wi-Fi is up, and the first mail
+        # check then fails with a notification; the next is 10 minutes
+        # later. Wait for a connection, but start without one after 60 s.
+        # The same goes for the restart hypridle does after a suspend.
+        ExecStartPre = "-${pkgs.networkmanager}/bin/nm-online -q -t 60";
         ExecStart = "${pkgs.thunderbird}/bin/thunderbird --headless";
         Restart = "on-failure";
         RestartSec = "30s";
