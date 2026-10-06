@@ -361,7 +361,6 @@
     isNormalUser = true;
     description = "Tomasz Majer";
     extraGroups = [
-      "users"
       "networkmanager"
       "wheel"
       "video"
