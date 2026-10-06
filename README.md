@@ -89,7 +89,7 @@ git add --force private.nix  # makes it visible to nix flake (stays gitignored)
 - NetworkManager with wpa\_supplicant backend
 - systemd-resolved for DNS
 - Avahi (mDNS/zeroconf)
-- WireGuard VPN (`wg0`, manual start, endpoint configured in `private.nix`)
+- WireGuard VPN (`wg0`, endpoint configured in `private.nix`): brought up on every network that is not trusted in `private.nix`, with a kill switch
 - Spotify LAN sync and Cast ports open in firewall
 - Little Snitch outbound application firewall (`littlesnitch.nix`)
 
