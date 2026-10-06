@@ -499,8 +499,10 @@
     # Safe now that the lock goes through pam_fprintd, which claims anew each time; hyprlock
     # did not (debug-session-2026-06-10.md). See debug-session-2026-10-03.md.
     ${pkgs.systemd}/bin/systemctl stop fprintd.service || true
-    ${pkgs.kmod}/bin/modprobe amdxdna
-    ${pkgs.kmod}/bin/modprobe mt7925e
+    # The script runs under set -e: neither module failing to load may keep the other
+    # from being tried. WiFi first, it is the one that is missed.
+    ${pkgs.kmod}/bin/modprobe mt7925e || echo "resume: cannot load mt7925e" >&2
+    ${pkgs.kmod}/bin/modprobe amdxdna || echo "resume: cannot load amdxdna" >&2
   '';
 
   system.stateVersion = "25.05";
