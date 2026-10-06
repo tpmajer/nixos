@@ -25,7 +25,6 @@
     extraPackages = with pkgs; [
       rocmPackages.clr.icd
       rocmPackages.rocm-runtime
-      rocmPackages.rocminfo
     ];
   };
   # Puts amdgpu.dcdebugmask=0x10 on the kernel command line, which is otherwise the only
