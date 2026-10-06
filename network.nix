@@ -251,7 +251,6 @@ in
 
   networking.wg-quick.interfaces.wg0 = {
     autostart = false;
-    listenPort = 51820;
     address = [ private.wg.address ];
     dns = [ private.wg.dns ];
     privateKeyFile = "/etc/secrets/wireguard/privateKey";
