@@ -218,7 +218,8 @@
         done
         ${pkgs.thunderbird}/bin/thunderbird "$@"
         status=$?
-        systemctl --user start "$unit"
+        # Not waited for: offline, the unit takes up to 60 s to start.
+        systemctl --user start --no-block "$unit"
         exit $status
       ''
     ))
