@@ -17,6 +17,7 @@
 
     ../hardware-configuration.nix
     ./network.nix
+    ./wireguard.nix
     ./session.nix
     ./background-apps.nix
     # ./optional/llm.nix
