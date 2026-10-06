@@ -401,11 +401,6 @@
         "claude-code.cachix.org-1:YeXf2aNu7UTX8Vwrze0za1WEDS+4DuI2kVeWEE4fsRk="
       ];
     };
-    gc = {
-      automatic = false;
-      dates = "weekly";
-      options = "--delete-older-than 14d";
-    };
   };
 
   xdg.portal = {
