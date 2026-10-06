@@ -455,20 +455,24 @@
     # suspend held (2026-09-22, debug-session-2026-09-22.md).
     # r8152 sets that flag itself, though — at probe from the chip's WoL bits, and to
     # "enabled" on every runtime suspend whatever WoL says — so a udev rule cannot hold it;
-    # the one that was here until 2026-10-06 was undone within a second of boot. Turning WoL
-    # off here clears the flag until the next autosuspend, 20 s away; getting to sleep takes
-    # 0.5-10 s. TLP's WOL_DISABLE only covers PCI NICs. See debug-session-2026-10-06.2.md.
+    # the one that was here until 2026-10-06 was undone within a second of boot. Hence here,
+    # right before the suspend. TLP's WOL_DISABLE only covers PCI NICs. See
+    # debug-session-2026-10-06.2.md.
     # - The card is found by its USB ID, not by its driver: as cdc_ncm (its other USB
     #   configuration) it has no WoL to turn off, but the flag is cleared all the same.
     # - Only with a link. Without one there is no link change to wake on, and the card is
     #   left alone, autosuspended: no USB resume on this xHCI (the one of the s2idle hang
     #   that is still open) on the way to every sleep. A link that comes up during the
     #   sleep can then wake the laptop, once: the next suspend finds the link and gets here.
+    # - power/control=on keeps the card from autosuspending between here and the suspend,
+    #   which would set the flag again; resumeCommands puts it back to auto. That used to
+    #   rest on the 20 s autosuspend delay, which is nixos-hardware's and not this repo's.
     # Cost: the laptop can no longer be woken over Ethernet, which is not a feature in use.
     for dev in /sys/bus/usb/devices/*; do
       [ "$(cat "$dev/idVendor" 2>/dev/null):$(cat "$dev/idProduct" 2>/dev/null)" = 0bda:8156 ] || continue
       for net in "$dev"/*/net/*; do
         [ "$(cat "$net/carrier" 2>/dev/null)" = 1 ] || continue
+        echo on > "$dev/power/control" || true
         driver=$(basename "$(readlink -f "$net/device/driver")")
         if [ "$driver" = r8152 ]; then
           ${pkgs.ethtool}/bin/ethtool -s "''${net##*/}" wol d || true
@@ -479,6 +483,11 @@
   '';
 
   powerManagement.resumeCommands = ''
+    # The RTL8156 may autosuspend again, see powerDownCommands.
+    for dev in /sys/bus/usb/devices/*; do
+      [ "$(cat "$dev/idVendor" 2>/dev/null):$(cat "$dev/idProduct" 2>/dev/null)" = 0bda:8156 ] || continue
+      echo auto > "$dev/power/control" || true
+    done
     # fprintd 1.94.5: a Release during PrepareForSleep drops its session but leaves the
     # device open, and every Claim fails until the daemon restarts. D-Bus starts a new one.
     # Safe now that the lock goes through pam_fprintd, which claims anew each time; hyprlock
