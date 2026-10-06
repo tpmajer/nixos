@@ -1,18 +1,22 @@
 #!/usr/bin/env bash
-set -e
+set -e -o pipefail
 
 if git diff --cached --name-only | grep -q '^private\.nix$'; then
   git reset HEAD private.nix
 fi
 
-STAGED=$(git diff --cached --name-only --diff-filter=ACM | grep '\.nix$' || true)
-[ -z "$STAGED" ] && exit 0
-
-for f in $STAGED; do
-    nixfmt "$f"
-    git add "$f"
-done
-
-for f in $STAGED; do
-    nix-instantiate --parse "$f" > /dev/null
-done
+# Format what is staged, not the file: `git add` on the file would pull its
+# unstaged hunks into a commit made from `git add -p`. nixfmt fails on what
+# does not parse, which stops the commit.
+git diff --cached --name-only --diff-filter=ACM -z -- '*.nix' |
+  while IFS= read -r -d '' f; do
+    mode=$(git ls-files -s -- "$f" | cut -d' ' -f1)
+    blob=$(git show ":$f" | nixfmt - | git hash-object -w --stdin)
+    git update-index --cacheinfo "$mode,$blob,$f"
+    # The file itself too, unstaged hunks and all, so that it does not
+    # differ from the commit by formatting. Those hunks are not this
+    # commit's: one that does not parse must not stop it.
+    if [ -f "$f" ]; then
+      nixfmt "$f" || echo "pre-commit: $f left unformatted" >&2
+    fi
+  done
