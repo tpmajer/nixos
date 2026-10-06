@@ -458,10 +458,19 @@
     # the one that was here until 2026-10-06 was undone within a second of boot. Turning WoL
     # off here clears the flag until the next autosuspend, 20 s away; getting to sleep takes
     # 0.5-10 s. TLP's WOL_DISABLE only covers PCI NICs. See debug-session-2026-10-06.2.md.
+    # - The card is found by its USB ID, not by its driver: as cdc_ncm (its other USB
+    #   configuration) it has no WoL to turn off, but the flag is cleared all the same.
     # Cost: the laptop can no longer be woken over Ethernet, which is not a feature in use.
-    for n in /sys/class/net/*; do
-      [ "$(basename "$(readlink -f "$n/device/driver")")" = r8152 ] || continue
-      ${pkgs.ethtool}/bin/ethtool -s "''${n##*/}" wol d || true
+    for dev in /sys/bus/usb/devices/*; do
+      [ "$(cat "$dev/idVendor" 2>/dev/null):$(cat "$dev/idProduct" 2>/dev/null)" = 0bda:8156 ] || continue
+      for net in "$dev"/*/net/*; do
+        [ -e "$net" ] || continue
+        driver=$(basename "$(readlink -f "$net/device/driver")")
+        if [ "$driver" = r8152 ]; then
+          ${pkgs.ethtool}/bin/ethtool -s "''${net##*/}" wol d || true
+        fi
+        echo disabled > "$dev/power/wakeup" || true
+      done
     done
   '';
 
