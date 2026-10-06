@@ -460,11 +460,15 @@
     # 0.5-10 s. TLP's WOL_DISABLE only covers PCI NICs. See debug-session-2026-10-06.2.md.
     # - The card is found by its USB ID, not by its driver: as cdc_ncm (its other USB
     #   configuration) it has no WoL to turn off, but the flag is cleared all the same.
+    # - Only with a link. Without one there is no link change to wake on, and the card is
+    #   left alone, autosuspended: no USB resume on this xHCI (the one of the s2idle hang
+    #   that is still open) on the way to every sleep. A link that comes up during the
+    #   sleep can then wake the laptop, once: the next suspend finds the link and gets here.
     # Cost: the laptop can no longer be woken over Ethernet, which is not a feature in use.
     for dev in /sys/bus/usb/devices/*; do
       [ "$(cat "$dev/idVendor" 2>/dev/null):$(cat "$dev/idProduct" 2>/dev/null)" = 0bda:8156 ] || continue
       for net in "$dev"/*/net/*; do
-        [ -e "$net" ] || continue
+        [ "$(cat "$net/carrier" 2>/dev/null)" = 1 ] || continue
         driver=$(basename "$(readlink -f "$net/device/driver")")
         if [ "$driver" = r8152 ]; then
           ${pkgs.ethtool}/bin/ethtool -s "''${net##*/}" wol d || true
