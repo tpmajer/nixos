@@ -114,7 +114,9 @@
     # "Mark as Read" and "Delete".
     # Thunderbird runs one instance per profile, so the thunderbird wrapper
     # below stops this before the window comes up and starts it again once
-    # the window is closed. The condition is for a start with the window up.
+    # the window is closed. The second condition is for a start with the
+    # window up; the first only waits, so that the window is looked for
+    # right before the start and not up to 60 s ahead of it.
     thunderbird-headless = {
       after = [
         "niri.service"
@@ -124,9 +126,6 @@
       description = "Thunderbird without a window, for new mail notifications";
       serviceConfig = {
         Type = "simple";
-        ExecCondition = pkgs.writeShellScript "thunderbird-no-window-up" ''
-          ! ${pkgs.procps}/bin/pgrep -u "$(${pkgs.coreutils}/bin/id -u)" -f 'bin/\.thunderbird-wrapped_' > /dev/null
-        '';
         # Logging in can come before the Wi-Fi is up, and the first mail
         # check then fails with a notification; the next is 10 minutes
         # later. Wait for the mail server to answer, but start without it
@@ -136,21 +135,26 @@
         # which is before DNS works (2 s later on 2026-10-06) and before
         # wg-auto has brought wg0 up on an untrusted network. Hence the
         # server itself, twice 2 s apart, and not while wg0 is coming up.
-        ExecStartPre = "-${pkgs.writeShellScript "thunderbird-wait-for-mail-server" ''
-          answers=0
-          while [ "$SECONDS" -lt 60 ]; do
-            if [ "$(${pkgs.systemd}/bin/systemctl is-active wg-quick-wg0.service)" != activating ] \
-              && ${pkgs.coreutils}/bin/timeout 3 ${pkgs.bash}/bin/bash -c ': < /dev/tcp/imap.gmail.com/993' 2> /dev/null; then
-              answers=$((answers + 1))
-              [ "$answers" -ge 2 ] && exit 0
-            else
-              answers=0
-            fi
-            ${pkgs.coreutils}/bin/sleep 2
-          done
-          echo "imap.gmail.com did not answer within 60 s: starting without it" >&2
-          exit 1
-        ''}";
+        ExecCondition = [
+          (pkgs.writeShellScript "thunderbird-wait-for-mail-server" ''
+            answers=0
+            while [ "$SECONDS" -lt 60 ]; do
+              if [ "$(${pkgs.systemd}/bin/systemctl is-active wg-quick-wg0.service)" != activating ] \
+                && ${pkgs.coreutils}/bin/timeout 3 ${pkgs.bash}/bin/bash -c ': < /dev/tcp/imap.gmail.com/993' 2> /dev/null; then
+                answers=$((answers + 1))
+                [ "$answers" -ge 2 ] && exit 0
+              else
+                answers=0
+              fi
+              ${pkgs.coreutils}/bin/sleep 2
+            done
+            echo "imap.gmail.com did not answer within 60 s: starting without it" >&2
+            exit 0
+          '')
+          (pkgs.writeShellScript "thunderbird-no-window-up" ''
+            ! ${pkgs.procps}/bin/pgrep -u "$(${pkgs.coreutils}/bin/id -u)" -f 'bin/\.thunderbird-wrapped_' > /dev/null
+          '')
+        ];
         ExecStart = "${pkgs.thunderbird}/bin/thunderbird --headless";
         Restart = "on-failure";
         RestartSec = "30s";
