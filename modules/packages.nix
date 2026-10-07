@@ -62,7 +62,6 @@
     gthumb
     gtk-layer-shell
     helix
-    inotify-tools # for DLNA
     jq # for niri screencasting
     keepassxc
     lazygit

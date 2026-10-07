@@ -1,6 +1,6 @@
 # MiniDLNA serving ~/Videos and ~/Music. Not imported by default.
 
-{ lib, ... }:
+{ pkgs, lib, ... }:
 
 {
   systemd.services.minidlna.serviceConfig.ProtectHome = lib.mkForce "read-only";
@@ -14,11 +14,11 @@
     ];
     log_level = "error";
     # so changes in media dirs are updates in the server listing
-    # also make sure "inotify-tools" packages is installed
     inotify = "yes";
     notify_interval = 60;
   };
   services.minidlna.openFirewall = true;
+  environment.systemPackages = [ pkgs.inotify-tools ];
 
   users.users.minidlna = {
     extraGroups = [ "users" ]; # so minidlna can access the files.
