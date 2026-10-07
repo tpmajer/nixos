@@ -1,6 +1,6 @@
 # Locale, the user, sudo and Nix itself.
 
-{ pkgs, inputs, ... }:
+{ inputs, ... }:
 
 {
   time.timeZone = "Europe/Warsaw";
@@ -30,8 +30,6 @@
       "audio"
       "scanner"
       "lp"
-    ];
-    packages = with pkgs; [
     ];
   };
 
