@@ -47,7 +47,6 @@ in
     gnome.localsearch.enable = true;
     gnome.sushi.enable = true; # Nautilus quick preview (Space)
     gvfs.enable = true;
-    geoclue2.enable = true;
 
     flatpak.enable = true;
     fprintd.enable = true; # 'sudo fprintd-enroll $USER' to enroll
