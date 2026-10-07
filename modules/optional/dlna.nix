@@ -1,7 +1,6 @@
 # MiniDLNA serving ~/Videos and ~/Music. Not imported by default.
 
 {
-  pkgs,
   lib,
   config,
   user,
@@ -29,7 +28,6 @@ in
     };
   };
   systemd.services.minidlna.serviceConfig.ProtectHome = lib.mkForce "read-only";
-  environment.systemPackages = [ pkgs.inotify-tools ];
 
   # So that minidlna can read the files, and get to them in the home directory.
   users.users.minidlna.extraGroups = [ "users" ];
