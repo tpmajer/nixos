@@ -15,4 +15,16 @@
     font-awesome
     fira-sans
   ];
+
+  # Generic families otherwise resolve to DejaVu.
+  fonts.fontconfig.defaultFonts = {
+    sansSerif = [
+      "Adwaita Sans"
+      "Noto Sans CJK JP"
+    ];
+    monospace = [
+      "JetBrainsMono Nerd Font"
+      "Noto Sans Mono CJK JP"
+    ];
+  };
 }
