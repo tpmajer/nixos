@@ -213,5 +213,4 @@
       terminal = "ghostty";
     };
   };
-
 }
