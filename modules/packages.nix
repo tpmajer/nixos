@@ -143,9 +143,6 @@
         set -g status-style bg=default,fg=green
         set -g status-left ""
       '';
-      plugins = with pkgs; [
-        # tmuxPlugins.catppuccin
-      ];
     };
     nh = {
       enable = true;
