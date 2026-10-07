@@ -49,9 +49,9 @@
     overlays = [
       inputs.claude-code.overlays.default
       inputs.niri.overlays.niri
-      (self: super: {
-        mpv-unwrapped = super.mpv-unwrapped.override {
-          ffmpeg = super.ffmpeg-full;
+      (_: prev: {
+        mpv-unwrapped = prev.mpv-unwrapped.override {
+          ffmpeg = prev.ffmpeg-full;
         };
       })
     ];
