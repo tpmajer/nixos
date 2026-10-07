@@ -2,7 +2,7 @@
 # already this is only a message to it.
 unit=thunderbird-headless.service
 if ! systemctl --user is-active --quiet "$unit" \
-  && pgrep -u "$(id -u)" -f 'bin/\.thunderbird-wrapped_' > /dev/null; then
+  && thunderbird-running; then
   exec "$THUNDERBIRD_BIN" "$@"
 fi
 systemctl --user stop "$unit"

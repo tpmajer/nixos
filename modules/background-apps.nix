@@ -14,6 +14,12 @@ let
     wantedBy = [ "niri.service" ];
   };
 
+  thunderbirdRunning = script "thunderbird-running" {
+    inputs = [
+      pkgs.coreutils
+      pkgs.procps
+    ];
+  };
   signalRunning = script "signal-running" {
     inputs = [
       pkgs.coreutils
@@ -41,9 +47,7 @@ in
         # The wait always passes; the window is then looked for right before the start.
         ExecCondition = [
           (lib.getExe waitForMailServer)
-          (pkgs.writeShellScript "thunderbird-no-window-up" ''
-            ! ${pkgs.procps}/bin/pgrep -u "$(${pkgs.coreutils}/bin/id -u)" -f 'bin/\.thunderbird-wrapped_' > /dev/null
-          '')
+          (pkgs.writeShellScript "thunderbird-no-window-up" "! ${lib.getExe thunderbirdRunning}")
         ];
         ExecStart = "${pkgs.thunderbird}/bin/thunderbird --headless";
         Restart = "on-failure";
@@ -71,7 +75,10 @@ in
   environment.systemPackages = [
     (lib.hiPrio (
       script "thunderbird" {
-        inputs = [ pkgs.jq ];
+        inputs = [
+          pkgs.jq
+          thunderbirdRunning
+        ];
         env.THUNDERBIRD_BIN = "${pkgs.thunderbird}/bin/thunderbird";
       }
     ))
