@@ -18,7 +18,7 @@
     candy-icons
     catppuccin-papirus-folders
     cava
-    inputs.claude-code.packages.${pkgs.stdenv.hostPlatform.system}.default
+    claude-code # from the claude-code input's overlay (core.nix), not nixpkgs
     clinfo
     cliphist
     clock-rs
