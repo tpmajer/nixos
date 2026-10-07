@@ -37,7 +37,7 @@ in
     };
 
     awww-daemon = withNiri // {
-      description = "AWWW Service";
+      description = "awww wallpaper daemon";
       serviceConfig = {
         Type = "simple";
         ExecStart = "${pkgs.awww}/bin/awww-daemon";
@@ -48,7 +48,7 @@ in
     };
 
     gammastep = withNiri // {
-      description = "Gammastep Service";
+      description = "Gammastep blue-light filter";
       serviceConfig = {
         Type = "simple";
         ExecStart = "${pkgs.gammastep}/bin/gammastep -l 50.5:22.0 -t 6500:4500 -m wayland -v";
@@ -74,7 +74,7 @@ in
         "niri.service"
       ];
       wantedBy = [ "niri.service" ];
-      description = "Ghostty Service";
+      description = "Ghostty in the background, for new windows without a start-up";
       serviceConfig = {
         Type = "simple";
         ExecStart = "${pkgs.ghostty}/bin/ghostty --gtk-single-instance=true --initial-window=false";
