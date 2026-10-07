@@ -165,16 +165,7 @@
       enable = true;
       openFirewall = true;
     };
-    fish = {
-      enable = true;
-      package = pkgs.fish;
-      generateCompletions = true;
-      vendor = {
-        config.enable = true;
-        functions.enable = true;
-        completions.enable = true;
-      };
-    };
+    fish.enable = true;
     starship.enable = true;
     niri = {
       enable = true;
