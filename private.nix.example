@@ -1,13 +1,16 @@
 {
-  trustedSSIDs = [ "HomeNetwork" "Phone-Hotspot" ];
+  trustedSSIDs = [
+    "HomeNetwork"
+    "Phone-Hotspot"
+  ];
   # Wired networks to trust, by the MAC address of their default gateway:
   #   ip neigh show "$(ip -4 route show default | awk '{ print $3; exit }')"
   trustedGatewayMACs = [ "aa:bb:cc:dd:ee:ff" ];
   wg = {
-    address       = "10.0.0.2/32";
-    dns           = "10.0.0.1";
+    address = "10.0.0.2/32";
+    dns = "10.0.0.1";
     peerPublicKey = "<PEER-PUBLIC-KEY>";
-    endpoint      = "<YOUR-SERVER>:51820";
+    endpoint = "<YOUR-SERVER>:51820";
   };
   printerSerial = "<PRINTER-SERIAL>";
 }
