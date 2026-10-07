@@ -5,6 +5,7 @@
   pkgs,
   lib,
   private,
+  user,
   ...
 }:
 
@@ -162,6 +163,6 @@ in
   # The override lasts until the next boot; removing it needs no password.
   systemd.tmpfiles.rules = [ "r! /var/lib/wg-auto-disabled" ];
   security.sudo.extraConfig = ''
-    tpmajer ALL=(root) NOPASSWD: /run/current-system/sw/bin/rm -f /var/lib/wg-auto-disabled
+    ${user} ALL=(root) NOPASSWD: /run/current-system/sw/bin/rm -f /var/lib/wg-auto-disabled
   '';
 }

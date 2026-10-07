@@ -1,6 +1,6 @@
 # Ollama and Open WebUI, on localhost only. Not imported by default.
 
-{ pkgs, ... }:
+{ pkgs, user, ... }:
 
 {
   services.ollama = {
@@ -24,5 +24,5 @@
   };
 
   # GPU access through the render group
-  users.users.tpmajer.extraGroups = [ "render" ];
+  users.users.${user}.extraGroups = [ "render" ];
 }

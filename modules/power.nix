@@ -1,7 +1,12 @@
 # Power management, suspend and the services around the battery and the Wi-Fi
 # card. Background in notes/s2idle.md, notes/mt7925.md and notes/rtl8156.md.
 
-{ pkgs, lib, ... }:
+{
+  pkgs,
+  lib,
+  user,
+  ...
+}:
 
 let
   script = import ./script.nix { inherit pkgs; };
@@ -105,7 +110,7 @@ in
       ];
       if (action.id == "org.freedesktop.systemd1.manage-units" &&
           units.indexOf(action.lookup("unit")) >= 0 &&
-          subject.user == "tpmajer") {
+          subject.user == "${user}") {
         return polkit.Result.YES;
       }
     });

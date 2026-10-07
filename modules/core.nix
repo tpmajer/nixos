@@ -1,6 +1,6 @@
 # Locale, the user, sudo and Nix itself.
 
-{ inputs, ... }:
+{ inputs, user, ... }:
 
 {
   time.timeZone = "Europe/Warsaw";
@@ -20,7 +20,7 @@
 
   console.keyMap = "pl2";
 
-  users.users.tpmajer = {
+  users.users.${user} = {
     isNormalUser = true;
     description = "Tomasz Majer";
     extraGroups = [

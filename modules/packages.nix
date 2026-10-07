@@ -1,7 +1,13 @@
 # Packages and the programs configured through NixOS.
 # A specific version: inputs.<name>.legacyPackages.${pkgs.stdenv.hostPlatform.system}.<package>
 
-{ pkgs, inputs, ... }:
+{
+  pkgs,
+  config,
+  inputs,
+  user,
+  ...
+}:
 
 {
   environment.systemPackages = with pkgs; [
@@ -147,7 +153,7 @@
       enable = true;
       clean.enable = true;
       clean.extraArgs = "--keep-since 14d --keep 50";
-      flake = "/home/tpmajer/.nixos"; # sets NH_OS_FLAKE variable for you
+      flake = "${config.users.users.${user}.home}/.nixos"; # sets NH_OS_FLAKE variable for you
     };
     yubikey-manager.enable = true;
     yubikey-touch-detector = {

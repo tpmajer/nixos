@@ -33,6 +33,7 @@
           inherit inputs;
           # Secrets, kept out of the repo: see private.nix.example.
           private = import ./private.nix;
+          user = "tpmajer";
         };
         modules = [ ./modules ];
       };
