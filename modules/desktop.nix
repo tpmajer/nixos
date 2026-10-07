@@ -14,6 +14,12 @@ let
       "gdm-greeter-5"
     ];
   };
+
+  # Catppuccin Mocha, for newt dialogs (nmtui): widget=foreground,background.
+  text = "#cdd6f4";
+  green = "#a6e3a1";
+  crust = "#11111b";
+  base = "#1e1e2e";
 in
 
 {
@@ -89,7 +95,27 @@ in
     EDITOR = "micro";
     VISUAL = "micro";
     TERMINAL = "ghostty";
-    NEWT_COLORS = "root=#cdd6f4,#11111b border=#a6e3a1,#11111b window=#11111b,#11111b shadow=#11111b,#11111b title=#a6e3a1,#11111b button=#11111b,#a6e3a1 button_active=#11111b,#1e1e2e actbutton=#a6e3a1,#11111b compactbutton=#a6e3a1,#11111b checkbox=#a6e3a1,#11111b entry=#a6e3a1,#11111b disentry=#11111b,#11111b textbox=#a6e3a1,#11111b acttextbox=#a6e3a1,#11111b label=#a6e3a1,#11111b listbox=#a6e3a1,#11111b actlistbox=#a6e3a1,#11111b sellistbox=#a6e3a1,#11111b actsellistbox=#11111b,#a6e3a1";
+    NEWT_COLORS = lib.concatStringsSep " " [
+      "root=${text},${crust}"
+      "border=${green},${crust}"
+      "window=${crust},${crust}"
+      "shadow=${crust},${crust}"
+      "title=${green},${crust}"
+      "button=${crust},${green}"
+      "button_active=${crust},${base}"
+      "actbutton=${green},${crust}"
+      "compactbutton=${green},${crust}"
+      "checkbox=${green},${crust}"
+      "entry=${green},${crust}"
+      "disentry=${crust},${crust}"
+      "textbox=${green},${crust}"
+      "acttextbox=${green},${crust}"
+      "label=${green},${crust}"
+      "listbox=${green},${crust}"
+      "actlistbox=${green},${crust}"
+      "sellistbox=${green},${crust}"
+      "actsellistbox=${crust},${green}"
+    ];
   };
   environment.sessionVariables.NIXOS_OZONE_WL = "1";
 }
