@@ -1,5 +1,6 @@
 # A script from ../scripts as a command, shellchecked at build. No bash options
 # are added: a script that wants `set -e` says so itself.
+
 { pkgs }:
 
 name:
