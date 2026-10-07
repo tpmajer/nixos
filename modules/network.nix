@@ -1,6 +1,6 @@
 # NetworkManager, name resolution and the firewall. WireGuard is in wireguard.nix.
 
-{ ... }:
+_:
 
 {
   networking.hostName = "nixos";
