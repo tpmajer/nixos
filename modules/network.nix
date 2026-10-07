@@ -11,8 +11,6 @@ _:
     wifi.scanRandMacAddress = false;
     dns = "systemd-resolved";
   };
-  networking.nameservers = [ ];
-  networking.enableIPv6 = true;
 
   services.resolved.enable = true;
   # Off against LLMNR poisoning on untrusted networks; mDNS covers the LAN.
