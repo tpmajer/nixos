@@ -6,6 +6,7 @@
   services.printing = {
     enable = true;
     drivers = [ pkgs.samsung-unified-linux-driver ];
+    browsed.enable = false; # the printer is on USB: no network printers to add
   };
 
   hardware.printers = {
