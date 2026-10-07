@@ -27,7 +27,6 @@
     distrobox
     editorconfig-core-c # for micro's editorconfig plugin (~/.dotfiles)
     eza
-    # inputs.eza.packages.${pkgs.stdenv.hostPlatform.system}.default
     fastfetch
     fd
     ffmpeg-full
@@ -42,7 +41,6 @@
     gammastep
     gh
     ghostty
-    # inputs.ghostty.packages.${pkgs.stdenv.hostPlatform.system}.default
     git
     git-filter-repo
     gnome-calculator
@@ -54,7 +52,6 @@
     gnome-tweaks
     gocryptfs
     google-chrome
-    # graphite
     grc
     gst_all_1.gstreamer
     gst_all_1.gst-plugins-base
