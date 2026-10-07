@@ -8,7 +8,6 @@ _:
     enable = true;
     wifi.backend = "wpa_supplicant";
     wifi.powersave = false;
-    wifi.scanRandMacAddress = false;
     dns = "systemd-resolved";
   };
 
