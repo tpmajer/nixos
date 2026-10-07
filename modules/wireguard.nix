@@ -29,13 +29,15 @@ let
   killSwitch =
     mode:
     let
-      physical = chain: ''
-        oifname "wl*" jump ${chain}
-        oifname "en*" jump ${chain}
-        oifname "eth*" jump ${chain}
-        oifname "usb*" jump ${chain}
-        oifname "ww*" jump ${chain}
-      '';
+      physical =
+        match: chain:
+        lib.concatMapStrings (prefix: "${match} \"${prefix}*\" jump ${chain}\n") [
+          "wl"
+          "en"
+          "eth"
+          "usb"
+          "ww"
+        ];
     in
     pkgs.writeText "wg-killswitch-${mode}.nft" ''
       table inet wg_killswitch
@@ -43,19 +45,15 @@ let
       table inet wg_killswitch {
         chain output {
           type filter hook output priority filter; policy accept;
-          ${physical "leaving"}
+          ${physical "oifname" "leaving"}
         }
         chain forward {
           type filter hook forward priority filter; policy accept;
-          ${physical "leaving"}
+          ${physical "oifname" "leaving"}
         }
         chain input {
           type filter hook input priority filter; policy accept;
-          iifname "wl*" jump arriving
-          iifname "en*" jump arriving
-          iifname "eth*" jump arriving
-          iifname "usb*" jump arriving
-          iifname "ww*" jump arriving
+          ${physical "iifname" "arriving"}
         }
         chain leaving {
           ${
