@@ -1,3 +1,5 @@
+# Fonts and the default families.
+
 { pkgs, ... }:
 
 {
