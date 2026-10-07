@@ -48,7 +48,6 @@ in
     geoclue2.enable = true;
 
     flatpak.enable = true;
-    envfs.enable = false;
     fprintd.enable = true; # 'sudo fprintd-enroll $USER' to enroll
   };
 
@@ -80,7 +79,6 @@ in
 
   xdg.portal = {
     enable = true;
-    xdgOpenUsePortal = false;
     extraPortals = with pkgs; [
       xdg-desktop-portal-gnome
       xdg-desktop-portal-gtk
