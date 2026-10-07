@@ -14,6 +14,13 @@ let
     wantedBy = [ "niri.service" ];
   };
 
+  signalRunning = script "signal-running" {
+    inputs = [
+      pkgs.coreutils
+      pkgs.gnugrep
+    ];
+  };
+
   waitForMailServer = script "thunderbird-wait-for-mail-server" {
     inputs = [
       pkgs.bash
@@ -50,10 +57,7 @@ in
       serviceConfig = {
         Type = "simple";
         # Not next to a Signal started some other way.
-        ExecCondition = pkgs.writeShellScript "signal-not-running" ''
-          lock=$(${pkgs.coreutils}/bin/readlink "$HOME/.config/Signal/SingletonLock") || exit 0
-          ! ${pkgs.gnugrep}/bin/grep -qs signal-desktop "/proc/''${lock##*-}/cmdline"
-        '';
+        ExecCondition = pkgs.writeShellScript "signal-not-running" "! ${lib.getExe signalRunning}";
         ExecStart = "${pkgs.signal-desktop}/bin/signal-desktop --start-in-tray";
         Restart = "on-failure";
         RestartSec = "30s";
@@ -73,6 +77,7 @@ in
     ))
     (lib.hiPrio (
       script "signal-desktop" {
+        inputs = [ signalRunning ];
         env.SIGNAL_BIN = "${pkgs.signal-desktop}/bin/signal-desktop";
       }
     ))
