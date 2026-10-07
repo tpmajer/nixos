@@ -4,12 +4,13 @@
 { pkgs, lib, ... }:
 
 let
-  # A service of the session. path = [ ] keeps the session's PATH instead of a
-  # Nix-built one, for programs that run others (the bar's scripts, links).
+  # A service of the session.
   withNiri = {
     after = [ "niri.service" ];
     wantedBy = [ "niri.service" ];
   };
+  # The session's PATH instead of a Nix-built one, for programs that run others
+  # (the bar's scripts, links).
   sessionPath.path = lib.mkForce [ ];
 in
 
