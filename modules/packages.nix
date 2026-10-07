@@ -47,6 +47,7 @@
     gammastep
     gh
     ghostty
+    # inputs.ghostty.packages.${pkgs.stdenv.hostPlatform.system}.default
     git
     git-filter-repo
     gnome-calculator
