@@ -19,7 +19,6 @@ in
 {
   services = {
     displayManager.gdm.enable = true;
-    desktopManager.gnome.enable = false;
     xserver.xkb = {
       layout = "pl";
       variant = "";
