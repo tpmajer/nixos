@@ -25,10 +25,7 @@ in
 {
   services = {
     displayManager.gdm.enable = true;
-    xserver.xkb = {
-      layout = "pl";
-      variant = "";
-    };
+    xserver.xkb.layout = "pl";
     libinput.enable = true;
 
     pulseaudio.enable = false;
