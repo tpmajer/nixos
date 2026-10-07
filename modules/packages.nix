@@ -39,9 +39,9 @@
     ffmpegthumbnailer
     file-roller
     fishPlugins.done
+    fishPlugins.fzf-fish
     fishPlugins.grc
     fishPlugins.sponge
-    fishPlugins.fzf-fish
     fragments
     fuzzel
     gammastep
