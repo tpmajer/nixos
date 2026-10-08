@@ -23,7 +23,10 @@
     calcure
     caligula # TUI for disk imaging
     candy-icons
-    catppuccin-papirus-folders
+    (catppuccin-papirus-folders.override {
+      flavor = "mocha";
+      accent = "blue";
+    })
     cava
     claude-code # from the claude-code input's overlay (core.nix), not nixpkgs
     clinfo
