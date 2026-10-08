@@ -199,6 +199,15 @@
             };
           };
         }
+        # A default, not locked: under Wayland GTK 3 takes its theme from here,
+        # not from ~/.config/gtk-3.0/settings.ini.
+        {
+          settings = {
+            "org/gnome/desktop/interface" = {
+              gtk-theme = "adw-gtk3-dark";
+            };
+          };
+        }
       ];
     };
     nautilus-open-any-terminal = {
