@@ -199,12 +199,17 @@
             };
           };
         }
-        # A default, not locked: under Wayland GTK 3 takes its theme from here,
+        # Defaults, not locked. Under Wayland GTK 3 takes its theme from here,
         # not from ~/.config/gtk-3.0/settings.ini.
         {
           settings = {
             "org/gnome/desktop/interface" = {
+              color-scheme = "prefer-dark";
+              cursor-theme = "Simp1e-Catppuccin-Mocha";
+              font-antialiasing = "rgba";
+              font-hinting = "slight";
               gtk-theme = "adw-gtk3-dark";
+              icon-theme = "Papirus";
             };
           };
         }
