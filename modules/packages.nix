@@ -11,6 +11,7 @@
 
 {
   environment.systemPackages = with pkgs; [
+    adw-gtk3 # GTK 3 theme that takes the colors of ~/.config/gtk-3.0
     awww
     baobab
     bat
