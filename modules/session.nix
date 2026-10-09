@@ -4,8 +4,9 @@
 { pkgs, lib, ... }:
 
 let
-  # A service of the session.
+  # A service of the session, stopped when niri goes (notes/desktop.md).
   withNiri = {
+    bindsTo = [ "niri.service" ];
     after = [ "niri.service" ];
     wantedBy = [ "niri.service" ];
   };

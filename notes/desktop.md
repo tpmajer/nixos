@@ -17,6 +17,13 @@ niri.service, not to graphical-session.target. Those that run other programs
 `path = [ ]`, which keeps the session's PATH from niri instead of a Nix-built
 one, so nmcli, wpctl, `niri msg` and the like resolve as in the shell.
 
+Those defined in `session.nix` with `withNiri` are bound with `BindsTo`, so
+they are stopped when niri goes. Without it Quickshell and awww-daemon were
+restarted with no display and dumped core on every try, Quickshell every 2 s.
+`PartOf` would not do: it follows a stop job, and niri exits by itself.
+awww-daemon still dumps core once as niri goes: it panics on the broken
+connection before systemd stops it.
+
 Quickshell restarts `always`, not `on-failure`: it is the session lock too. If
 it goes while the session is locked, even cleanly (`qs kill`, SIGTERM), niri
 keeps the session locked with nothing to unlock it; the next process locks
