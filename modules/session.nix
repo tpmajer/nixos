@@ -33,6 +33,9 @@ in
         };
       };
 
+    # Quickshell is polkit's agent too (Auth.qml), in place of niri-flake's.
+    niri-flake-polkit.enable = false;
+
     hypridle = sessionPath // {
       after = [ "niri.service" ];
       wantedBy = lib.mkForce [ "niri.service" ];
