@@ -35,6 +35,9 @@ in
       enable = true;
       pd.enable = true;
     };
+    # The power key opens Quickshell's power menu, bound in niri's config.
+    logind.settings.Login.HandlePowerKey = "ignore";
+
     # sched_ext scheduler; swap live with 'systemctl restart scx'.
     scx = {
       enable = true;
