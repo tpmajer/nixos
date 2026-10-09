@@ -61,6 +61,10 @@ in
     oo7.enable = true;
   };
 
+  # Quickshell's polkit prompt: the reader gives way to the password after
+  # 10 s, not 30.
+  security.pam.services.polkit-1.rules.auth.fprintd.settings.timeout = 10;
+
   # oo7-daemon's mlockall needs its whole address space under RLIMIT_MEMLOCK:
   # 2G for it, through user@.service, and the 8M default for everything else.
   systemd.services."user@".serviceConfig.LimitMEMLOCK = "2G";
