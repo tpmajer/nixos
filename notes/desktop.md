@@ -8,6 +8,11 @@ greetd, with Quickshell drawing the screen in a niri of its own
 - The greeter runs as the `greeter` user, which cannot read `~/.dotfiles`:
   the screen is built into the store, with the lock's look copied, not shared.
   A change to it needs a rebuild, and an edit to the bar cannot break it.
+- For the same reason the wallpaper is a copy: `greeter-wallpaper`, a user
+  service, leaves what awww shows on each output in `/var/cache/greeter`,
+  scaled down, as the session starts and whenever awww writes its cache
+  (a path unit on `~/.cache/awww/<version>`; awww tells nobody). The copies
+  are readable by every user. No copy for an output, and the screen is plain.
 - Its niri has no binds. The VT keys are niri's own, so a TTY is still there
   if the screen fails; greetd starts the greeter again when it exits.
 - greetd's PAM service only refers to `login`, as gdm-password did, so the
