@@ -303,6 +303,14 @@ ShellRoot {
         }
     }
 
+    // Left at the login screen, the machine sleeps, as in the session
+    // (~/.dotfiles, hypridle.conf).
+    IdleMonitor {
+        timeout: 600
+        onIsIdleChanged: if (isIdle)
+            Quickshell.execDetached(["systemctl", "suspend"])
+    }
+
     component Label: Text {
         color: root.subtext0
         textFormat: Text.PlainText
