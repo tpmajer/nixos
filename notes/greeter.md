@@ -48,6 +48,14 @@ the greeter's niri going to the session's niri taking the output. So the
 screen fades to black before the session is started, and the greeter's niri
 is black under it: black screen, black VT, then the desktop.
 
+The session comes up the same way round (`~/.dotfiles`, Arrival.qml): at its
+first start in a session Quickshell draws a curtain in niri's backdrop colour
+over everything and lifts it in a fade once awww shows the wallpaper.
+awww-daemon waits for the curtain's first frame (`awww-wait-for-curtain`,
+3 s at most), or the wallpaper would show before it. The session is told by
+niri's socket, kept in `$XDG_RUNTIME_DIR/quickshell-arrived`: a later start
+of the shell in it draws no curtain.
+
 Of that gap, 0.5 to 0.6 s lie between the PAM session's close and logind
 removing the session, in every hand-over of that boot and the two before,
 either way round (greeter to session, session to greeter). A TTY login
