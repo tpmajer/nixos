@@ -6,8 +6,9 @@ import Quickshell.Wayland
 import Quickshell.Services.Greetd
 
 // greetd's login screen, in a niri of its own (modules/greeter.nix): the
-// clock, the date and the password field of the lock in ~/.dotfiles, on a
-// plain background. One user and one session, both from the environment.
+// clock, the date, the password field and the reader's icon of the lock in
+// ~/.dotfiles, on a plain background. One user and one session, both from the
+// environment.
 ShellRoot {
     id: root
 
@@ -24,12 +25,11 @@ ShellRoot {
     readonly property int fontSize: 17
 
     property string buffer: ""
-    // Entered, and not answered yet: no key but Esc is taken.
-    property bool checking: false
-    // Whether greetd's first question got the password.
-    property bool sent: false
-    // greetd waits for an answer that is still to be typed.
+    // Enter was pressed: no key but Esc is taken until PAM has answered.
+    property bool entered: false
+    // PAM waits for an answer, and how many it has had in this conversation.
     property bool asked: false
+    property int answered: 0
     property bool accepted: false
     property bool rejected: false
     // What the empty field says, and whether what is typed may be seen: a
@@ -38,36 +38,73 @@ ShellRoot {
     property bool plain: false
     // The line below the field: what PAM or greetd had to say.
     property string status: Greetd.available ? "" : "greetd is not there"
+    // The reader's icon: "" not asked, "waiting" for a finger, "bad" for a
+    // moment after one it did not recognise, "ok" after one it did.
+    property string finger: ""
+    // Fingers not recognised in this conversation, and whether the reader
+    // asked for one: it does not when there is none, or it is still held.
+    property int misses: 0
+    property bool readerAsked: false
+    // A conversation is to be started, this long after the last one was
+    // dropped, and whether PAM has said anything in the one there is.
+    property bool wanted: false
+    property int delay: 250
+    property bool heard: false
 
-    // As new, for the next attempt.
-    function reset() {
+    // A conversation is open whenever someone may be there: pam_fprintd
+    // waits for a finger in it, then PAM asks for the password. Nothing typed
+    // by then, and it is started over, for the reader to wait again.
+    function begin() {
+        heard = false;
+        asked = false;
+        answered = 0;
+        misses = 0;
+        readerAsked = false;
+        finger = "";
+        Greetd.createSession(user);
+    }
+
+    // Not at once: Quickshell does not wait for greetd's answer to the
+    // cancel, and would take it for the new conversation's success.
+    function restart() {
+        wanted = true;
+        if (Greetd.state !== GreetdState.Inactive)
+            Greetd.cancelSession();
+        starter.restart();
+    }
+
+    // What was typed and asked is forgotten.
+    function forget() {
         buffer = "";
-        checking = false;
-        sent = false;
+        entered = false;
         asked = false;
         prompt = "password";
         plain = false;
     }
 
+    function answer() {
+        asked = false;
+        answered++;
+        Greetd.respond(buffer);
+    }
+
     function enter() {
-        if (checking || accepted)
+        if (entered || accepted)
             return;
-        checking = true;
+        entered = true;
         status = "";
-        if (asked) {
-            asked = false;
-            Greetd.respond(buffer);
-        } else {
-            Greetd.createSession(user);
-        }
+        // Else it is sent when PAM asks: the reader has its seconds first.
+        if (asked)
+            answer();
     }
 
     function cancel() {
         if (accepted)
             return;
-        if (Greetd.state !== GreetdState.Inactive)
-            Greetd.cancelSession();
-        reset();
+        rejectionShown.stop();
+        rejected = false;
+        forget();
+        restart();
     }
 
     function key(event) {
@@ -76,9 +113,9 @@ ShellRoot {
             cancel();
             return;
         }
-        if (checking || accepted)
+        if (entered || accepted)
             return;
-        // A key during the red marks starts the next attempt.
+        // A key during the red line starts the next attempt.
         if (rejected) {
             rejectionShown.stop();
             rejected = false;
@@ -90,6 +127,9 @@ ShellRoot {
             break;
         case Qt.Key_Backspace:
             buffer = event.modifiers & Qt.ControlModifier ? "" : buffer.slice(0, -1);
+            // Nothing left to send: the reader again.
+            if (buffer === "" && asked && answered === 0)
+                restart();
             break;
         default:
             // Printable characters only.
@@ -98,43 +138,101 @@ ShellRoot {
         }
     }
 
+    Component.onCompleted: if (Greetd.available)
+        begin()
+
     Connections {
         target: Greetd
 
         function onAuthMessage(message, error, responseRequired, echoResponse) {
+            root.heard = true;
             if (!responseRequired) {
-                root.status = message.trim();
+                // pam_fprintd: its prompt for a finger, an error for each one
+                // not recognised, and a word when it gives up.
+                if (error && !/timed out/i.test(message)) {
+                    root.misses++;
+                    root.finger = "bad";
+                    root.status = message.trim();
+                    missShown.restart();
+                } else if (!error) {
+                    root.readerAsked = true;
+                    if (root.finger !== "bad")
+                        root.finger = "waiting";
+                }
                 return;
             }
-            if (!root.sent) {
-                root.sent = true;
-                Greetd.respond(root.buffer);
+            missShown.stop();
+            root.finger = "";
+            root.status = "";
+            if (root.answered > 0) {
+                // A second question: typed, then entered.
+                root.buffer = "";
+                root.entered = false;
+                root.asked = true;
+                root.prompt = message.trim().replace(/:$/, "").toLowerCase();
+                root.plain = echoResponse;
                 return;
             }
-            // A second question: typed, then entered.
-            root.buffer = "";
-            root.checking = false;
             root.asked = true;
-            root.prompt = message.trim().replace(/:$/, "").toLowerCase();
-            root.plain = echoResponse;
+            if (root.entered)
+                root.answer();
+            else if (root.buffer !== "" || idle.isIdle)
+                return;
+            else if (root.misses >= 3 || !root.readerAsked)
+                // Not at once: the reader's limit holds, and a reader that is
+                // not there, or held by a conversation dropped while it
+                // waited, is tried again in a while.
+                rearm.restart();
+            else
+                root.restart();
         }
 
         function onAuthFailure(message) {
-            root.reset();
+            root.forget();
             root.rejected = true;
             rejectionShown.restart();
+            // Quickshell cancels what is left of it.
+            root.wanted = true;
+            starter.restart();
         }
 
         function onReadyToLaunch() {
+            // The answer to a cancel after all, come late: PAM lets nobody
+            // in without a word. Once more, with a longer wait.
+            if (!root.heard) {
+                root.delay = Math.min(root.delay * 2, 4000);
+                root.restart();
+                return;
+            }
             root.accepted = true;
+            if (root.answered === 0)
+                root.finger = "ok";
             // The session's type is logind's to know: greetd has a VT, which
             // makes it a tty otherwise.
             Greetd.launch([root.session], ["XDG_SESSION_TYPE=wayland", "XDG_SESSION_DESKTOP=niri"], true);
         }
 
+        // Not started over by itself: it would be, without end. Esc does.
         function onError(error) {
-            root.reset();
+            root.forget();
+            root.finger = "";
             root.status = error;
+        }
+    }
+
+    Timer {
+        id: starter
+        interval: root.delay
+        onTriggered: {
+            if (!root.wanted || root.accepted)
+                return;
+            // Dropped again meanwhile, by Quickshell.
+            if (Greetd.state !== GreetdState.Inactive) {
+                root.restart();
+                return;
+            }
+            root.wanted = false;
+            root.begin();
         }
     }
 
@@ -144,16 +242,42 @@ ShellRoot {
         onTriggered: root.rejected = false
     }
 
+    // How long the mark of a finger not recognised stays, and its line.
+    Timer {
+        id: missShown
+        interval: 1500
+        onTriggered: {
+            root.finger = "waiting";
+            root.status = "";
+        }
+    }
+
+    // The reader again: half a minute after three fingers it did not know,
+    // else in a few seconds.
+    Timer {
+        id: rearm
+        interval: root.misses >= 3 ? 30000 : 5000
+        onTriggered: if (root.buffer === "" && !root.entered)
+            root.restart()
+    }
+
     SystemClock {
         id: clock
         precision: SystemClock.Minutes
     }
 
     // The screens go dark after a minute; niri lights them at the next key.
+    // Nobody there, and the conversation rests at the password; someone
+    // back, and the reader waits again.
     IdleMonitor {
+        id: idle
         timeout: 60
-        onIsIdleChanged: if (isIdle)
-            Quickshell.execDetached(["niri", "msg", "action", "power-off-monitors"])
+        onIsIdleChanged: {
+            if (isIdle)
+                Quickshell.execDetached(["niri", "msg", "action", "power-off-monitors"]);
+            else if (root.buffer === "" && !root.entered)
+                root.restart();
+        }
     }
 
     component Label: Text {
@@ -242,7 +366,7 @@ ShellRoot {
                     Label {
                         anchors.centerIn: parent
                         visible: root.buffer === ""
-                        text: root.rejected ? "not let in" : root.checking ? "checking…" : root.prompt
+                        text: root.rejected ? "not let in" : root.entered ? "checking…" : root.prompt
                         color: root.rejected ? root.red : root.subtext0
                     }
 
@@ -264,7 +388,7 @@ ShellRoot {
 
                         // Pulses while the password is checked.
                         SequentialAnimation on opacity {
-                            running: root.checking
+                            running: root.entered && !root.accepted
                             loops: Animation.Infinite
                             onStopped: marks.opacity = 1
 
@@ -289,6 +413,27 @@ ShellRoot {
                                 text: String.fromCodePoint(0xf14fb)
                                 color: root.accepted ? root.green : root.subtext1
                             }
+                        }
+                    }
+                }
+
+                // The reader's icon. It keeps its place when not shown, so
+                // nothing moves.
+                Label {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    text: String.fromCodePoint(0xf0237)
+                    font.pixelSize: 36
+                    opacity: root.finger === "" ? 0 : 1
+                    color: root.finger === "ok" ? root.green : root.finger === "bad" ? root.red : root.subtext0
+
+                    Behavior on opacity {
+                        NumberAnimation {
+                            duration: 150
+                        }
+                    }
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: 150
                         }
                     }
                 }

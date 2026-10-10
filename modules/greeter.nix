@@ -72,7 +72,14 @@ in
     settings.default_session.command = "${niri}/bin/niri --config ${niriConfig}";
   };
 
-  # The password, not the reader: only a password unlocks the keyring. GDM's
-  # module did this by itself.
+  # The reader for the login screen alone, ahead of login's rules; a TTY keeps
+  # to the password, as under GDM. 5 s, then the password is asked for: the
+  # screen starts the conversation over while nothing is typed.
   security.pam.services.login.fprintAuth = false;
+  security.pam.services.greetd.rules.auth.fprintd = {
+    order = 10000;
+    control = "sufficient";
+    modulePath = "${config.services.fprintd.package}/lib/security/pam_fprintd.so";
+    settings.timeout = 5;
+  };
 }
