@@ -1,5 +1,5 @@
 # What runs with the niri session: the bar, the idle daemon, the wallpaper.
-# All are bound to niri.service.
+# All start with niri.service and stop when it goes.
 
 { pkgs, lib, ... }:
 
