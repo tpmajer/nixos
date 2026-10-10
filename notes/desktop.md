@@ -1,5 +1,14 @@
 # Desktop notes
 
+## No pipewire for the GDM greeter
+
+GDM 50: the greeter's gnome-shell (libgvc) segfaults in
+`_pa_context_get_card_info_by_index_cb` when the greeter's own pipewire-pulse
+exposes an HDA card whose profile enumeration is not finished yet ("card 52
+port N profiles inconsistent (0 < 3)"). The greeter has no use for audio, so
+pipewire, pipewire-pulse and wireplumber are not started for the gdm-greeter
+users.
+
 ## Session services
 
 Quickshell, hypridle, the wallpaper daemon and the rest are bound to

@@ -1,5 +1,9 @@
 # The login screen
 
+Not in use on this branch: GDM is back (`modules/desktop.nix`), and
+`modules/greeter.nix` is not imported. What follows is how greetd's login
+screen works, and what was found with it.
+
 greetd, with Quickshell drawing the screen in a niri of its own
 (`modules/greeter.nix`, `greeter/shell.qml`), in place of GDM (2026-10-10).
 

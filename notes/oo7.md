@@ -11,9 +11,9 @@ oo7 replaces gnome-keyring (`modules/desktop.nix`).
 - `gcr_3` ships gcr-prompter, which owns org.gnome.keyring.SystemPrompter.
   gcr-ssh-agent asks it for the passphrase of an SSH key; gcr_4 dropped it,
   and nothing else pulls it in. oo7 asked it too, before the prompt below.
-- `services.oo7` turns pam_oo7 on for the login stack, which greetd's service
-  substacks, so the keyring unlocks with the login password. The module
-  default, left on purpose; `lib.mkForce false` goes back to no auto-unlock.
+- `services.oo7` turns pam_oo7 on for the login stack, which gdm-password
+  substacks, so the keyring unlocks with the GDM password. The module default,
+  left on purpose; `lib.mkForce false` goes back to no auto-unlock.
 - The `hyprlock` PAM service is the Quickshell lock's password check
   (`~/.dotfiles`, Lock.qml). It keeps the name of hyprlock, which it was set up
   for and which is gone. The lock's reader has `lock-fingerprint`, pam_fprintd
