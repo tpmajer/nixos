@@ -48,6 +48,8 @@ ShellRoot {
     // asked for one: it does not when there is none, or it is still held.
     property int misses: 0
     property bool readerAsked: false
+    // When someone came back to dark screens, in ms.
+    property real wokeAt: 0
     // A conversation is to be started, this long after the last one was
     // dropped, and whether PAM has said anything in the one there is.
     property bool wanted: false
@@ -120,6 +122,9 @@ ShellRoot {
 
     function key(event) {
         event.accepted = true;
+        // The key that lights the screens is not typed.
+        if (idle.isIdle || Date.now() - wokeAt < 300)
+            return;
         if (event.key === Qt.Key_Escape) {
             cancel();
             return;
@@ -287,9 +292,13 @@ ShellRoot {
         id: idle
         timeout: 60
         onIsIdleChanged: {
-            if (isIdle)
+            if (isIdle) {
                 Quickshell.execDetached(["niri", "msg", "action", "power-off-monitors"]);
-            else if (root.buffer === "" && !root.entered)
+                return;
+            }
+            root.wokeAt = Date.now();
+            // Only one that rests: the reader waits in any other.
+            if (root.asked && root.answered === 0 && root.buffer === "")
                 root.restart();
         }
     }
