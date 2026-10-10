@@ -4,6 +4,8 @@
 { pkgs, lib, ... }:
 
 let
+  notGreeter.unitConfig.ConditionUser = "!greeter";
+
   # Catppuccin Mocha, for newt dialogs (nmtui): widget=foreground,background.
   text = "#cdd6f4";
   green = "#a6e3a1";
@@ -83,7 +85,10 @@ in
   systemd.services."user@".serviceConfig.LimitMEMLOCK = "2G";
   systemd.user.settings.Manager.DefaultLimitMEMLOCK = "8M";
 
-  systemd.user.services.oo7-daemon = {
+  # Neither a keyring nor an SSH agent for the login screen's user.
+  systemd.user.sockets.gcr-ssh-agent = notGreeter;
+  systemd.user.services.gcr-ssh-agent = notGreeter;
+  systemd.user.services.oo7-daemon = notGreeter // {
     serviceConfig.LimitMEMLOCK = "2G";
     # oo7 asks org.kde.secretprompter, not gcr-prompter, only under Plasma.
     environment.XDG_CURRENT_DESKTOP = "KDE";
