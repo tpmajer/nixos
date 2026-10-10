@@ -12,6 +12,7 @@
 {
   environment.systemPackages = with pkgs; [
     adw-gtk3 # GTK 3 theme that takes the colors of ~/.config/gtk-3.0
+    adwaita-icon-theme # candy-icons inherits it; GDM's module brought it
     awww
     baobab
     bat
