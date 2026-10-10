@@ -499,9 +499,25 @@ ShellRoot {
     // Left at the login screen, the machine sleeps, as in the session
     // (~/.dotfiles, hypridle.conf).
     IdleMonitor {
+        id: asleep
         timeout: 600
-        onIsIdleChanged: if (isIdle)
-            Quickshell.execDetached(["systemctl", "suspend"])
+        onIsIdleChanged: {
+            if (!isIdle)
+                return;
+            Quickshell.execDetached(["systemctl", "suspend"]);
+            recount.start();
+        }
+    }
+
+    // Woken with nothing touched, the machine would stay up: idle is told
+    // once. The count is begun anew a minute into being awake again.
+    Timer {
+        id: recount
+        interval: 60000
+        onTriggered: {
+            asleep.enabled = false;
+            asleep.enabled = true;
+        }
     }
 
     component Label: Text {
