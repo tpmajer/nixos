@@ -35,7 +35,6 @@
 
   security.sudo.extraConfig = ''
     Defaults pwfeedback # asterisks for the typed password
-    Defaults insults
   '';
 
   services = {
