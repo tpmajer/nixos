@@ -7,17 +7,14 @@ import Quickshell.Io
 import Quickshell.Wayland
 import Quickshell.Services.Greetd
 
-// greetd's login screen, in a niri of its own (modules/greeter.nix): what the
-// lock in ~/.dotfiles shows (lock/LockView.qml), copied, over the session's
-// last wallpaper. One user, from the environment, and the sessions the system
-// has.
+// greetd's login screen, in a niri of its own (modules/greeter.nix), drawn
+// as the lock in ~/.dotfiles is. Background in notes/greeter.md.
 ShellRoot {
     id: root
 
     readonly property string user: Quickshell.env("GREETER_USER")
-    // The sessions to choose from, as a display manager finds them: the
-    // desktop entries of a directory, [{ id: the file's name without its
-    // ending, name, exec, desktops: its DesktopNames, ":" between them }].
+    // The sessions to choose from, a directory's desktop entries:
+    // [{ id: the file's name, name, exec, desktops: its DesktopNames }].
     property var sessions: []
     // The one to start: niri, unless another is chosen; else the first.
     property int chosen: 0
@@ -111,9 +108,8 @@ ShellRoot {
     property int delay: 250
     property bool heard: false
 
-    // A conversation is open whenever someone may be there: pam_fprintd
-    // waits for a finger in it, then PAM asks for the password. Nothing typed
-    // by then, and it is started over, for the reader to wait again.
+    // A conversation is open whenever someone may be there: the reader waits
+    // in it, then PAM asks for the password (notes/greeter.md).
     function begin() {
         rearm.stop();
         heard = false;
@@ -178,11 +174,8 @@ ShellRoot {
         }
     }
 
-    // What was typed is dropped, and the conversation with it, but for two
-    // that greetd is busy in and would answer late, into the next one. Where
-    // the reader still waits, the conversation stays: cancelled, it would
-    // hold the reader too. Where an answer is being checked, nothing is
-    // done: PAM's word on it comes first.
+    // What was typed is dropped, and the conversation with it, unless greetd
+    // is busy in it: the reader waits, or an answer is checked.
     function cancel() {
         if (accepted)
             return;
@@ -246,10 +239,8 @@ ShellRoot {
         function onAuthMessage(message, error, responseRequired, echoResponse) {
             root.heard = true;
             if (!responseRequired) {
-                // pam_fprintd's, told by their words, which are English
-                // under the system's locale: its prompt for a finger, an
-                // error for one it does not know, which counts, or could not
-                // read, which does not, and a word when it gives up.
+                // pam_fprintd's are told by their words, English under the
+                // system's locale; only a finger it does not know counts.
                 if (/timed out/i.test(message))
                     return;
                 if (!/finger|swipe|sensor|reader/i.test(message)) {
@@ -289,9 +280,8 @@ ShellRoot {
             else if (root.buffer !== "" || idle.isIdle)
                 return;
             else if (root.misses >= 3 || !root.readerAsked)
-                // Not at once: the reader's limit holds, and a reader that is
-                // not there, or held by a conversation dropped while it
-                // waited, is tried again in a while.
+                // Not at once: the reader's limit holds, and one that is not
+                // there, or still held, is tried again in a while.
                 rearm.restart();
             else
                 root.restart();
@@ -329,9 +319,8 @@ ShellRoot {
             root.accepted = true;
             if (root.answered === 0)
                 root.finger = "ok";
-            // What a display manager says of the session. Its type is
-            // logind's to know: greetd has a VT, which makes it a tty
-            // otherwise.
+            // What a display manager says of the session; without the type
+            // logind takes it for a tty, as greetd has a VT.
             const environment = ["XDG_SESSION_TYPE=wayland", "XDG_SESSION_DESKTOP=" + session.id];
             if (session.desktops !== "")
                 environment.push("XDG_CURRENT_DESKTOP=" + session.desktops);
@@ -464,8 +453,7 @@ ShellRoot {
     }
 
     // The screens go dark after a minute; niri lights them at the next key.
-    // Nobody there, and the conversation rests at the password; someone
-    // back, and the reader waits again.
+    // Meanwhile the conversation rests at the password.
     IdleMonitor {
         id: idle
         timeout: 60
@@ -743,8 +731,7 @@ ShellRoot {
 
                         Repeater {
                             // As many as the field is wide, shown one per
-                            // character: counting the characters would make
-                            // all of them anew at every key.
+                            // character: no mark is made anew at a key.
                             model: 18
 
                             // The bar's mark of the active workspace.
@@ -808,9 +795,8 @@ ShellRoot {
 
                 Label {
                     anchors.horizontalCenter: parent.horizontalCenter
-                    // Caps Lock, which matters while typing, else what the
-                    // reader or greetd had to say. Keeps its line when
-                    // empty, so nothing moves.
+                    // Caps Lock, else what the reader or greetd had to say.
+                    // Keeps its line when empty, so nothing moves.
                     text: root.capsLock ? "caps lock is on" : root.status !== "" ? root.status : " "
                     color: root.capsLock ? root.peach : root.red
                     font.pixelSize: root.fontSize - 2

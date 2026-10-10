@@ -1,5 +1,5 @@
 # The login screen: greetd, with Quickshell drawing it in a niri of its own
-# (greeter/shell.qml). Background in notes/desktop.md.
+# (greeter/shell.qml). Background in notes/greeter.md.
 
 {
   config,
@@ -44,9 +44,8 @@ let
     niri msg action quit --skip-confirmation
   '';
 
-  # No binds: nothing to start from the login screen. The VT keys are niri's own.
-  # Checked at build: niri starts with its defaults, binds and all, on a
-  # config it cannot read.
+  # No binds: nothing to start from the login screen. Checked at build: niri
+  # starts with its defaults, binds and all, on a config it cannot read.
   niriConfig = pkgs.writeTextFile {
     name = "greeter-niri.kdl";
     checkPhase = "${niri}/bin/niri validate --config $target";
@@ -99,8 +98,7 @@ in
   };
 
   # The reader for the login screen alone, ahead of login's rules; a TTY keeps
-  # to the password, as under GDM. 10 s, pam_fprintd's least, then the password
-  # is asked for: the screen starts the conversation over while nothing is typed.
+  # to the password. 10 s is pam_fprintd's least (notes/greeter.md).
   security.pam.services.login.fprintAuth = false;
   security.pam.services.greetd.rules.auth.fprintd = {
     order = 10000;
