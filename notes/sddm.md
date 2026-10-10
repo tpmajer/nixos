@@ -32,6 +32,10 @@ the output, one login each:
 - A greeter at another refresh rate than the session hands over with a
   modeset of its own, which shows. The panel names 60 Hz as preferred next
   to 120 Hz; niri takes 120 Hz in both places.
+- The theme waits half a second after Enter before it sends the password:
+  SDDM closes the greeter's window the moment PAM takes it, so a pause on
+  the login screen has to come first. A password refused is told that much
+  later too.
 - A logout still ends the session's compositor on the VT in front: that
   way round the half second stays.
 
