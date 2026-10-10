@@ -20,6 +20,11 @@ let
   green = "#a6e3a1";
   crust = "#11111b";
   base = "#1e1e2e";
+
+  # oo7's prompter under Plasma, with Quickshell drawing the prompt.
+  secretPrompter = pkgs.writers.writePython3Bin "secret-prompter" {
+    libraries = [ pkgs.python3Packages.dbus-fast ];
+  } (builtins.readFile ../scripts/secret-prompter.py);
 in
 
 {
@@ -40,7 +45,14 @@ in
     oo7.enable = true;
     gnome.gnome-keyring.enable = lib.mkForce false;
     gnome.gcr-ssh-agent.enable = true; # would go off with gnome-keyring
-    dbus.packages = [ pkgs.gcr_3 ]; # gcr-prompter, for oo7's unlock dialog
+    dbus.packages = [
+      pkgs.gcr_3 # gcr-prompter, for oo7's unlock dialog
+      (pkgs.writeTextDir "share/dbus-1/services/org.kde.secretprompter.service" ''
+        [D-BUS Service]
+        Name=org.kde.secretprompter
+        Exec=${secretPrompter}/bin/secret-prompter
+      '')
+    ];
 
     gnome.core-apps.enable = false;
     gnome.tinysparql.enable = true;
@@ -74,7 +86,11 @@ in
   systemd.user.services =
     lib.genAttrs [ "pipewire" "pipewire-pulse" "wireplumber" ] (_: skipGreeter)
     // {
-      oo7-daemon.serviceConfig.LimitMEMLOCK = "2G";
+      oo7-daemon = {
+        serviceConfig.LimitMEMLOCK = "2G";
+        # oo7 asks org.kde.secretprompter, not gcr-prompter, only under Plasma.
+        environment.XDG_CURRENT_DESKTOP = "KDE";
+      };
     };
 
   virtualisation.podman = {

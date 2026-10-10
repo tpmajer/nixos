@@ -18,6 +18,34 @@ oo7 replaces gnome-keyring (`modules/desktop.nix`).
   (`~/.dotfiles`, Lock.qml). It keeps the name of hyprlock, which it was set up
   for and which is gone.
 
+## The unlock prompt
+
+oo7 draws no dialogs. It asks one of two prompters over D-Bus:
+org.gnome.keyring.SystemPrompter (gcr-prompter), or, when
+`XDG_CURRENT_DESKTOP` is `KDE` and the name is activatable,
+org.kde.secretprompter (Plasma's ksecretprompter). The choice is made at the
+first prompt and kept until the daemon restarts.
+
+Here the second is `scripts/secret-prompter.py`, with Quickshell drawing the
+prompt (`~/.dotfiles`, Keyring.qml); `XDG_CURRENT_DESKTOP=KDE` is set for
+oo7-daemon alone. Plasma's protocol is two methods and a callback object,
+where GNOME's wants a key exchange and the password encrypted.
+
+- oo7 calls `UnlockCollectionPrompt` or `CreateCollectionPrompt` on
+  `/SecretPrompter` with the path of its request object and the keyring's
+  name.
+- The prompter calls the request's `Accepted(fd)`, the password to be read
+  from the fd to its end. oo7 reads it with `recv`: a socket, not a pipe.
+  The answer is 0, done, or 1, wrong: `Retry(reason)` is signalled before it.
+- `Rejected()` cancels. `Dismissed()` ends every prompt, and oo7's `Dismiss`
+  signal asks for that.
+
+secret-prompter connects to `$XDG_RUNTIME_DIR/quickshell-keyring.sock` for
+each prompt and speaks lines of JSON: `{"event": "prompt", "role",
+"collection"}`, `{"event": "retry", "reason"}`, `{"event": "done"}` or, for an error
+from oo7, `{"event": "failed"}` to Quickshell, `{"password"}` or `{"cancel"}` back. Without Quickshell the
+prompt is rejected. A keyring with no items takes any password.
+
 ## The memlock limit
 
 oo7-daemon calls `mlockall(MCL_CURRENT | MCL_FUTURE)` so that secrets never
