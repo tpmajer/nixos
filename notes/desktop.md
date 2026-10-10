@@ -1,13 +1,24 @@
 # Desktop notes
 
-## No pipewire for the GDM greeter
+## The login screen
 
-GDM 50: the greeter's gnome-shell (libgvc) segfaults in
-`_pa_context_get_card_info_by_index_cb` when the greeter's own pipewire-pulse
-exposes an HDA card whose profile enumeration is not finished yet ("card 52
-port N profiles inconsistent (0 < 3)"). The greeter has no use for audio, so
-pipewire, pipewire-pulse and wireplumber are not started for the gdm-greeter
-users.
+greetd, with Quickshell drawing the screen in a niri of its own
+(`modules/greeter.nix`, `greeter/shell.qml`), in place of GDM (2026-10-10).
+
+- The greeter runs as the `greeter` user, which cannot read `~/.dotfiles`:
+  the screen is built into the store, with the lock's look copied, not shared.
+  A change to it needs a rebuild, and an edit to the bar cannot break it.
+- Its niri has no binds. The VT keys are niri's own, so a TTY is still there
+  if the screen fails; greetd starts the greeter again when it exits.
+- greetd's PAM service only refers to `login`, as gdm-password did, so the
+  keyring unlocks with the password (notes/oo7.md). GDM's module also set
+  `login.fprintAuth = false`; without it `login` would ask for a finger first
+  and leave the keyring locked. GDM's separate gdm-fingerprint service, a
+  login by finger alone, has no counterpart.
+- The session is `niri-session`, started with `XDG_SESSION_TYPE=wayland`:
+  greetd has a VT, and logind would call the session a tty.
+- Tried without a rebuild: `GREETD_SOCK` pointing at a stand-in for greetd's
+  IPC, and `qs --path greeter` in a nested niri.
 
 ## Session services
 
