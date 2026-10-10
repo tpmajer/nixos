@@ -98,6 +98,10 @@ let
 
       binds {
       }
+
+      // The outputs off after a minute, the machine asleep after ten, as
+      // greetd's screen had it.
+      spawn-at-startup "${pkgs.swayidle}/bin/swayidle" "-w" "timeout" "60" "${niri}/bin/niri msg action power-off-monitors" "timeout" "600" "${pkgs.systemd}/bin/systemctl suspend"
     '';
   };
 
