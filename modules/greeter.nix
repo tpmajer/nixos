@@ -45,6 +45,10 @@ let
   # No binds: nothing to start from the login screen. The VT keys are niri's own.
   niriConfig = pkgs.writeText "greeter-niri.kdl" ''
     input {
+        // niri would suspend at the power key, which is the reader too;
+        // logind ignores it (power.nix).
+        disable-power-key-handling
+
         keyboard {
             xkb {
                 layout "pl"
