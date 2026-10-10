@@ -324,8 +324,9 @@ ShellRoot {
             const environment = ["XDG_SESSION_TYPE=wayland", "XDG_SESSION_DESKTOP=" + session.id];
             if (session.desktops !== "")
                 environment.push("XDG_CURRENT_DESKTOP=" + session.desktops);
-            // greetd hands the command to a shell, after /etc/profile.
-            Greetd.launch([session.exec], environment, true);
+            // greetd hands the command to a shell, after /etc/profile; the
+            // session's output goes to the journal under its id.
+            Greetd.launch([Quickshell.env("GREETER_RUN"), session.id, session.exec], environment, true);
         }
 
         // greetd's own, a session it could not start among them. Started

@@ -25,6 +25,9 @@ let
     ];
   };
 
+  # Whatever greetd starts, with its output off the VT (notes/greeter.md).
+  run = lib.getExe (script "greeter-session" { inputs = [ pkgs.systemd ]; });
+
   # The greeter's whole session: Quickshell, and niri gone with it.
   greeter = pkgs.writeShellScript "greeter" ''
     export PATH=${
@@ -40,6 +43,7 @@ let
     export GREETER_USER=${user}
     export GREETER_SESSIONS=${config.services.displayManager.sessionData.desktops}/share/wayland-sessions
     export GREETER_WALLPAPERS=${wallpapers}
+    export GREETER_RUN=${run}
     ${lib.getExe pkgs.quickshell} --path ${../greeter}
     niri msg action quit --skip-confirmation
   '';
@@ -94,7 +98,7 @@ in
 {
   services.greetd = {
     enable = true;
-    settings.default_session.command = "${niri}/bin/niri --config ${niriConfig}";
+    settings.default_session.command = "${run} greeter ${niri}/bin/niri --config ${niriConfig}";
   };
 
   # The reader for the login screen alone, ahead of login's rules; a TTY keeps
