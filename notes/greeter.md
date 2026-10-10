@@ -61,8 +61,14 @@ removing the session, in every hand-over of that boot and the two before,
 either way round (greeter to session, session to greeter). A TTY login
 through the same `login` stack was removed 27 ms after its close, so it is
 not a PAM module: it comes with a session that held the VT and the display.
-What logind does in that time was not traced; it needs root
-(`strace -T -p $(pidof systemd-logind)` over a login).
+Traced 2026-10-10 (`strace -T -tt` on systemd-logind, run with `systemd-run`
+so that it outlives the logout): it is one call, `ioctl(KDSETMODE, KD_TEXT)`
+on the VT, 0.59 and 0.60 s, made as logind takes the VT back from a
+compositor, right after `DRM_IOCTL_DROP_MASTER`. The kernel's console takes
+the display again there, at the panel's own mode, 2880x1920@120, which the
+compositors use too. Nothing else in logind took 50 ms. So it is the
+kernel's, on this display, at every end of a compositor on a VT; neither
+greetd nor logind has a setting for it.
 
 First seen 2026-10-10: a flash of text at login, and Steam's gamescope
 session looking stuck on a console of its own logs until Ctrl+Alt+F3. Whether
