@@ -3,7 +3,7 @@ import QtQuick
 import QtQuick.Effects
 
 // SDDM's login screen, drawn as the lock in ~/.dotfiles is
-// (lock/LockView.qml), copied. One per screen. Background in notes/greeter.md.
+// (lock/LockView.qml), copied. One per screen. Background in notes/sddm.md.
 Rectangle {
     id: root
 

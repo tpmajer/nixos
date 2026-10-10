@@ -1,6 +1,6 @@
 # A trial: SDDM in place of greetd's login screen, for its hand-over to the
-# session (notes/greeter.md). Drawn as the lock is (sddm/Main.qml), and the
-# password alone.
+# session. Drawn as the lock is (sddm/Main.qml), and the password alone.
+# Background in notes/sddm.md.
 
 {
   pkgs,
