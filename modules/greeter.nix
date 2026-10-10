@@ -10,7 +10,20 @@
 }:
 
 let
+  script = import ./script.nix { inherit pkgs; };
+
   niri = config.programs.niri.package;
+
+  # The session's wallpapers, kept for the login screen by greeter-wallpaper.
+  wallpapers = "/var/cache/greeter";
+  greeterWallpaper = script "greeter-wallpaper" {
+    inputs = [
+      pkgs.awww
+      pkgs.coreutils
+      pkgs.gnused
+      pkgs.imagemagick
+    ];
+  };
 
   # The greeter's whole session: Quickshell, and niri gone with it.
   greeter = pkgs.writeShellScript "greeter" ''
@@ -24,6 +37,7 @@ let
     export XDG_CACHE_HOME=$XDG_RUNTIME_DIR/cache
     export GREETER_USER=${user}
     export GREETER_SESSION=${niri}/bin/niri-session
+    export GREETER_WALLPAPERS=${wallpapers}
     ${lib.getExe pkgs.quickshell} --path ${../greeter}
     niri msg action quit --skip-confirmation
   '';
@@ -81,5 +95,22 @@ in
     control = "sufficient";
     modulePath = "${config.services.fprintd.package}/lib/security/pam_fprintd.so";
     settings.timeout = 5;
+  };
+
+  # The greeter cannot read the user's home: a copy of what awww shows, made
+  # as the session starts and whenever awww records another image.
+  systemd.tmpfiles.rules = [ "d ${wallpapers} 0755 ${user} users -" ];
+  systemd.user.services.greeter-wallpaper = {
+    description = "The wallpaper, for the login screen";
+    after = [ "awww-daemon.service" ];
+    wantedBy = [ "niri.service" ];
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${lib.getExe greeterWallpaper} ${wallpapers}";
+    };
+  };
+  systemd.user.paths.greeter-wallpaper = {
+    wantedBy = [ "niri.service" ];
+    pathConfig.PathChanged = "%h/.cache/awww/${pkgs.awww.version}";
   };
 }

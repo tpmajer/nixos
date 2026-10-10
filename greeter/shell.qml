@@ -1,19 +1,22 @@
 //@ pragma Env QSG_DISTANCEFIELD_ANTIALIASING = gray
 
 import QtQuick
+import QtQuick.Effects
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Services.Greetd
 
 // greetd's login screen, in a niri of its own (modules/greeter.nix): the
 // clock, the date, the password field and the reader's icon of the lock in
-// ~/.dotfiles, on a plain background. One user and one session, both from the
-// environment.
+// ~/.dotfiles, over the session's last wallpaper, blurred and dimmed. One user
+// and one session, both from the environment.
 ShellRoot {
     id: root
 
     readonly property string user: Quickshell.env("GREETER_USER")
     readonly property string session: Quickshell.env("GREETER_SESSION")
+    // Where the session leaves what awww shows, a file per output.
+    readonly property string wallpapers: Quickshell.env("GREETER_WALLPAPERS")
 
     // Catppuccin Mocha and the bar's font, as Theme.qml in ~/.dotfiles.
     readonly property color base: "#1e1e2e"
@@ -329,6 +332,45 @@ ShellRoot {
                 anchors.fill: parent
                 focus: true
                 Keys.onPressed: event => root.key(event)
+            }
+
+            // None for this output, and the screen is plain.
+            Image {
+                id: image
+                anchors.fill: parent
+                visible: false
+                source: root.wallpapers ? "file://" + root.wallpapers + "/" + modelData.name + ".jpg" : ""
+                fillMode: Image.PreserveAspectCrop
+                asynchronous: true
+            }
+
+            Item {
+                anchors.fill: parent
+                opacity: image.status === Image.Ready ? 1 : 0
+                visible: opacity > 0
+
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: 400
+                        easing.type: Easing.OutCubic
+                    }
+                }
+
+                MultiEffect {
+                    anchors.fill: parent
+                    source: image
+                    blurEnabled: true
+                    blur: 1
+                    blurMax: 64
+                    autoPaddingEnabled: false
+                }
+
+                // Dims the wallpaper, so the text reads on a bright one.
+                Rectangle {
+                    anchors.fill: parent
+                    color: root.base
+                    opacity: 0.7
+                }
             }
 
             Column {
