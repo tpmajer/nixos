@@ -67,6 +67,12 @@ in
     fprintAuth = true;
     unixAuth = false;
   };
+  # GDM's name for it, which the lock asked for until ~/.dotfiles 918cefe: to
+  # go once that is in use.
+  security.pam.services.gdm-fingerprint = {
+    fprintAuth = true;
+    unixAuth = false;
+  };
 
   # Quickshell's polkit prompt: the reader gives way to the password after
   # 10 s, not 30.
