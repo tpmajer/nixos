@@ -34,15 +34,30 @@ ShellRoot {
         stdout: StdioCollector {
             onStreamFinished: {
                 const found = [];
+                // The entry's own group, not an action's after it.
+                let main = false;
                 for (const line of text.split("\n")) {
                     const file = line.match(/^\[\/.*\/([^\/]+)\.desktop\]$/);
-                    const key = line.match(/^(Name|Exec|DesktopNames)=(.*)$/);
-                    if (file)
-                        found.push({id: file[1], name: file[1], exec: "", desktops: ""});
-                    else if (key && found.length > 0)
-                        found[found.length - 1][{Name: "name", Exec: "exec", DesktopNames: "desktops"}[key[1]]] = key[2].replace(/;+$/, "").replace(/;/g, ":");
+                    const key = line.match(/^(Name|Exec|DesktopNames|Hidden|NoDisplay)=(.*)$/);
+                    if (file) {
+                        found.push({id: file[1], name: file[1], exec: "", desktops: "", hidden: false});
+                        main = false;
+                    } else if (line.startsWith("[")) {
+                        main = line.trim() === "[Desktop Entry]";
+                    } else if (!key || !main || found.length === 0) {
+                        continue;
+                    } else if (key[1] === "Name") {
+                        found[found.length - 1].name = key[2];
+                    } else if (key[1] === "Exec") {
+                        found[found.length - 1].exec = key[2];
+                    } else if (key[1] === "DesktopNames") {
+                        // A list, ";" between and after its names.
+                        found[found.length - 1].desktops = key[2].split(";").filter(n => n !== "").join(":");
+                    } else if (key[2].trim() === "true") {
+                        found[found.length - 1].hidden = true;
+                    }
                 }
-                const sessions = found.filter(s => s.exec !== "");
+                const sessions = found.filter(s => s.exec !== "" && !s.hidden);
                 root.chosen = Math.max(0, sessions.findIndex(s => s.id === "niri"));
                 root.sessions = sessions;
             }
