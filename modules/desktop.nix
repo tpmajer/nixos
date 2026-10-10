@@ -1,10 +1,19 @@
-# Sound, portals, the keyring and the desktop's services.
+# The login screen, sound, portals, the keyring and the desktop's services.
 # Background in notes/desktop.md and notes/oo7.md.
 
 { pkgs, lib, ... }:
 
 let
-  notGreeter.unitConfig.ConditionUser = "!greeter";
+  # GDM 50's greeter crashes on its own pipewire-pulse: no sound for it.
+  skipGreeter = {
+    unitConfig.ConditionUser = map (u: "!${u}") [
+      "gdm-greeter"
+      "gdm-greeter-2"
+      "gdm-greeter-3"
+      "gdm-greeter-4"
+      "gdm-greeter-5"
+    ];
+  };
 
   # Catppuccin Mocha, for newt dialogs (nmtui): widget=foreground,background.
   text = "#cdd6f4";
@@ -20,6 +29,7 @@ in
 
 {
   services = {
+    displayManager.gdm.enable = true;
     xserver.xkb.layout = "pl";
     libinput.enable = true;
 
@@ -69,12 +79,6 @@ in
     fprintAuth = true;
     unixAuth = false;
   };
-  # GDM's name for it, to go once ~/.dotfiles asks for the new one
-  # (notes/greeter.md).
-  security.pam.services.gdm-fingerprint = {
-    fprintAuth = true;
-    unixAuth = false;
-  };
 
   # Quickshell's polkit prompt: the reader gives way to the password after
   # 10 s, not 30.
@@ -85,14 +89,16 @@ in
   systemd.services."user@".serviceConfig.LimitMEMLOCK = "2G";
   systemd.user.settings.Manager.DefaultLimitMEMLOCK = "8M";
 
-  # Neither a keyring nor an SSH agent for the login screen's user.
-  systemd.user.sockets.gcr-ssh-agent = notGreeter;
-  systemd.user.services.gcr-ssh-agent = notGreeter;
-  systemd.user.services.oo7-daemon = notGreeter // {
-    serviceConfig.LimitMEMLOCK = "2G";
-    # oo7 asks org.kde.secretprompter, not gcr-prompter, only under Plasma.
-    environment.XDG_CURRENT_DESKTOP = "KDE";
-  };
+  systemd.user.sockets = lib.genAttrs [ "pipewire" "pipewire-pulse" ] (_: skipGreeter);
+  systemd.user.services =
+    lib.genAttrs [ "pipewire" "pipewire-pulse" "wireplumber" ] (_: skipGreeter)
+    // {
+      oo7-daemon = {
+        serviceConfig.LimitMEMLOCK = "2G";
+        # oo7 asks org.kde.secretprompter, not gcr-prompter, only under Plasma.
+        environment.XDG_CURRENT_DESKTOP = "KDE";
+      };
+    };
 
   virtualisation.podman = {
     enable = true;
