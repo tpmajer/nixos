@@ -4,6 +4,8 @@
 { pkgs, lib, ... }:
 
 let
+  script = import ./script.nix { inherit pkgs; };
+
   # A service of the session, stopped when niri goes (notes/desktop.md).
   withNiri = {
     bindsTo = [ "niri.service" ];
@@ -45,6 +47,8 @@ in
       description = "awww wallpaper daemon";
       serviceConfig = {
         Type = "simple";
+        # After a login the desktop fades in from under Quickshell's curtain.
+        ExecStartPre = lib.getExe (script "awww-wait-for-curtain" { inputs = [ pkgs.coreutils ]; });
         ExecStart = "${pkgs.awww}/bin/awww-daemon";
         Restart = "on-failure";
         RestartSec = "5s";
