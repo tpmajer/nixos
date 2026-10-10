@@ -68,6 +68,30 @@ power off are in the other corner.
   read again, and would be written back.
 - The reader's icon has its place kept and is never shown.
 
+## The wallpaper's first frame
+
+After the hand-over the session's niri showed its backdrop until awww had
+the wallpaper up: 0.2 to 1.0 s over 25 logins (niri's socket to awww's first
+buffer, in the journal). awww keeps the image's path, not its pixels: at
+every start it decodes the file and scales it, here a 4658x2620 PNG with
+Lanczos3.
+
+- Not SDDM's to hide: started on a VT that is not in front, niri has no
+  outputs until the switch (its `tty.rs`), so nothing can be drawn ahead of
+  it. A curtain in Quickshell comes after the wallpaper, unless awww is held
+  for it, which was tried under greetd and dropped (notes/greeter.md).
+- `wallpaper-first`, a user service started with niri, draws
+  `greeter-wallpaper`'s copy with swaybg, and ends it half a second after
+  awww names an image, or after 5 s.
+- The copy is cut to the output's size in pixels for it, as awww fills an
+  output (crop, centred), so swaybg draws it as it is and awww's image comes
+  over the same picture.
+- On an idle machine, in a headless sway at the panel's mode: swaybg with
+  that copy has its first buffer in about 30 ms, awww's restore takes 160.
+
+Not seen on a login yet. The black of SDDM's niri before the session's is
+still there: its window is closed at the login.
+
 ## Trying the theme without a rebuild
 
 `sddm-greeter-qt6 --test-mode --theme <directory>`, in a nested niri with the
