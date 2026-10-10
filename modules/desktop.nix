@@ -61,6 +61,13 @@ in
     oo7.enable = true;
   };
 
+  # The lock's reader, a conversation of its own next to the password's: a
+  # finger and nothing else.
+  security.pam.services.lock-fingerprint = {
+    fprintAuth = true;
+    unixAuth = false;
+  };
+
   # Quickshell's polkit prompt: the reader gives way to the password after
   # 10 s, not 30.
   security.pam.services.polkit-1.rules.auth.fprintd.settings.timeout = 10;
