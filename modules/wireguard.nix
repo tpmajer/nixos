@@ -4,6 +4,7 @@
 {
   pkgs,
   lib,
+  config,
   private,
   user,
   ...
@@ -23,6 +24,20 @@ let
   # wg-quick marks the tunnel's own packets with this; the kill switch lets them out.
   wgMark = 51820;
 
+  # A ruleset that nft takes, checked at build as the firewall's own is: one
+  # it refuses would leave no kill switch at all.
+  checked =
+    name: text:
+    pkgs.writeTextFile {
+      inherit name text;
+      checkPhase = ''
+        echo "systemd-resolve:x:${toString config.users.users.systemd-resolve.uid}:0::/:" > passwd
+        NIX_REDIRECTS=/etc/passwd=$PWD/passwd \
+        LD_PRELOAD="${pkgs.buildPackages.libredirect}/lib/libredirect.so ${pkgs.buildPackages.lklWithFirewall.lib}/lib/liblkl-hijack.so" \
+          ${pkgs.buildPackages.nftables}/bin/nft --check --file $out
+      '';
+    };
+
   # The kill switch, an nftables table of its own. strict: nothing out but the
   # tunnel and DHCP, nothing in. bootstrap: also DNS for systemd-resolved, to
   # resolve the endpoint. inbound: all out but mDNS, nothing in.
@@ -41,7 +56,7 @@ let
           "bnep"
         ];
     in
-    pkgs.writeText "wg-killswitch-${mode}.nft" ''
+    checked "wg-killswitch-${mode}.nft" ''
       table inet wg_killswitch
       delete table inet wg_killswitch
       table inet wg_killswitch {

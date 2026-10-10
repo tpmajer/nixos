@@ -24,11 +24,16 @@ trusted_gateway() {
   [ -n "$mac" ] && grep -Fxq -- "$mac" "$TRUSTED_GATEWAYS"
 }
 
+# A ruleset nft refuses leaves the kill switch as it was: said, and the run
+# ends as failed.
+failed=0
 kill_switch() {
   case "$1" in
     off) nft delete table inet wg_killswitch 2> /dev/null || true ;;
     *) nft -f "$1" ;;
-  esac || echo "wg-auto: cannot set the kill switch to ${1##*-}" >&2
+  esac && return
+  echo "wg-auto: cannot set the kill switch to ${1##*-}: it is NOT as it should be" >&2
+  failed=1
 }
 
 up=0
@@ -57,7 +62,7 @@ if [ -e "$override" ]; then
   else
     kill_switch "$KILL_SWITCH_INBOUND"
   fi
-  exit 0
+  exit "$failed"
 fi
 
 if [ "$up" = 0 ]; then
@@ -75,3 +80,4 @@ else
     echo "wg-auto: wg0 did not come up, the kill switch stays on" >&2
   fi
 fi
+exit "$failed"

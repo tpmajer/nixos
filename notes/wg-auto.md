@@ -51,6 +51,9 @@ forwarded.
   mDNS, with which Avahi would announce this host; nothing comes in.
 
 The kill switch goes on before the tunnel is started and stays if it fails.
+Its rulesets are checked at build (`nft --check`, as the firewall's own). One
+that nft refuses all the same leaves the kill switch as it was: wg-auto says
+so and ends as failed.
 
 ## The override
 
