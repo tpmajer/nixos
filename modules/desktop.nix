@@ -67,8 +67,8 @@ in
     fprintAuth = true;
     unixAuth = false;
   };
-  # GDM's name for it, which the lock asked for until ~/.dotfiles 918cefe: to
-  # go once that is in use.
+  # GDM's name for it, to go once ~/.dotfiles asks for the new one
+  # (notes/greeter.md).
   security.pam.services.gdm-fingerprint = {
     fprintAuth = true;
     unixAuth = false;
