@@ -14,8 +14,6 @@ let
 
   niri = config.programs.niri.package;
 
-  # The greeter's own: the session last started.
-  state = "/var/lib/greeter";
   # The session's wallpapers, kept for the login screen by greeter-wallpaper.
   wallpapers = "/var/cache/greeter";
   greeterWallpaper = script "greeter-wallpaper" {
@@ -41,7 +39,6 @@ let
     export XDG_CACHE_HOME=$XDG_RUNTIME_DIR/cache
     export GREETER_USER=${user}
     export GREETER_SESSIONS=${config.services.displayManager.sessionData.desktops}/share/wayland-sessions
-    export GREETER_STATE=${state}
     export GREETER_WALLPAPERS=${wallpapers}
     ${lib.getExe pkgs.quickshell} --path ${../greeter}
     niri msg action quit --skip-confirmation
@@ -114,10 +111,7 @@ in
 
   # The greeter cannot read the user's home: a copy of what awww shows, made
   # as the session starts and whenever awww records another image.
-  systemd.tmpfiles.rules = [
-    "d ${wallpapers} 0755 ${user} users -"
-    "d ${state} 0755 greeter greeter -"
-  ];
+  systemd.tmpfiles.rules = [ "d ${wallpapers} 0755 ${user} users -" ];
   systemd.user.services.greeter-wallpaper = {
     description = "The wallpaper, for the login screen";
     after = [ "awww-daemon.service" ];

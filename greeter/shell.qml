@@ -19,7 +19,7 @@ ShellRoot {
     // desktop entries of a directory, [{ id: the file's name without its
     // ending, name, exec, desktops: its DesktopNames, ":" between them }].
     property var sessions: []
-    // The one to start: the last one started, else niri, else the first.
+    // The one to start: niri, unless another is chosen; else the first.
     property int chosen: 0
     readonly property var session: sessions[chosen] ?? null
 
@@ -43,22 +43,10 @@ ShellRoot {
                         found[found.length - 1][{Name: "name", Exec: "exec", DesktopNames: "desktops"}[key[1]]] = key[2].replace(/;+$/, "").replace(/;/g, ":");
                 }
                 const sessions = found.filter(s => s.exec !== "");
-                const last = lastSession.text().trim();
-                const at = id => sessions.findIndex(s => s.id === id);
-                root.chosen = Math.max(0, at(last) >= 0 ? at(last) : at("niri"));
+                root.chosen = Math.max(0, sessions.findIndex(s => s.id === "niri"));
                 root.sessions = sessions;
             }
         }
-    }
-
-    // The session last started, by its id: kept for the next login.
-    FileView {
-        id: lastSession
-        path: Quickshell.env("GREETER_STATE") + "/session"
-        blockLoading: true
-        // Written before Quickshell goes, as it does once the session is set.
-        blockWrites: true
-        printErrors: false
     }
 
     // Where the session leaves what awww shows, a file per output.
@@ -316,7 +304,6 @@ ShellRoot {
             root.accepted = true;
             if (root.answered === 0)
                 root.finger = "ok";
-            lastSession.setText(session.id + "\n");
             // What a display manager says of the session. Its type is
             // logind's to know: greetd has a VT, which makes it a tty
             // otherwise.
