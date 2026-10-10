@@ -4,17 +4,6 @@
 { pkgs, lib, ... }:
 
 let
-  # GDM 50's greeter crashes on its own pipewire-pulse: no sound for it.
-  skipGreeter = {
-    unitConfig.ConditionUser = map (u: "!${u}") [
-      "gdm-greeter"
-      "gdm-greeter-2"
-      "gdm-greeter-3"
-      "gdm-greeter-4"
-      "gdm-greeter-5"
-    ];
-  };
-
   # Catppuccin Mocha, for newt dialogs (nmtui): widget=foreground,background.
   text = "#cdd6f4";
   green = "#a6e3a1";
@@ -81,16 +70,11 @@ in
   systemd.services."user@".serviceConfig.LimitMEMLOCK = "2G";
   systemd.user.settings.Manager.DefaultLimitMEMLOCK = "8M";
 
-  systemd.user.sockets = lib.genAttrs [ "pipewire" "pipewire-pulse" ] (_: skipGreeter);
-  systemd.user.services =
-    lib.genAttrs [ "pipewire" "pipewire-pulse" "wireplumber" ] (_: skipGreeter)
-    // {
-      oo7-daemon = {
-        serviceConfig.LimitMEMLOCK = "2G";
-        # oo7 asks org.kde.secretprompter, not gcr-prompter, only under Plasma.
-        environment.XDG_CURRENT_DESKTOP = "KDE";
-      };
-    };
+  systemd.user.services.oo7-daemon = {
+    serviceConfig.LimitMEMLOCK = "2G";
+    # oo7 asks org.kde.secretprompter, not gcr-prompter, only under Plasma.
+    environment.XDG_CURRENT_DESKTOP = "KDE";
+  };
 
   virtualisation.podman = {
     enable = true;
