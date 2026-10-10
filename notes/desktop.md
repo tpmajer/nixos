@@ -12,9 +12,20 @@ greetd, with Quickshell drawing the screen in a niri of its own
   if the screen fails; greetd starts the greeter again when it exits.
 - greetd's PAM service only refers to `login`, as gdm-password did, so the
   keyring unlocks with the password (notes/oo7.md). GDM's module also set
-  `login.fprintAuth = false`; without it `login` would ask for a finger first
-  and leave the keyring locked. GDM's separate gdm-fingerprint service, a
-  login by finger alone, has no counterpart.
+  `login.fprintAuth = false`, which is kept: a TTY asks for the password.
+- The reader is pam_fprintd in greetd's own service, ahead of `login`. greetd
+  holds one conversation, so the reader and the password take turns, unlike
+  GDM's two services: the reader waits 5 s, then PAM asks for the password.
+  With nothing typed by then the screen drops the conversation and starts
+  another, so the reader waits for as long as someone is there; a password
+  entered meanwhile is sent when PAM asks. A login by finger leaves the
+  keyring locked, as it did under GDM.
+- greetd does not stop a cancelled conversation's worker: one cancelled while
+  pam_fprintd waits holds the reader until its timeout. The screen cancels at
+  the password, and tries again in 5 s when the reader did not ask.
+- Quickshell does not wait for greetd's answer to a cancel and logs it as
+  unexpected; a conversation started before it comes takes it for a success.
+  Hence the screen's wait before each new one.
 - The session is `niri-session`, started with `XDG_SESSION_TYPE=wayland`:
   greetd has a VT, and logind would call the session a tty.
 - Tried without a rebuild: `GREETD_SOCK` pointing at a stand-in for greetd's
