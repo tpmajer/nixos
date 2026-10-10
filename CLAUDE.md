@@ -22,6 +22,8 @@ Scopes, one per area:
   `background-apps`, `network`, `wireguard`, `packages`, …
 - `scripts` and `notes` for those directories, when a change is theirs alone
 - `docs:` without a scope for the README
+- `docs(scope):` for a change to comments alone, with the scope of the
+  file they are in
 - no comma-joined scopes and no one-off ones
 
 Do not copy the style from `git log`: part of the history predates this
