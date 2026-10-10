@@ -34,6 +34,10 @@ let
     exec ${pkgs.systemd}/bin/systemd-cat --identifier="$identifier" -- "$@"
   '';
 
+  # The greeter's home is /var/empty: a cache of its own, for niri's and
+  # Quickshell's shaders to outlast a start.
+  cache = "/var/cache/greeter-shell";
+
   # The greeter's whole session: Quickshell, and niri gone with it.
   greeter = pkgs.writeShellScript "greeter" ''
     export PATH=${
@@ -44,8 +48,6 @@ let
         pkgs.systemd
       ]
     }:$PATH
-    # The greeter's home is /var/empty: Quickshell's cache goes with the session.
-    export XDG_CACHE_HOME=$XDG_RUNTIME_DIR/cache
     export GREETER_USER=${user}
     export GREETER_SESSIONS=${config.services.displayManager.sessionData.desktops}/share/wayland-sessions
     export GREETER_WALLPAPERS=${wallpapers}
@@ -110,7 +112,7 @@ in
 {
   services.greetd = {
     enable = true;
-    settings.default_session.command = "${run} greeter ${niri}/bin/niri --config ${niriConfig}";
+    settings.default_session.command = "${pkgs.coreutils}/bin/env XDG_CACHE_HOME=${cache} ${run} greeter ${niri}/bin/niri --config ${niriConfig}";
   };
 
   # The reader for the login screen alone, ahead of login's rules; a TTY keeps
@@ -125,7 +127,10 @@ in
 
   # The greeter cannot read the user's home: a copy of what awww shows, made
   # as the session starts and whenever awww records another image.
-  systemd.tmpfiles.rules = [ "d ${wallpapers} 0755 ${user} users -" ];
+  systemd.tmpfiles.rules = [
+    "d ${wallpapers} 0755 ${user} users -"
+    "d ${cache} 0700 greeter greeter -"
+  ];
   systemd.user.services.greeter-wallpaper = {
     description = "The wallpaper, for the login screen";
     after = [ "awww-daemon.service" ];
