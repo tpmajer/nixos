@@ -114,6 +114,8 @@ in
     description = "The wallpaper, for the login screen";
     after = [ "awww-daemon.service" ];
     wantedBy = [ "niri.service" ];
+    # Wallpapers shuffled in a row: the limit would stop the path unit too.
+    unitConfig.StartLimitIntervalSec = 0;
     serviceConfig = {
       Type = "oneshot";
       ExecStart = "${lib.getExe greeterWallpaper} ${wallpapers}";
