@@ -129,7 +129,8 @@ is plain, as at the first login after this is deployed.
 
 ## What went with GDM
 
-- `adwaita-icon-theme`, which candy-icons inherits: in `packages.nix` now.
+- `adwaita-icon-theme`, where GTK looks for an icon the theme in use lacks,
+  whatever that theme is: in `packages.nix` now.
 - `accounts-daemon`, which nothing here asks for: left off.
 - The gdm-fingerprint PAM service, which the lock borrowed for its reader:
   `lock-fingerprint` in `desktop.nix` now. The old name is kept next to it
