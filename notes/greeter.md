@@ -133,7 +133,7 @@ login yet:
 
 The screen shows the session's last wallpaper, blurred and dimmed as the lock
 does. `greeter-wallpaper`, a user service, leaves what awww shows on each
-output in `/var/cache/greeter/<output>.jpg`, scaled down:
+output in `/var/cache/greeter/<output>.jpg`, cut to the output's size:
 
 - as the session starts, and whenever awww writes its cache: a path unit on
   `~/.cache/awww/<version>`, as awww tells nobody;
