@@ -24,6 +24,11 @@ restarted with no display and dumped core on every try, Quickshell every 2 s.
 awww-daemon still dumps core once as niri goes: it panics on the broken
 connection before systemd stops it.
 
+Ghostty is bound the same way, and so are Thunderbird and Signal in
+`background-apps.nix`: unbound, Ghostty was started every 2 s with no display
+after a logout, and Signal failed as niri went (2026-10-10). hypridle is not:
+its module makes it part of graphical-session.target, which stops it.
+
 Quickshell restarts `always`, not `on-failure`: it is the session lock too. If
 it goes while the session is locked, even cleanly (`qs kill`, SIGTERM), niri
 keeps the session locked with nothing to unlock it; the next process locks
