@@ -1,4 +1,4 @@
-# The login screen, sound, portals, the keyring and the desktop's services.
+# Sound, portals, the keyring and the desktop's services.
 # Background in notes/desktop.md and notes/oo7.md.
 
 { pkgs, lib, ... }:
@@ -29,7 +29,6 @@ in
 
 {
   services = {
-    displayManager.gdm.enable = true;
     xserver.xkb.layout = "pl";
     libinput.enable = true;
 
