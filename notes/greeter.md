@@ -16,9 +16,17 @@ the screen fails; greetd starts the greeter again when it exits. niri starts
 with its default config, binds included, on one it cannot parse, so the
 greeter's is checked with `niri validate` at build.
 
+The greeter's home is /var/empty, so its cache is `/var/cache/greeter-shell`,
+set before niri starts: without one Mesa keeps no shaders, and they are
+compiled at every start. Its niri has X11 off, or it would take display :0
+ahead of the session's. Its user manager starts no keyring and no SSH agent
+(`ConditionUser=!greeter` in `desktop.nix`).
+
 The power key is the reader too, and niri would suspend at it: its niri is
 told not to handle it. Left alone for a minute the screen turns the outputs
-off, for ten it suspends the machine, as hypridle does in the session.
+off, for ten it suspends the machine, as hypridle does in the session. Idle
+is told once per stretch without input, so the count is begun anew a minute
+after each suspend: a machine woken untouched sleeps again.
 
 ## Sessions
 
@@ -39,7 +47,10 @@ compositor shows its first frame, the VT is what the screen shows, with
 whatever was printed to it: under GDM the output went to the journal.
 `greeter-session` wraps both: the output goes to the journal under the
 session's id (`journalctl -t steam`, `-t niri`, `-t greeter`), and the VT's
-cursor is hidden.
+cursor is hidden. It calls systemd-cat by its path and sets no PATH: it
+becomes the session, which would keep it. niri gives what it spawns no
+output, so the login screen's Quickshell is put through systemd-cat too,
+under the same `greeter`.
 
 The gap cannot be closed from here: greetd ends the greeter before it starts
 the session on the same VT, where GDM kept its greeter on one VT until the
@@ -89,8 +100,10 @@ GDM's two services:
   outputs off the conversation rests at the password.
 - A password entered while the reader waits is sent when PAM asks.
 - After three fingers it does not know the reader is back in half a minute,
-  so its limit holds. Only "Failed to match" counts; a touch it could not
-  read does not.
+  so its limit holds: until then the conversation rests at the password, and
+  neither Esc nor an emptied field begins another. A wrong password does, as
+  PAM leaves no other way. Only "Failed to match" counts; a touch it could
+  not read does not.
 - A login by finger leaves the keyring locked, as it did under GDM.
 
 pam_fprintd's messages are told from other modules' by their words, which
@@ -108,6 +121,10 @@ login yet:
   cancelled while PAM checks an answer still sends its refusal. So Esc
   cancels nothing then; the screen cancels at the password prompt alone,
   and tries again every 5 s when the reader did not ask.
+- Each conversation dropped at the password makes pam_unix log two lines at
+  err, "conversation failed" and "auth could not identify password", every
+  10 s for as long as someone is at the screen with nothing typed. They are
+  the reader's rounds, not failed logins.
 - Quickshell does not wait for greetd's answer to a cancel and logs it as
   unexpected; a conversation started before it comes takes it for a success.
   Hence the screen's wait before each new one, longer after a late answer.
@@ -144,4 +161,5 @@ is plain, as at the first login after this is deployed.
 
 `GREETD_SOCK` pointing at a stand-in for greetd's IPC, and
 `qs --path greeter` in a nested niri, with `GREETER_USER`,
-`GREETER_SESSIONS` and `GREETER_WALLPAPERS` set as the module sets them.
+`GREETER_SESSIONS`, `GREETER_WALLPAPERS` and `GREETER_RUN` set as the module
+sets them; for `GREETER_RUN` any path does, as the stand-in starts nothing.
