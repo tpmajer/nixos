@@ -58,6 +58,7 @@ ShellRoot {
     // waits for a finger in it, then PAM asks for the password. Nothing typed
     // by then, and it is started over, for the reader to wait again.
     function begin() {
+        rearm.stop();
         heard = false;
         asked = false;
         answered = 0;
@@ -70,6 +71,9 @@ ShellRoot {
     // Not at once: Quickshell does not wait for greetd's answer to the
     // cancel, and would take it for the new conversation's success.
     function restart() {
+        if (accepted)
+            return;
+        rearm.stop();
         wanted = true;
         if (Greetd.state !== GreetdState.Inactive)
             Greetd.cancelSession();
@@ -101,13 +105,17 @@ ShellRoot {
             answer();
     }
 
+    // What was typed is dropped. The conversation too, unless the reader
+    // still waits in it: cancelled then, it would hold the reader.
     function cancel() {
         if (accepted)
             return;
         rejectionShown.stop();
         rejected = false;
+        const waits = Greetd.state === GreetdState.Authenticating && !asked && answered === 0;
         forget();
-        restart();
+        if (!waits)
+            restart();
     }
 
     function key(event) {
@@ -215,11 +223,14 @@ ShellRoot {
             Greetd.launch([root.session], ["XDG_SESSION_TYPE=wayland", "XDG_SESSION_DESKTOP=niri"], true);
         }
 
-        // Not started over by itself: it would be, without end. Esc does.
+        // greetd's own, a session it could not start among them. Started
+        // over in a while, not at once: it would be, without end.
         function onError(error) {
+            root.accepted = false;
             root.forget();
             root.finger = "";
             root.status = error;
+            rearm.restart();
         }
     }
 
@@ -260,7 +271,7 @@ ShellRoot {
     Timer {
         id: rearm
         interval: root.misses >= 3 ? 30000 : 5000
-        onTriggered: if (root.buffer === "" && !root.entered)
+        onTriggered: if (Greetd.state === GreetdState.Inactive || (root.buffer === "" && !root.entered))
             root.restart()
     }
 
