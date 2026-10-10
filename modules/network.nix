@@ -14,6 +14,8 @@ _:
   services.resolved.enable = true;
   # Off against LLMNR poisoning on untrusted networks; mDNS covers the LAN.
   services.resolved.settings.Resolve.LLMNR = false;
+  # Avahi is the one mDNS stack: two on port 5353 make it unreliable.
+  services.resolved.settings.Resolve.MulticastDNS = false;
 
   services.avahi = {
     enable = true;
