@@ -40,8 +40,12 @@ greetd, with Quickshell drawing the screen in a niri of its own
   candy-icons inherits and is now in `packages.nix`; `accounts-daemon`, which
   nothing here asks for, left off; and the gdm-fingerprint PAM service, which
   the lock borrowed for its reader: `lock-fingerprint` in `desktop.nix` now.
-- The session is `niri-session`, started with `XDG_SESSION_TYPE=wayland`:
-  greetd has a VT, and logind would call the session a tty.
+- The sessions are the desktop entries of the display manager's session
+  data, niri and Steam's gamescope: the one in the corner is started, and a
+  click or Tab makes it the next. The last one started is kept in
+  `/var/lib/greeter/session`, as GDM kept it; niri without one. It is
+  started with `XDG_SESSION_TYPE=wayland`: greetd has a VT, and logind
+  would call the session a tty.
 - Tried without a rebuild: `GREETD_SOCK` pointing at a stand-in for greetd's
   IPC, and `qs --path greeter` in a nested niri.
 
