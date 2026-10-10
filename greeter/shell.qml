@@ -9,12 +9,58 @@ import Quickshell.Services.Greetd
 
 // greetd's login screen, in a niri of its own (modules/greeter.nix): what the
 // lock in ~/.dotfiles shows (lock/LockView.qml), copied, over the session's
-// last wallpaper. One user and one session, both from the environment.
+// last wallpaper. One user, from the environment, and the sessions the system
+// has.
 ShellRoot {
     id: root
 
     readonly property string user: Quickshell.env("GREETER_USER")
-    readonly property string session: Quickshell.env("GREETER_SESSION")
+    // The sessions to choose from, as a display manager finds them: the
+    // desktop entries of a directory, [{ id: the file's name without its
+    // ending, name, exec, desktops: its DesktopNames, ":" between them }].
+    property var sessions: []
+    // The one to start: the last one started, else niri, else the first.
+    property int chosen: 0
+    readonly property var session: sessions[chosen] ?? null
+
+    function nextSession() {
+        if (sessions.length > 1 && !accepted)
+            chosen = (chosen + 1) % sessions.length;
+    }
+
+    Process {
+        running: true
+        command: ["sh", "-c", 'for f in "$1"/*.desktop; do echo "[$f]"; cat "$f"; done', "sh", Quickshell.env("GREETER_SESSIONS")]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const found = [];
+                for (const line of text.split("\n")) {
+                    const file = line.match(/^\[\/.*\/([^\/]+)\.desktop\]$/);
+                    const key = line.match(/^(Name|Exec|DesktopNames)=(.*)$/);
+                    if (file)
+                        found.push({id: file[1], name: file[1], exec: "", desktops: ""});
+                    else if (key && found.length > 0)
+                        found[found.length - 1][{Name: "name", Exec: "exec", DesktopNames: "desktops"}[key[1]]] = key[2].replace(/;+$/, "").replace(/;/g, ":");
+                }
+                const sessions = found.filter(s => s.exec !== "");
+                const last = lastSession.text().trim();
+                const at = id => sessions.findIndex(s => s.id === id);
+                root.chosen = Math.max(0, at(last) >= 0 ? at(last) : at("niri"));
+                root.sessions = sessions;
+            }
+        }
+    }
+
+    // The session last started, by its id: kept for the next login.
+    FileView {
+        id: lastSession
+        path: Quickshell.env("GREETER_STATE") + "/session"
+        blockLoading: true
+        // Written before Quickshell goes, as it does once the session is set.
+        blockWrites: true
+        printErrors: false
+    }
+
     // Where the session leaves what awww shows, a file per output.
     readonly property string wallpapers: Quickshell.env("GREETER_WALLPAPERS")
 
@@ -149,6 +195,10 @@ ShellRoot {
         // The key that lights the screens is not typed.
         if (idle.isIdle || Date.now() - wokeAt < 300)
             return;
+        if (event.key === Qt.Key_Tab) {
+            nextSession();
+            return;
+        }
         // A moment later, for niri to have set the LED.
         if (event.key === Qt.Key_CapsLock) {
             capsDelay.restart();
@@ -253,15 +303,28 @@ ShellRoot {
                 root.restart();
                 return;
             }
+            const session = root.session;
+            if (!session) {
+                root.forget();
+                root.status = "no session to start";
+                root.restart();
+                return;
+            }
             // The marks turn green, and what was typed is not kept.
             root.frozenMarks = root.buffer.length;
             root.buffer = "";
             root.accepted = true;
             if (root.answered === 0)
                 root.finger = "ok";
-            // The session's type is logind's to know: greetd has a VT, which
-            // makes it a tty otherwise.
-            Greetd.launch([root.session], ["XDG_SESSION_TYPE=wayland", "XDG_SESSION_DESKTOP=niri"], true);
+            lastSession.setText(session.id + "\n");
+            // What a display manager says of the session. Its type is
+            // logind's to know: greetd has a VT, which makes it a tty
+            // otherwise.
+            const environment = ["XDG_SESSION_TYPE=wayland", "XDG_SESSION_DESKTOP=" + session.id];
+            if (session.desktops !== "")
+                environment.push("XDG_CURRENT_DESKTOP=" + session.desktops);
+            // greetd hands the command to a shell, after /etc/profile.
+            Greetd.launch([session.exec], environment, true);
         }
 
         // greetd's own, a session it could not start among them. Started
@@ -740,6 +803,26 @@ ShellRoot {
                     text: root.capsLock ? "caps lock is on" : root.status !== "" ? root.status : " "
                     color: root.capsLock ? root.peach : root.red
                     font.pixelSize: root.fontSize - 2
+                }
+            }
+
+            // The session to start; a click or Tab, and it is the next one.
+            // Not there with one to choose from.
+            Label {
+                anchors.left: parent.left
+                anchors.bottom: parent.bottom
+                anchors.margins: 32
+                visible: root.sessions.length > 1
+                text: root.session?.name ?? ""
+                color: sessionArea.containsMouse ? root.subtext1 : root.subtext0
+                opacity: sessionArea.containsMouse ? 1 : 0.6
+
+                MouseArea {
+                    id: sessionArea
+                    anchors.fill: parent
+                    anchors.margins: -8
+                    hoverEnabled: true
+                    onClicked: root.nextSession()
                 }
             }
 
