@@ -61,7 +61,15 @@ Rectangle {
             return;
         checking = true;
         status = "";
-        sddm.login(config.user, buffer, chosen);
+        entering.start();
+    }
+
+    // Half a second on this screen before the hand-over: SDDM closes the
+    // window as soon as the password is taken, so it is held before PAM.
+    Timer {
+        id: entering
+        interval: 500
+        onTriggered: sddm.login(config.user, root.buffer, root.chosen)
     }
 
     function key(event) {
