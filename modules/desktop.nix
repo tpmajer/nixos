@@ -46,7 +46,7 @@ in
     gnome.gnome-keyring.enable = lib.mkForce false;
     gnome.gcr-ssh-agent.enable = true; # would go off with gnome-keyring
     dbus.packages = [
-      pkgs.gcr_3 # gcr-prompter, for oo7's unlock dialog
+      pkgs.gcr_3 # gcr-prompter, for gcr-ssh-agent's passphrase dialog
       (pkgs.writeTextDir "share/dbus-1/services/org.kde.secretprompter.service" ''
         [D-BUS Service]
         Name=org.kde.secretprompter

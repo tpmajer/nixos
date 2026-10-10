@@ -8,9 +8,9 @@ oo7 replaces gnome-keyring (`modules/desktop.nix`).
 - `gcr-ssh-agent` defaults to gnome-keyring's setting and would go off with it,
   taking the SSH agent (`SSH_AUTH_SOCK=/run/user/$UID/gcr/ssh`). It is gcr_4
   and independent of the Secret Service: kept on.
-- `gcr_3` ships gcr-prompter, which owns org.gnome.keyring.SystemPrompter, the
-  prompter oo7 calls for unlock dialogs. The oo7 module does not pull it in and
-  gcr_4 dropped it; without it there is no unlock prompt at all.
+- `gcr_3` ships gcr-prompter, which owns org.gnome.keyring.SystemPrompter.
+  gcr-ssh-agent asks it for the passphrase of an SSH key; gcr_4 dropped it,
+  and nothing else pulls it in. oo7 asked it too, before the prompt below.
 - `services.oo7` turns pam_oo7 on for the login stack, which gdm-password
   substacks, so the keyring unlocks with the GDM password. The module default,
   left on purpose; `lib.mkForce false` goes back to no auto-unlock.
