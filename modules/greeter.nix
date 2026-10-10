@@ -30,6 +30,8 @@ let
     export PATH=${
       lib.makeBinPath [
         niri
+        pkgs.bash
+        pkgs.coreutils
         pkgs.systemd
       ]
     }:$PATH

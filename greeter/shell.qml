@@ -3,13 +3,13 @@
 import QtQuick
 import QtQuick.Effects
 import Quickshell
+import Quickshell.Io
 import Quickshell.Wayland
 import Quickshell.Services.Greetd
 
-// greetd's login screen, in a niri of its own (modules/greeter.nix): the
-// clock, the date, the password field and the reader's icon of the lock in
-// ~/.dotfiles, over the session's last wallpaper, blurred and dimmed. One user
-// and one session, both from the environment.
+// greetd's login screen, in a niri of its own (modules/greeter.nix): what the
+// lock in ~/.dotfiles shows (lock/LockView.qml), copied, over the session's
+// last wallpaper. One user and one session, both from the environment.
 ShellRoot {
     id: root
 
@@ -23,6 +23,7 @@ ShellRoot {
     readonly property color subtext1: "#bac2de"
     readonly property color subtext0: "#a6adc8"
     readonly property color green: "#a6e3a1"
+    readonly property color peach: "#fab387"
     readonly property color red: "#f38ba8"
     readonly property string font: "JetBrainsMono Nerd Font Propo"
     readonly property int fontSize: 17
@@ -34,13 +35,19 @@ ShellRoot {
     property bool asked: false
     property int answered: 0
     property bool accepted: false
+    // The marks, kept green or red for a moment after the answer, and what
+    // the red ones turn into.
     property bool rejected: false
+    property int frozenMarks: -1
+    property string rejection: ""
+    readonly property int marks: frozenMarks >= 0 ? frozenMarks : buffer.length
     // What the empty field says, and whether what is typed may be seen: a
     // question after the password is PAM's to word.
     property string prompt: "password"
     property bool plain: false
-    // The line below the field: what PAM or greetd had to say.
+    // The line below the field: what the reader, PAM or greetd had to say.
     property string status: Greetd.available ? "" : "greetd is not there"
+    property bool capsLock: false
     // The reader's icon: "" not asked, "waiting" for a finger, "bad" for a
     // moment after one it did not recognise, "ok" after one it did.
     property string finger: ""
@@ -111,11 +118,26 @@ ShellRoot {
 
     // What was typed is dropped. The conversation too, unless the reader
     // still waits in it: cancelled then, it would hold the reader.
+    // The red marks go, the field is empty again. They stay red while they
+    // fade, unless a key has already started the next attempt.
+    function endRejection(now = true) {
+        if (!rejected)
+            return;
+        rejectionShown.stop();
+        frozenMarks = -1;
+        if (now) {
+            rejectionFade.stop();
+            rejected = false;
+        } else {
+            rejectionFade.restart();
+        }
+    }
+
     function cancel() {
         if (accepted)
             return;
-        rejectionShown.stop();
-        rejected = false;
+        endRejection();
+        rejection = "";
         const waits = Greetd.state === GreetdState.Authenticating && !asked && answered === 0;
         forget();
         if (!waits)
@@ -127,17 +149,20 @@ ShellRoot {
         // The key that lights the screens is not typed.
         if (idle.isIdle || Date.now() - wokeAt < 300)
             return;
+        // A moment later, for niri to have set the LED.
+        if (event.key === Qt.Key_CapsLock) {
+            capsDelay.restart();
+            return;
+        }
         if (event.key === Qt.Key_Escape) {
             cancel();
             return;
         }
         if (entered || accepted)
             return;
-        // A key during the red line starts the next attempt.
-        if (rejected) {
-            rejectionShown.stop();
-            rejected = false;
-        }
+        // A key during the red marks starts the next attempt.
+        endRejection();
+        rejection = "";
         switch (event.key) {
         case Qt.Key_Return:
         case Qt.Key_Enter:
@@ -170,7 +195,7 @@ ShellRoot {
                 if (error && !/timed out/i.test(message)) {
                     root.misses++;
                     root.finger = "bad";
-                    root.status = message.trim();
+                    root.status = "fingerprint not recognised";
                     missShown.restart();
                 } else if (!error) {
                     root.readerAsked = true;
@@ -209,9 +234,12 @@ ShellRoot {
         }
 
         function onAuthFailure(message) {
+            root.frozenMarks = root.buffer.length;
             root.forget();
             root.rejected = true;
+            root.rejection = "wrong password";
             rejectionShown.restart();
+            rejectionGone.restart();
             // Quickshell cancels what is left of it.
             root.wanted = true;
             starter.restart();
@@ -225,6 +253,9 @@ ShellRoot {
                 root.restart();
                 return;
             }
+            // The marks turn green, and what was typed is not kept.
+            root.frozenMarks = root.buffer.length;
+            root.buffer = "";
             root.accepted = true;
             if (root.answered === 0)
                 root.finger = "ok";
@@ -237,6 +268,7 @@ ShellRoot {
         // over in a while, not at once: it would be, without end.
         function onError(error) {
             root.accepted = false;
+            root.frozenMarks = -1;
             root.forget();
             root.finger = "";
             root.status = error;
@@ -262,8 +294,75 @@ ShellRoot {
 
     Timer {
         id: rejectionShown
-        interval: 1500
+        interval: 800
+        onTriggered: root.endRejection(false)
+    }
+
+    // From the rejection: the red marks' time, then the three seconds.
+    Timer {
+        id: rejectionGone
+        interval: rejectionShown.interval + 3000
+        onTriggered: root.rejection = ""
+    }
+
+    Timer {
+        id: rejectionFade
+        interval: 120
         onTriggered: root.rejected = false
+    }
+
+    // Read at the start and after the Caps Lock key is pressed and released.
+    Process {
+        id: capsQuery
+        running: true
+        command: ["sh", "-c", "cat /sys/class/leds/*::capslock/brightness 2>/dev/null"]
+        stdout: StdioCollector {
+            onStreamFinished: root.capsLock = /[1-9]/.test(text)
+        }
+    }
+
+    Timer {
+        id: capsDelay
+        interval: 60
+        onTriggered: capsQuery.running = true
+    }
+
+    // BAT1 from sysfs, as the bar's module: the icon by the tenth, and the
+    // bar's warning colours while it runs low.
+    QtObject {
+        id: battery
+
+        property int capacity: -1
+        property string status: ""
+        readonly property bool known: capacity >= 0
+        readonly property bool charging: status === "Charging"
+        readonly property bool low: status === "Discharging" && capacity <= 25
+        readonly property color color: !low ? root.subtext0 : capacity <= 15 ? root.red : root.peach
+        readonly property var chargingIcons: [0xf089c, 0xf0086, 0xf0087, 0xf0088, 0xf089d, 0xf0089, 0xf089e, 0xf008a, 0xf008b, 0xf0085]
+        readonly property var defaultIcons: [0xf007a, 0xf007b, 0xf007c, 0xf007d, 0xf007e, 0xf007f, 0xf0080, 0xf0081, 0xf0082, 0xf0079]
+        readonly property string icon: String.fromCodePoint((charging ? chargingIcons : defaultIcons)[Math.min(9, Math.floor(Math.max(0, capacity) / 10))])
+    }
+
+    FileView {
+        id: capacityFile
+        path: "/sys/class/power_supply/BAT1/capacity"
+        onLoaded: battery.capacity = Number(text().trim())
+    }
+
+    FileView {
+        id: statusFile
+        path: "/sys/class/power_supply/BAT1/status"
+        onLoaded: battery.status = text().trim()
+    }
+
+    Timer {
+        interval: 30000
+        running: true
+        repeat: true
+        onTriggered: {
+            capacityFile.reload();
+            statusFile.reload();
+        }
     }
 
     // How long the mark of a finger not recognised stays, and its line.
@@ -365,6 +464,10 @@ ShellRoot {
                 anchors.fill: parent
                 focus: true
                 Keys.onPressed: event => root.key(event)
+                Keys.onReleased: event => {
+                    if (event.key === Qt.Key_CapsLock)
+                        capsDelay.restart();
+                }
             }
 
             // None for this output, and the screen is plain.
@@ -427,9 +530,17 @@ ShellRoot {
                     text: Qt.formatDateTime(clock.date, "dddd, d MMMM")
                 }
 
+                // The lock's row, of which only the battery is known here.
+                // It keeps its line without one, so nothing moves.
                 Label {
                     anchors.horizontalCenter: parent.horizontalCenter
-                    text: root.user
+                    text: battery.known ? battery.icon + " " + battery.capacity + "%" : " "
+                    color: battery.color
+                }
+
+                Item {
+                    width: 1
+                    height: 24
                 }
 
                 // The password field: a mark per character typed.
@@ -438,55 +549,163 @@ ShellRoot {
                     width: 320
                     height: 48
 
+                    // The bar's shape and shadow, see-through as a whole.
+                    Item {
+                        anchors.fill: parent
+                        opacity: 0.7
+
+                        layer.enabled: true
+                        layer.effect: MultiEffect {
+                            shadowEnabled: true
+                            shadowColor: "#77000000"
+                            shadowBlur: 1.0
+                            blurMax: 24
+                            shadowVerticalOffset: 3
+                        }
+
+                        Rectangle {
+                            anchors.fill: parent
+                            radius: 6
+                            color: root.base
+                        }
+                    }
+
                     Label {
+                        id: placeholder
+                        readonly property bool shown: root.marks === 0 && !(root.plain && root.buffer !== "")
+
                         anchors.centerIn: parent
-                        visible: root.buffer === ""
-                        text: root.rejected ? "not let in" : root.entered ? "checking…" : root.prompt
-                        color: root.rejected ? root.red : root.subtext0
+
+                        text: root.rejection !== "" ? root.rejection : root.entered ? "checking…" : root.prompt
+                        color: root.rejection !== "" ? root.red : root.subtext0
+
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: 250
+                            }
+                        }
+
+                        // Gone at the first key; back once the marks have
+                        // faded.
+                        states: State {
+                            name: "typing"
+                            when: !placeholder.shown
+                            PropertyChanges {
+                                placeholder.opacity: 0
+                            }
+                        }
+                        transitions: Transition {
+                            from: "typing"
+                            SequentialAnimation {
+                                PauseAnimation {
+                                    duration: 100
+                                }
+                                NumberAnimation {
+                                    property: "opacity"
+                                    duration: 150
+                                }
+                            }
+                        }
                     }
 
                     Label {
                         anchors.centerIn: parent
-                        width: Math.min(implicitWidth, parent.width)
+                        width: Math.min(implicitWidth, parent.width - 24)
                         elide: Text.ElideLeft
                         visible: root.plain
                         text: root.buffer
                         color: root.subtext1
+                        opacity: marks.opacity
                     }
 
+                    // One per character typed: a mark fades and grows in at
+                    // the end of the row, which stays centred by sliding.
                     Row {
                         id: marks
 
-                        anchors.centerIn: parent
+                        x: (parent.width - width) / 2
+                        anchors.verticalCenter: parent.verticalCenter
                         visible: !root.plain
                         spacing: 8
 
                         // Pulses while the password is checked.
-                        SequentialAnimation on opacity {
+                        SequentialAnimation {
                             running: root.entered && !root.accepted
                             loops: Animation.Infinite
-                            onStopped: marks.opacity = 1
+                            onStarted: pulseEnd.stop()
+                            onStopped: pulseEnd.start()
 
                             NumberAnimation {
+                                target: marks
+                                property: "opacity"
                                 to: 0.35
                                 duration: 450
                                 easing.type: Easing.InOutSine
                             }
                             NumberAnimation {
+                                target: marks
+                                property: "opacity"
                                 to: 1
                                 duration: 450
                                 easing.type: Easing.InOutSine
                             }
                         }
 
-                        Repeater {
-                            // As many as the field is wide.
-                            model: Math.min(root.buffer.length, 18)
+                        // Back to full from wherever the pulse was.
+                        NumberAnimation {
+                            id: pulseEnd
+                            target: marks
+                            property: "opacity"
+                            to: 1
+                            duration: 150
+                        }
 
+                        Behavior on x {
+                            NumberAnimation {
+                                duration: 150
+                                easing.type: Easing.OutCubic
+                            }
+                        }
+
+                        Repeater {
+                            // As many as the field is wide, shown one per
+                            // character: counting the characters would make
+                            // all of them anew at every key.
+                            model: 18
+
+                            // The bar's mark of the active workspace.
                             Label {
-                                // The bar's mark of the active workspace.
+                                required property int index
+                                readonly property bool typed: index < root.marks
+
                                 text: String.fromCodePoint(0xf14fb)
-                                color: root.accepted ? root.green : root.subtext1
+                                color: root.accepted ? root.green : root.rejected ? root.red : root.subtext1
+
+                                // Red comes in gradually. Green does not:
+                                // what shows it is gone within a few frames.
+                                Behavior on color {
+                                    enabled: !root.accepted
+                                    ColorAnimation {
+                                        duration: 250
+                                    }
+                                }
+                                opacity: typed ? 1 : 0
+                                scale: typed ? 1 : 0.4
+                                // Out of the row once faded: the row is as
+                                // wide as what was typed.
+                                visible: opacity > 0
+
+                                Behavior on opacity {
+                                    NumberAnimation {
+                                        duration: typed ? 150 : 100
+                                    }
+                                }
+                                Behavior on scale {
+                                    NumberAnimation {
+                                        duration: typed ? 200 : 100
+                                        easing.type: typed ? Easing.OutBack : Easing.InQuad
+                                    }
+                                }
                             }
                         }
                     }
@@ -515,9 +734,11 @@ ShellRoot {
 
                 Label {
                     anchors.horizontalCenter: parent.horizontalCenter
-                    // Keeps its line when empty, so nothing moves.
-                    text: root.status !== "" ? root.status : " "
-                    color: root.red
+                    // Caps Lock, which matters while typing, else what the
+                    // reader or greetd had to say. Keeps its line when
+                    // empty, so nothing moves.
+                    text: root.capsLock ? "caps lock is on" : root.status !== "" ? root.status : " "
+                    color: root.capsLock ? root.peach : root.red
                     font.pixelSize: root.fontSize - 2
                 }
             }
