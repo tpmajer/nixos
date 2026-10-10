@@ -50,7 +50,8 @@ let
     export GREETER_SESSIONS=${config.services.displayManager.sessionData.desktops}/share/wayland-sessions
     export GREETER_WALLPAPERS=${wallpapers}
     export GREETER_RUN=${run}
-    ${lib.getExe pkgs.quickshell} --path ${../greeter}
+    # niri gives what it spawns no output: Quickshell's goes to the journal here.
+    ${pkgs.systemd}/bin/systemd-cat --identifier=greeter ${lib.getExe pkgs.quickshell} --path ${../greeter}
     niri msg action quit --skip-confirmation
   '';
 
