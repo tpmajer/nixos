@@ -91,9 +91,8 @@ ShellRoot {
     property bool readerAsked: false
     // When someone came back to dark screens, in ms.
     property real wokeAt: 0
-    // A conversation is to be started, this long after the last one was
-    // dropped, and whether PAM has said anything in the one there is.
-    property bool wanted: false
+    // How long after one conversation was dropped the next is started, and
+    // whether PAM has said anything in the one there is.
     property int delay: 250
     property bool heard: false
 
@@ -117,7 +116,6 @@ ShellRoot {
         if (accepted)
             return;
         rearm.stop();
-        wanted = true;
         // Nothing to answer until the next one asks.
         asked = false;
         if (Greetd.state !== GreetdState.Inactive)
@@ -284,7 +282,6 @@ ShellRoot {
             rejectionShown.restart();
             rejectionGone.restart();
             // Quickshell cancels what is left of it.
-            root.wanted = true;
             starter.restart();
         }
 
@@ -335,14 +332,13 @@ ShellRoot {
         id: starter
         interval: root.delay
         onTriggered: {
-            if (!root.wanted || root.accepted)
+            if (root.accepted)
                 return;
             // Dropped again meanwhile, by Quickshell.
             if (Greetd.state !== GreetdState.Inactive) {
                 root.restart();
                 return;
             }
-            root.wanted = false;
             root.begin();
         }
     }
