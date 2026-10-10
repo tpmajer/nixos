@@ -32,7 +32,8 @@ git add --force private.nix  # makes it visible to nix flake (stays gitignored)
 │   ├── core.nix                 # Locale, user, sudo, Nix settings
 │   ├── hardware.nix             # Graphics, radios, kernel, LUKS
 │   ├── power.nix                # TLP, scx, suspend hooks, battery, Wi-Fi power save
-│   ├── desktop.nix              # GDM, PipeWire, portals, oo7, desktop services
+│   ├── desktop.nix              # PipeWire, portals, oo7, desktop services
+│   ├── greeter.nix              # greetd and its login screen
 │   ├── session.nix              # User services of the niri session (Quickshell, hypridle, …)
 │   ├── background-apps.nix      # Thunderbird and Signal without a window
 │   ├── network.nix              # NetworkManager, resolved, Avahi, firewall
@@ -43,6 +44,7 @@ git add --force private.nix  # makes it visible to nix flake (stays gitignored)
 │   ├── littlesnitch.nix         # Little Snitch application firewall
 │   ├── script.nix               # Helper: a file from scripts/ as a command
 │   └── optional/                # Not imported: llm.nix, dlna.nix
+├── greeter/                     # The login screen's Quickshell config, built into the store
 ├── scripts/                     # Shell scripts the modules install, shellchecked at build
 ├── notes/                       # Why things are the way they are, one file per topic
 └── .githooks/
@@ -79,6 +81,7 @@ setting, with dates and measurements, is in `notes/`.
 - **Status bar:** Quickshell (config in `~/.dotfiles/.config/quickshell`)
 - **Idle daemon:** Hypridle
 - **Lock screen:** Quickshell (same config as the status bar)
+- **Login screen:** greetd with Quickshell (`greeter/shell.qml`)
 - **Wallpaper daemon:** AWWW
 - **Blue-light filter:** Gammastep (`-l 50.5:22.0`, 6500K→4500K)
 - **Notifications:** Quickshell (same config as the status bar)
