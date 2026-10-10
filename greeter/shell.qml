@@ -347,6 +347,7 @@ ShellRoot {
         // over in a while, not at once: it would be, without end.
         function onError(error) {
             root.accepted = false;
+            leave.stop();
             root.launching = null;
             root.frozenMarks = -1;
             root.forget();
@@ -378,7 +379,7 @@ ShellRoot {
     Timer {
         id: leave
         interval: 300
-        onTriggered: root.launching()
+        onTriggered: root.launching?.()
     }
 
     Timer {
