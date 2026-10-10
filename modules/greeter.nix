@@ -101,6 +101,11 @@ let
           background-color "#000000"
       }
 
+      // No X11 for the login screen: it would take display :0 first.
+      xwayland-satellite {
+          off
+      }
+
       binds {
       }
 
