@@ -25,8 +25,14 @@ let
     ];
   };
 
-  # Whatever greetd starts, with its output off the VT (notes/greeter.md).
-  run = lib.getExe (script "greeter-session" { inputs = [ pkgs.systemd ]; });
+  # Whatever greetd starts, with its output in the journal and no cursor on
+  # the VT (notes/greeter.md). No PATH of its own: the session would keep it.
+  run = pkgs.writeShellScript "greeter-session" ''
+    printf '\033[?25l'
+    identifier=$1
+    shift
+    exec ${pkgs.systemd}/bin/systemd-cat --identifier="$identifier" -- "$@"
+  '';
 
   # The greeter's whole session: Quickshell, and niri gone with it.
   greeter = pkgs.writeShellScript "greeter" ''
