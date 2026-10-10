@@ -31,6 +31,22 @@ greetd hands the entry's `Exec` to a shell after `/etc/profile`, so a bare
 `niri-session` is found. The session is started with
 `XDG_SESSION_TYPE=wayland`: greetd has a VT, and logind would call it a tty.
 
+## Output
+
+greetd connects what it starts, the greeter and the session alike, to the VT
+and sets the VT to text mode. Between two compositors, and until a session's
+compositor shows its first frame, the VT is what the screen shows, with
+whatever was printed to it: under GDM the output went to the journal.
+`greeter-session` wraps both: the output goes to the journal under the
+session's id (`journalctl -t steam`, `-t niri`, `-t greeter`), and the VT's
+cursor is hidden.
+
+First seen 2026-10-10: a flash of text at login, and Steam's gamescope
+session looking stuck on a console of its own logs until Ctrl+Alt+F3. Whether
+gamescope was only waiting for Steam's first frame, some 20 s as under GDM,
+or needed the VT switch to show, is not known: its logs were on the VT. They
+are in the journal from here on.
+
 ## PAM, the keyring and the reader
 
 greetd's PAM service only refers to `login`, as gdm-password did, so the
