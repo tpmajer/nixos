@@ -100,6 +100,14 @@ ShellRoot {
     // Fingers not recognised in this conversation, and whether the reader
     // asked for one: it does not when there is none, or it is still held.
     property int misses: 0
+    // Until when the reader is kept away after three of them, in ms: no
+    // conversation, and so no reader, is begun by a key before that.
+    property real barredUntil: 0
+
+    // The conversation is kept at the password while the reader is away.
+    function resting() {
+        return asked && answered === 0 && Date.now() < barredUntil;
+    }
     property bool readerAsked: false
     // When someone came back to dark screens, in ms.
     property real wokeAt: 0
@@ -184,8 +192,11 @@ ShellRoot {
         endRejection();
         rejection = "";
         const waits = Greetd.state === GreetdState.Authenticating && !asked && answered === 0;
+        const rests = resting();
         forget();
-        if (!waits)
+        // The password is still asked for.
+        asked = rests;
+        if (!waits && !rests)
             restart();
     }
 
@@ -220,7 +231,7 @@ ShellRoot {
         case Qt.Key_Backspace:
             buffer = event.modifiers & Qt.ControlModifier ? "" : buffer.slice(0, -1);
             // Nothing left to send: the reader again.
-            if (buffer === "" && asked && answered === 0)
+            if (buffer === "" && asked && answered === 0 && !resting())
                 restart();
             break;
         default:
@@ -275,6 +286,8 @@ ShellRoot {
             // back towards what it was.
             root.delay = Math.max(250, Math.round(root.delay * 3 / 4));
             root.asked = true;
+            if (root.misses >= 3)
+                root.barredUntil = Date.now() + rearm.interval;
             if (root.entered)
                 root.answer();
             else if (root.buffer !== "" || idle.isIdle)
@@ -477,7 +490,7 @@ ShellRoot {
             }
             root.wokeAt = Date.now();
             // Only one that rests: the reader waits in any other.
-            if (root.asked && root.answered === 0 && root.buffer === "")
+            if (root.asked && root.answered === 0 && root.buffer === "" && !root.resting())
                 root.restart();
         }
     }
