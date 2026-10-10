@@ -77,6 +77,8 @@ ShellRoot {
             return;
         rearm.stop();
         wanted = true;
+        // Nothing to answer until the next one asks.
+        asked = false;
         if (Greetd.state !== GreetdState.Inactive)
             Greetd.cancelSession();
         starter.restart();
