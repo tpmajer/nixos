@@ -89,8 +89,9 @@ Lanczos3.
 - On an idle machine, in a headless sway at the panel's mode: swaybg with
   that copy has its first buffer in about 30 ms, awww's restore takes 160.
 
-Not seen on a login yet. The black of SDDM's niri before the session's is
-still there: its window is closed at the login.
+Seen on a login 2026-10-11: the wallpaper is there as the session comes up.
+The black of SDDM's niri before the session's is still there: its window is
+closed at the login.
 
 ## Trying the theme without a rebuild
 
