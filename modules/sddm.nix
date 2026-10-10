@@ -26,6 +26,15 @@ let
     ];
   };
 
+  wallpaperFirst = script "wallpaper-first" {
+    inputs = [
+      pkgs.awww
+      pkgs.coreutils
+      pkgs.gnugrep
+      pkgs.swaybg
+    ];
+  };
+
   # The battery, for the theme: it can read settings, and no sysfs.
   battery = "${config.users.users.sddm.home}/battery.ini";
 
@@ -170,6 +179,15 @@ in
       Type = "oneshot";
       ExecStart = "${lib.getExe greeterWallpaper} ${wallpapers}";
     };
+  };
+  # The copy on the screen at once as the session starts, until awww has its
+  # own image up (notes/sddm.md).
+  systemd.user.services.wallpaper-first = {
+    description = "The wallpaper's first frame";
+    bindsTo = [ "niri.service" ];
+    after = [ "niri.service" ];
+    wantedBy = [ "niri.service" ];
+    serviceConfig.ExecStart = "${lib.getExe wallpaperFirst} ${wallpapers}";
   };
   systemd.user.paths.greeter-wallpaper = {
     wantedBy = [ "niri.service" ];
