@@ -189,6 +189,9 @@ ShellRoot {
                 root.plain = echoResponse;
                 return;
             }
+            // A conversation in order: the wait before the next one goes
+            // back towards what it was.
+            root.delay = Math.max(250, Math.round(root.delay * 3 / 4));
             root.asked = true;
             if (root.entered)
                 root.answer();
