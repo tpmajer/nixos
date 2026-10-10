@@ -43,45 +43,51 @@ let
   '';
 
   # No binds: nothing to start from the login screen. The VT keys are niri's own.
-  niriConfig = pkgs.writeText "greeter-niri.kdl" ''
-    input {
-        // niri would suspend at the power key, which is the reader too;
-        // logind ignores it (power.nix).
-        disable-power-key-handling
+  # Checked at build: niri starts with its defaults, binds and all, on a
+  # config it cannot read.
+  niriConfig = pkgs.writeTextFile {
+    name = "greeter-niri.kdl";
+    checkPhase = "${niri}/bin/niri validate --config $target";
+    text = ''
+      input {
+          // niri would suspend at the power key, which is the reader too;
+          // logind ignores it (power.nix).
+          disable-power-key-handling
 
-        keyboard {
-            xkb {
-                layout "pl"
-            }
+          keyboard {
+              xkb {
+                  layout "${config.services.xserver.xkb.layout}"
+              }
 
-            numlock
-        }
+              numlock
+          }
 
-        touchpad {
-            tap
-            natural-scroll
-        }
-    }
+          touchpad {
+              tap
+              natural-scroll
+          }
+      }
 
-    // As in the session (~/.dotfiles, niri's config.kdl).
-    output "eDP-1" {
-        scale 1.6
-    }
+      // As in the session (~/.dotfiles, niri's config.kdl).
+      output "eDP-1" {
+          scale 1.6
+      }
 
-    cursor {
-        xcursor-theme "Simp1e-Catppuccin-Mocha"
-        xcursor-size 24
-    }
+      cursor {
+          xcursor-theme "Simp1e-Catppuccin-Mocha"
+          xcursor-size 24
+      }
 
-    hotkey-overlay {
-        skip-at-startup
-    }
+      hotkey-overlay {
+          skip-at-startup
+      }
 
-    binds {
-    }
+      binds {
+      }
 
-    spawn-at-startup "${greeter}"
-  '';
+      spawn-at-startup "${greeter}"
+    '';
+  };
 in
 
 {
