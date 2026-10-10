@@ -13,7 +13,7 @@
     ./hardware.nix
     ./power.nix
     ./desktop.nix
-    ./greeter.nix
+    ./sddm.nix
     ./session.nix
     ./background-apps.nix
     ./network.nix
