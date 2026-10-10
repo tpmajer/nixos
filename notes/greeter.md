@@ -41,6 +41,21 @@ whatever was printed to it: under GDM the output went to the journal.
 session's id (`journalctl -t steam`, `-t niri`, `-t greeter`), and the VT's
 cursor is hidden.
 
+The gap cannot be closed from here: greetd ends the greeter before it starts
+the session on the same VT, where GDM kept its greeter on one VT until the
+session's compositor was up on another. Measured 2026-10-10, some 1.1 s from
+the greeter's niri going to the session's niri taking the output. So the
+screen fades to black before the session is started, and the greeter's niri
+is black under it: black screen, black VT, then the desktop.
+
+Of that gap, 0.5 to 0.6 s lie between the PAM session's close and logind
+removing the session, in every hand-over of that boot and the two before,
+either way round (greeter to session, session to greeter). A TTY login
+through the same `login` stack was removed 27 ms after its close, so it is
+not a PAM module: it comes with a session that held the VT and the display.
+What logind does in that time was not traced; it needs root
+(`strace -T -p $(pidof systemd-logind)` over a login).
+
 First seen 2026-10-10: a flash of text at login, and Steam's gamescope
 session looking stuck on a console of its own logs until Ctrl+Alt+F3. Whether
 gamescope was only waiting for Steam's first frame, some 20 s as under GDM,
