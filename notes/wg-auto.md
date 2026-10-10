@@ -34,7 +34,8 @@ Bluetooth tethering always are. To read the gateway's MAC:
 
 An nftables table of its own (`inet wg_killswitch`), next to the firewall's, so
 that taking it away is one command. It looks at Wi-Fi, wired and modem
-interfaces (`wl*`, `en*`, `eth*`, `usb*`, `ww*`); traffic through `wg0`, `lo`
+interfaces and Bluetooth tethering (`wl*`, `en*`, `eth*`, `usb*`, `ww*`,
+`ppp*`, `bnep*`); traffic through `wg0`, `lo`
 and the containers' bridges is not looked at, what containers send out is, as
 forwarded.
 

@@ -37,6 +37,8 @@ let
           "eth"
           "usb"
           "ww"
+          "ppp"
+          "bnep"
         ];
     in
     pkgs.writeText "wg-killswitch-${mode}.nft" ''
