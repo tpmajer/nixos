@@ -231,14 +231,22 @@ ShellRoot {
         function onAuthMessage(message, error, responseRequired, echoResponse) {
             root.heard = true;
             if (!responseRequired) {
-                // pam_fprintd: its prompt for a finger, an error for each one
-                // not recognised, and a word when it gives up.
-                if (error && !/timed out/i.test(message)) {
-                    root.misses++;
+                // pam_fprintd's, told by their words, which are English
+                // under the system's locale: its prompt for a finger, an
+                // error for one it does not know, which counts, or could not
+                // read, which does not, and a word when it gives up.
+                if (/timed out/i.test(message))
+                    return;
+                if (!/finger|swipe|sensor|reader/i.test(message)) {
+                    // Another module's: said, and no more.
+                    root.status = message.trim();
+                } else if (error) {
+                    if (/match/i.test(message))
+                        root.misses++;
                     root.finger = "bad";
                     root.status = "fingerprint not recognised";
                     missShown.restart();
-                } else if (!error) {
+                } else {
                     root.readerAsked = true;
                     if (root.finger !== "bad")
                         root.finger = "waiting";
