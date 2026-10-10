@@ -73,19 +73,21 @@ in
       };
     };
 
-    "app-com.mitchell.ghostty" = sessionPath // {
-      after = [
-        "graphical-session.target"
-        "niri.service"
-      ];
-      wantedBy = [ "niri.service" ];
-      description = "Ghostty in the background, for new windows without a start-up";
-      serviceConfig = {
-        Type = "simple";
-        ExecStart = "${pkgs.ghostty}/bin/ghostty --gtk-single-instance=true --initial-window=false";
-        Restart = "on-failure";
-        RestartSec = "2s";
+    "app-com.mitchell.ghostty" =
+      withNiri
+      // sessionPath
+      // {
+        after = [
+          "graphical-session.target"
+          "niri.service"
+        ];
+        description = "Ghostty in the background, for new windows without a start-up";
+        serviceConfig = {
+          Type = "simple";
+          ExecStart = "${pkgs.ghostty}/bin/ghostty --gtk-single-instance=true --initial-window=false";
+          Restart = "on-failure";
+          RestartSec = "2s";
+        };
       };
-    };
   };
 }
