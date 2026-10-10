@@ -6,7 +6,9 @@
 let
   script = import ./script.nix { inherit pkgs; };
 
+  # Stopped when niri goes, as the session's services are (notes/desktop.md).
   background = {
+    bindsTo = [ "niri.service" ];
     after = [
       "niri.service"
       "quickshell.service"
