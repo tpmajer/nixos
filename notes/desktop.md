@@ -31,6 +31,15 @@ greetd, with Quickshell drawing the screen in a niri of its own
 - Quickshell does not wait for greetd's answer to a cancel and logs it as
   unexpected; a conversation started before it comes takes it for a success.
   Hence the screen's wait before each new one.
+- Its niri is told not to handle the power key, which would suspend: the key
+  is the reader too. Left alone for ten minutes the screen suspends the
+  machine itself, as GDM's greeter did.
+- niri starts with its default config, binds included, on one it cannot
+  parse, so the greeter's is checked with `niri validate` at build.
+- What GDM's module brought and is gone with it: `adwaita-icon-theme`, which
+  candy-icons inherits and is now in `packages.nix`; `accounts-daemon`, which
+  nothing here asks for, left off; and the gdm-fingerprint PAM service, which
+  the lock borrowed for its reader: `lock-fingerprint` in `desktop.nix` now.
 - The session is `niri-session`, started with `XDG_SESSION_TYPE=wayland`:
   greetd has a VT, and logind would call the session a tty.
 - Tried without a rebuild: `GREETD_SOCK` pointing at a stand-in for greetd's

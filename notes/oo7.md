@@ -16,7 +16,8 @@ oo7 replaces gnome-keyring (`modules/desktop.nix`).
   default, left on purpose; `lib.mkForce false` goes back to no auto-unlock.
 - The `hyprlock` PAM service is the Quickshell lock's password check
   (`~/.dotfiles`, Lock.qml). It keeps the name of hyprlock, which it was set up
-  for and which is gone.
+  for and which is gone. The lock's reader has `lock-fingerprint`, pam_fprintd
+  alone: a finger does not unlock the keyring.
 
 ## The unlock prompt
 
