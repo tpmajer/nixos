@@ -1,59 +1,5 @@
 # Desktop notes
 
-## The login screen
-
-greetd, with Quickshell drawing the screen in a niri of its own
-(`modules/greeter.nix`, `greeter/shell.qml`), in place of GDM (2026-10-10).
-
-- The greeter runs as the `greeter` user, which cannot read `~/.dotfiles`:
-  the screen is built into the store, with the lock's look copied, not shared.
-  A change to it needs a rebuild, and an edit to the bar cannot break it.
-- For the same reason the wallpaper is a copy: `greeter-wallpaper`, a user
-  service, leaves what awww shows on each output in `/var/cache/greeter`,
-  scaled down, as the session starts and whenever awww writes its cache
-  (a path unit on `~/.cache/awww/<version>`; awww tells nobody). The copies
-  are readable by every user. No copy for an output, and the screen is plain.
-- Its niri has no binds. The VT keys are niri's own, so a TTY is still there
-  if the screen fails; greetd starts the greeter again when it exits.
-- greetd's PAM service only refers to `login`, as gdm-password did, so the
-  keyring unlocks with the password (notes/oo7.md). GDM's module also set
-  `login.fprintAuth = false`, which is kept: a TTY asks for the password.
-- The reader is pam_fprintd in greetd's own service, ahead of `login`. greetd
-  holds one conversation, so the reader and the password take turns, unlike
-  GDM's two services: the reader waits 10 s, pam_fprintd's least (it raises
-  a lower timeout), then PAM asks for the password.
-  With nothing typed by then the screen drops the conversation and starts
-  another, so the reader waits for as long as someone is there; a password
-  entered meanwhile is sent when PAM asks. A login by finger leaves the
-  keyring locked, as it did under GDM.
-- greetd does not stop a cancelled conversation's worker: one cancelled while
-  pam_fprintd waits holds the reader until its timeout. The screen cancels at
-  the password, and tries again every 5 s when the reader did not ask. Esc
-  while the reader waits or an answer is checked cancels nothing.
-- Quickshell does not wait for greetd's answer to a cancel and logs it as
-  unexpected; a conversation started before it comes takes it for a success.
-  Hence the screen's wait before each new one.
-- Its niri is told not to handle the power key, which would suspend: the key
-  is the reader too. Left alone for ten minutes the screen suspends the
-  machine itself, as GDM's greeter did.
-- niri starts with its default config, binds included, on one it cannot
-  parse, so the greeter's is checked with `niri validate` at build.
-- What GDM's module brought and is gone with it: `adwaita-icon-theme`, which
-  candy-icons inherits and is now in `packages.nix`; `accounts-daemon`, which
-  nothing here asks for, left off; and the gdm-fingerprint PAM service, which
-  the lock borrowed for its reader: `lock-fingerprint` in `desktop.nix` now.
-  The old name is kept next to it until `~/.dotfiles` asks for the new one
-  (its `greetd` branch): that repo is live and this one needs a rebuild, so
-  either may come first. Then the old name goes.
-- The sessions are the desktop entries of the display manager's session
-  data, niri and Steam's gamescope: the one in the corner is started, and a
-  click or Tab makes it the next. It is niri at every start: the last one
-  is not kept, unlike under GDM. It is started with
-  `XDG_SESSION_TYPE=wayland`: greetd has a VT, and logind would call the
-  session a tty.
-- Tried without a rebuild: `GREETD_SOCK` pointing at a stand-in for greetd's
-  IPC, and `qs --path greeter` in a nested niri.
-
 ## Session services
 
 Quickshell, hypridle, the wallpaper daemon and the rest are bound to
