@@ -70,3 +70,9 @@ Spotify's sync of local files with mobile devices; mDNS (5353) is opened by
 7100, 7000, 7001. LLMNR is off against poisoning on untrusted networks:
 nothing here resolves bare hostnames (no samba/cifs client, no wsdd) and mDNS
 covers the LAN.
+
+mDNS is Avahi's alone: systemd-resolved's is off. With both on port 5353
+Avahi warned at every start that a second stack makes mDNS unreliable
+(2026-10-10). Names in `.local` resolve through nss-mdns, which nsswitch asks
+before resolved; a program that asks resolved itself, past the system's
+resolver, no longer gets them.
