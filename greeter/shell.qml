@@ -150,8 +150,6 @@ ShellRoot {
             answer();
     }
 
-    // What was typed is dropped. The conversation too, unless the reader
-    // still waits in it: cancelled then, it would hold the reader.
     // The red marks go, the field is empty again. They stay red while they
     // fade, unless a key has already started the next attempt.
     function endRejection(now = true) {
@@ -167,8 +165,15 @@ ShellRoot {
         }
     }
 
+    // What was typed is dropped, and the conversation with it, but for two
+    // that greetd is busy in and would answer late, into the next one. Where
+    // the reader still waits, the conversation stays: cancelled, it would
+    // hold the reader too. Where an answer is being checked, nothing is
+    // done: PAM's word on it comes first.
     function cancel() {
         if (accepted)
+            return;
+        if (Greetd.state === GreetdState.Authenticating && !asked && answered > 0)
             return;
         endRejection();
         rejection = "";
