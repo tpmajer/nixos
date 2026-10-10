@@ -144,6 +144,39 @@ output in `/var/cache/greeter/<output>.jpg`, scaled down:
 The copies are readable by every user. No copy for an output, and the screen
 is plain, as at the first login after this is deployed.
 
+## SDDM, tried for its hand-over (branch `sddm`, 2026-10-10)
+
+SDDM starts the session on a new VT, as GDM does. Measured from the password
+taken to the session's niri having the output:
+
+| Greeter | Time | Black between |
+|---|---|---|
+| greetd | about 1.1 s | yes |
+| SDDM, Wayland greeter as shipped | 0.75 s | yes |
+| SDDM, greeter under Xorg | 0.33 s | no |
+| SDDM, Wayland greeter, compositor held | 0.46 s with weston, 0.17 s with niri | no |
+
+- SDDM 0.21's Wayland greeter closes its window at a login, and the helper
+  that runs it ends the compositor with it: the VT is back in text mode
+  before the session is up, the same half second as under greetd. Under
+  Xorg the X server is SDDM's own process and stays, as root, for as long
+  as the session runs.
+- SDDM waits 5 s for the compositor to end. `sddm-compositor` holds it for 3
+  after the signal, so the greeter's VT stays in graphics mode until the
+  session has the screen, and goes back to text in the background.
+- The compositor is niri, with greetd's settings for it: SDDM's greeter is a
+  plain window asking for fullscreen, hence the window rule. The panel
+  names 60 Hz as preferred next to 120 Hz; a greeter at another rate than
+  the session hands over with a modeset of its own, which shows.
+- The theme (`sddm/Main.qml`) is the lock's view again, in plain QML with
+  SDDM's objects. A theme reads no file but an image or settings: the
+  battery is written to `~sddm/battery.ini` by the compositor's wrapper and
+  read with `Settings`. `sddm-greeter-qt6 --test-mode --theme <dir>` shows it
+  in a window; a login does nothing there.
+- The password alone so far. SDDM begins its one PAM conversation when the
+  form is sent, so a reader that waits from the start needs more than a
+  theme.
+
 ## What went with GDM
 
 - `adwaita-icon-theme`, where GTK looks for an icon the theme in use lacks,
