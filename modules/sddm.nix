@@ -4,11 +4,11 @@
 { ... }:
 
 {
+  # The greeter under Xorg: SDDM's Wayland greeter and its compositor go as
+  # the session starts, an X server stays until the session is up.
+  services.xserver.enable = true;
   services.displayManager = {
-    sddm = {
-      enable = true;
-      wayland.enable = true;
-    };
+    sddm.enable = true;
     defaultSession = "niri";
   };
 
