@@ -99,14 +99,14 @@ in
   };
 
   # The reader for the login screen alone, ahead of login's rules; a TTY keeps
-  # to the password, as under GDM. 5 s, then the password is asked for: the
-  # screen starts the conversation over while nothing is typed.
+  # to the password, as under GDM. 10 s, pam_fprintd's least, then the password
+  # is asked for: the screen starts the conversation over while nothing is typed.
   security.pam.services.login.fprintAuth = false;
   security.pam.services.greetd.rules.auth.fprintd = {
     order = 10000;
     control = "sufficient";
     modulePath = "${config.services.fprintd.package}/lib/security/pam_fprintd.so";
-    settings.timeout = 5;
+    settings.timeout = 10;
   };
 
   # The greeter cannot read the user's home: a copy of what awww shows, made
