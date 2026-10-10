@@ -87,6 +87,11 @@ let
           skip-at-startup
       }
 
+      // Black under the login screen as it goes, as the VT after it is.
+      layout {
+          background-color "#000000"
+      }
+
       binds {
       }
 

@@ -326,13 +326,15 @@ ShellRoot {
                 environment.push("XDG_CURRENT_DESKTOP=" + session.desktops);
             // greetd hands the command to a shell, after /etc/profile; the
             // session's output goes to the journal under its id.
-            Greetd.launch([Quickshell.env("GREETER_RUN"), session.id, session.exec], environment, true);
+            root.launching = () => Greetd.launch([Quickshell.env("GREETER_RUN"), session.id, session.exec], environment, true);
+            leave.start();
         }
 
         // greetd's own, a session it could not start among them. Started
         // over in a while, not at once: it would be, without end.
         function onError(error) {
             root.accepted = false;
+            root.launching = null;
             root.frozenMarks = -1;
             root.forget();
             root.finger = "";
@@ -354,6 +356,16 @@ ShellRoot {
             }
             root.begin();
         }
+    }
+
+    // The session is started once the screen is black: greetd shows the
+    // VT, black too, until the session's compositor is up (notes/greeter.md).
+    property var launching: null
+
+    Timer {
+        id: leave
+        interval: 300
+        onTriggered: root.launching()
     }
 
     Timer {
@@ -838,6 +850,20 @@ ShellRoot {
                 Button {
                     text: String.fromCodePoint(0xf0425)
                     command: ["systemctl", "poweroff"]
+                }
+            }
+
+            // Over everything, as the session is let in.
+            Rectangle {
+                anchors.fill: parent
+                color: "black"
+                opacity: root.launching ? 1 : 0
+
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: 250
+                        easing.type: Easing.InQuad
+                    }
                 }
             }
         }
