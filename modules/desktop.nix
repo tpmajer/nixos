@@ -54,6 +54,16 @@ in
     fprintd.enable = true; # 'sudo fprintd-enroll $USER' to enroll
   };
 
+  # pam_oo7 sent the password from a thread, with a helper process that
+  # login(1) took for its shell: a TTY login ended at once (notes/oo7.md).
+  nixpkgs.overlays = [
+    (final: prev: {
+      oo7-pam = prev.oo7-pam.overrideAttrs (old: {
+        patches = (old.patches or [ ]) ++ [ ../patches/oo7/pam-send-before-returning.patch ];
+      });
+    })
+  ];
+
   security.rtkit.enable = true;
   security.polkit.enable = true;
 
