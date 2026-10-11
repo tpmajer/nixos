@@ -62,7 +62,7 @@ session's backdrop colour (`#11111b`), which the session's curtain has too,
 and the VT is given it as well: `greeter-session` sets the console's colour
 0 (`ESC ] P 0 11111b`) and clears, at the greeter's start already, so the VT
 has it at the first hand-over. Seen on a login 2026-10-11. The screen comes
-out of that colour too: a veil over it is lifted in 0.4 s once the wallpaper
+out of that colour too: a veil over it is lifted in 0.6 s once the wallpaper
 is read, where the clock and the field came at once and the wallpaper faded
 in under them (seen in a nested niri, not on the real screen).
 
