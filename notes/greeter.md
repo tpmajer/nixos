@@ -35,6 +35,12 @@ niri and Steam's gamescope. The one named in the corner is started; a click
 or Tab makes it the next. It is niri at every start: the last one is not
 kept, unlike under GDM.
 
+Steam's "Switch to Desktop" runs `steamos-session-select`, SteamOS's, and
+shows a window that stays when there is none. One is put in Steam's
+environment (`packages.nix`) that asks Steam to exit: gamescope ends with
+it, and the login screen is back, with niri as the session to start. Not
+tried in the session yet.
+
 greetd hands the entry's `Exec` to a shell after `/etc/profile`, so a bare
 `niri-session` is found. The session is started with
 `XDG_SESSION_TYPE=wayland`: greetd has a VT, and logind would call it a tty.
