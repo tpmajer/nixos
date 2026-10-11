@@ -8,8 +8,15 @@ the kill switch are on (`modules/wireguard.nix`).
 | every one trusted | off | off |
 | any foreign | on | strict |
 | nothing up (boot, between networks, asleep) | as it is | strict |
+| nothing up, airplane mode | off | strict, inbound with the override |
 | override set, every one trusted | as it is | off |
 | override set, otherwise | as it is | inbound |
+
+Airplane mode is every radio blocked (`rfkill`), as Quickshell's network
+module has it. The tunnel is stopped then, the override or not, once nothing
+is up: with a cable still in, the cable's network decides as ever. Out of
+airplane mode the next foreign network brings it back, but for a tunnel
+started by hand under the override.
 
 ## Trusted networks
 

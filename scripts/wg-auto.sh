@@ -3,6 +3,7 @@
 # file comes or goes. See notes/wg-auto.md.
 #   every network trusted       no tunnel, no kill switch
 #   nothing up                  the kill switch alone
+#   nothing up, airplane mode   no tunnel either, the override or not
 #   any network foreign         both
 #   override, a foreign network the tunnel as it is, nothing let in
 
@@ -22,6 +23,12 @@ trusted_gateway() {
   [ -n "$gateway" ] || return 1
   mac=$(arping -c 1 -w 2 -I "$1" "$gateway" | sed -n 's/.*\[\(.*\)\].*/\1/p' | head -n 1 | tr A-F a-f)
   [ -n "$mac" ] && grep -Fxq -- "$mac" "$TRUSTED_GATEWAYS"
+}
+
+# Airplane mode: there are radios and every one is blocked.
+airplane() {
+  radios=$(rfkill -n -o SOFT,HARD 2> /dev/null)
+  [ -n "$radios" ] && ! grep -Eq '^ *unblocked +unblocked *$' <<< "$radios"
 }
 
 # A ruleset nft refuses leaves the kill switch as it was: said, and the run
@@ -55,6 +62,10 @@ while IFS=: read -r type uuid device; do
       ;;
   esac
 done < <(nmcli -t -f TYPE,UUID,DEVICE connection show --active 2> /dev/null)
+
+if [ "$up" = 0 ] && airplane; then
+  systemctl stop wg-quick-wg0.service 2> /dev/null || true
+fi
 
 if [ -e "$override" ]; then
   if [ "$up" = 1 ] && [ "$foreign" = 0 ]; then
