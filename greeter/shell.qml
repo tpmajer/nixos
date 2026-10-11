@@ -462,8 +462,8 @@ ShellRoot {
         readonly property bool charging: status === "Charging"
         readonly property bool low: status === "Discharging" && capacity <= 25
         readonly property color color: !low ? root.subtext0 : capacity <= 15 ? root.red : root.peach
-        readonly property var chargingIcons: [0xf089c, 0xf0086, 0xf0087, 0xf0088, 0xf089d, 0xf0089, 0xf089e, 0xf008a, 0xf008b, 0xf0085]
-        readonly property var defaultIcons: [0xf007a, 0xf007b, 0xf007c, 0xf007d, 0xf007e, 0xf007f, 0xf0080, 0xf0081, 0xf0082, 0xf0079]
+        readonly property var chargingIcons: [0xf0e7, 0xf0e7, 0xf0e7, 0xf0e7, 0xf0e7, 0xf0e7, 0xf0e7, 0xf0e7, 0xf0e7, 0xf0e7]
+        readonly property var defaultIcons: [0xf244, 0xf243, 0xf243, 0xf243, 0xf242, 0xf242, 0xf241, 0xf241, 0xf240, 0xf240]
         readonly property string icon: String.fromCodePoint((charging ? chargingIcons : defaultIcons)[Math.min(9, Math.floor(Math.max(0, capacity) / 10))])
     }
 
@@ -810,7 +810,7 @@ ShellRoot {
                                 required property int index
                                 readonly property bool typed: index < root.marks
 
-                                text: String.fromCodePoint(0xf14fb)
+                                text: String.fromCodePoint(0xf0c8)
                                 color: root.accepted ? root.green : root.rejected ? root.red : root.subtext1
 
                                 // Red comes in gradually. Green does not:
@@ -901,12 +901,12 @@ ShellRoot {
                 spacing: 32
 
                 Button {
-                    text: String.fromCodePoint(0xf0709)
+                    text: String.fromCodePoint(0xf2f9)
                     command: ["systemctl", "reboot"]
                 }
 
                 Button {
-                    text: String.fromCodePoint(0xf0425)
+                    text: String.fromCodePoint(0xf011)
                     command: ["systemctl", "poweroff"]
                 }
             }
