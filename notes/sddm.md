@@ -110,13 +110,22 @@ Lanczos3.
   it. A curtain in Quickshell comes after the wallpaper, unless awww is held
   for it, which was tried under greetd and dropped (notes/greeter.md).
 - `wallpaper-first`, a user service started with niri, draws
-  `greeter-wallpaper`'s copy with swaybg, and ends it half a second after
-  awww names an image, or after 5 s.
+  `greeter-wallpaper`'s copy, and ends half a second after awww names an
+  image, or after 5 s.
 - The copy is cut to the output's size in pixels for it, as awww fills an
-  output (crop, centred), so swaybg draws it as it is and awww's image comes
-  over the same picture.
+  output (crop, centred), so it is drawn as it is and awww's image comes
+  under the same picture.
 - On an idle machine, in a headless sway at the panel's mode: swaybg with
-  that copy has its first buffer in about 30 ms, awww's restore takes 160.
+  that copy has its first buffer in about 30 ms, a second awww-daemon has
+  the image after 50 to 60, awww's restore of the original takes 160.
+- Drawn by swaybg at first, where the wallpaper came at once. Now by a
+  second awww-daemon (namespace `first`, no cache, the bottom layer), which
+  fades it in from black in a quarter of a second: black is what SDDM's
+  niri leaves. The bottom layer is above the session's awww, whose image
+  would else cut the fade short.
+- Its client writes the image's path into awww's cache, the session's
+  wallpapers among them: it is given a cache of its own in the runtime
+  directory.
 
 Seen on a login 2026-10-11: the wallpaper is there as the session comes up.
 The black of SDDM's niri before the session's is still there: its window is
