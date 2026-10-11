@@ -236,10 +236,8 @@ is plain, as at the first login after this is deployed.
   whatever that theme is: in `packages.nix` now.
 - `accounts-daemon`, which nothing here asks for: left off.
 - The gdm-fingerprint PAM service, which the lock borrowed for its reader:
-  `lock-fingerprint` in `desktop.nix` now. The old name is kept next to it
-  until `~/.dotfiles` asks for the new one (its `greetd` branch): that repo
-  is live and this one needs a rebuild, so either may come first. Then the
-  old name goes.
+  `lock-fingerprint` in `desktop.nix` now. The old name stayed next to it
+  until `~/.dotfiles` asked for the new one, and went on 2026-10-11.
 - The workaround that kept pipewire from GDM's greeter, whose gnome-shell
   crashed on it.
 
