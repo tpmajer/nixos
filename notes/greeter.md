@@ -138,6 +138,18 @@ the turns of the reader and the password described above.
   interrupts with the error "cancelled", which the screen passes over, then
   the cancel itself.
 
+- The hand-over (`terminal.handover`): the session is started at once on
+  the next free VT, in graphics mode, and switched to once its PAM session
+  is open; the greeter is kept on its VT for 3 s and then ended by greetd.
+  So the console never has the display between the two, and the kernel's
+  half second of giving it back falls on a VT that is not in front. The
+  screen no longer exits at the launch: its last frame, the backdrop
+  colour, is what stays on the display. A logout still ends the session's
+  compositor on the VT in front, as under SDDM.
+- Without a VT of its own to try it on, the hand-over is not seen before a
+  real login: built, greetd's tests pass, and the conversation's turns
+  were tried again on a build with the change.
+
 Tried 2026-10-11 in a nested niri against a greetd built to run without
 root, with stand-ins for the reader and the password in a PAM directory of
 its own: a round and its timeout, a wrong password (refused 0.13 s after
