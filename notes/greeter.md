@@ -61,11 +61,14 @@ niri is that colour under it. It was black; on `greetd-fork` it is the
 session's backdrop colour (`#11111b`), which the session's curtain has too,
 and the VT is given it as well: `greeter-session` sets the console's colour
 0 (`ESC ] P 0 11111b`) and clears, at the greeter's start already, so the VT
-has it at the first hand-over. The VT's part is not seen yet.
+has it at the first hand-over. Seen on a login 2026-10-11.
 
-A curtain over the session's first moments, lifted once the wallpaper was
-there, was tried the same day and dropped: it showed no difference and only
-held the desktop back.
+A curtain over the session's first moments, in the bar's Quickshell and
+with awww held for it, was tried under plain greetd 2026-10-10 and dropped:
+it showed no difference and only held the desktop back. The one on
+`greetd-fork` is another: `session-curtain`, a Quickshell of its own that
+is up before the wallpaper, with `wallpaper-first` drawing a copy at once
+(tried on the branch `sddm`, notes/sddm.md there).
 
 Of that gap, 0.5 to 0.6 s lie between the PAM session's close and logind
 removing the session, in every hand-over of that boot and the two before,
@@ -146,9 +149,10 @@ the turns of the reader and the password described above.
   screen no longer exits at the launch: its last frame, the backdrop
   colour, is what stays on the display. A logout still ends the session's
   compositor on the VT in front, as under SDDM.
-- Without a VT of its own to try it on, the hand-over is not seen before a
-  real login: built, greetd's tests pass, and the conversation's turns
-  were tried again on a build with the change.
+- Seen on three logins 2026-10-11: no black and no console between the
+  login screen and the session, the session on a VT of its own (tty2).
+  A VT looked at from the login screen gets a getty, and the next session
+  the VT after it.
 
 Tried 2026-10-11 in a nested niri against a greetd built to run without
 root, with stand-ins for the reader and the password in a PAM directory of
@@ -156,8 +160,8 @@ its own: a round and its timeout, a wrong password (refused 0.13 s after
 Enter, in the middle of a round), Esc, the right password and a finger both
 through to the session's start. On the real reader, three conversations
 cancelled in a row: answered within 1 ms, the next one asked for a finger
-0.3 s later. Not seen: the real PAM stack as root, a finger not recognised,
-the hand-over.
+0.3 s later. The password and a finger were then seen on logins. Not seen: a
+finger not recognised, and the reader kept away after three.
 
 ## greetd and Quickshell
 
