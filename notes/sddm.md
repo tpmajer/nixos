@@ -66,7 +66,31 @@ power off are in the other corner.
   to `~sddm/battery.ini` whenever it changes, and the theme reads it with
   `Settings` twice a minute: by `value()`, as its bound properties are not
   read again, and would be written back.
-- The reader's icon has its place kept and is never shown.
+- The reader's icon is shown during a round of the reader alone.
+
+## The reader
+
+SDDM begins its one PAM conversation when the form is sent, and takes no
+other login while it lasts. So the reader does not wait from the start, as
+on greetd's screen: Enter on an empty field begins a round of it.
+
+- PAM, in SDDM's own service ahead of `login`: pam_exec hands the password
+  to `sddm-typed`, which says whether one was typed. One typed skips
+  pam_fprintd and is checked at once; an empty one waits at the reader for
+  10 s, pam_fprintd's least, or three fingers it does not know.
+- pam_exec is told `quiet` and `quiet_log`: an empty password would
+  otherwise be an error on the screen and in the journal.
+- pam_fprintd's messages reach the theme as SDDM's information messages,
+  told from others by their words, English under the system's locale.
+- SDDM tells a failed login with each error of a PAM module, a finger not
+  recognised among them, while PAM goes on. The theme takes the refusal
+  that follows such a message for the reader's, and the next one for the
+  round's end.
+- A password typed during a round is sent when the round has ended, half a
+  second later: a login sent while SDDM's helper is still there is dropped
+  without an answer, and the screen would wait for good. pam_unix's delay
+  after the round's failure, about 2 s, comes before it.
+- A login by finger leaves the keyring locked, as under greetd and GDM.
 
 ## The wallpaper's first frame
 
@@ -105,11 +129,13 @@ Tried in test mode alone, and so not on a login: a password refused and one
 taken, the power buttons, swayidle's two steps, the theme on a second
 output.
 
+The reader's round is not seen at all: test mode has no PAM. `sddm-typed`
+was run by hand, the rest is read in the sources (SDDM 0.21, fprintd 1.94.5,
+Linux-PAM 1.7.2).
+
 ## Open
 
-- The reader. SDDM begins its one PAM conversation when the form is sent,
-  so a reader that waits from the start, as on greetd's screen, needs more
-  than a theme. The password alone until then; the lock in the session has
-  its reader as before.
+- A reader that waits from the start, as on greetd's screen: more than a
+  theme and PAM can do, with one conversation begun by the form.
 - Whether to stay with it: greetd's screen is on `main`, GDM on the branch
   `gdm`.
