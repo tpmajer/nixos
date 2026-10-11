@@ -208,7 +208,7 @@ in
     wantedBy = [ "niri.service" ];
     serviceConfig.ExecStart = "${lib.getExe wallpaperFirst} ${wallpapers}";
   };
-  # A curtain over the session until the bar and the wallpaper are there
+  # A curtain over the session until the wallpaper is there
   # (curtain/shell.qml). Started once it is on the screen: the wallpapers
   # wait for that.
   systemd.user.services.session-curtain = {

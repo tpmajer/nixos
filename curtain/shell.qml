@@ -4,17 +4,17 @@ import Quickshell.Io
 import Quickshell.Wayland
 
 // A curtain over the session's first moments, in niri's backdrop colour,
-// lifted in a fade once the bar and a wallpaper are there
-// (modules/greeter.nix). Background in notes/greeter.md.
+// lifted in a fade once a wallpaper is there (modules/greeter.nix). The bar
+// is not waited for: it pops in by itself. Background in notes/greeter.md.
 ShellRoot {
     id: root
 
     property bool lifting: false
 
-    // Ends when niri has the bar's layer and a wallpaper's, or in 2 s.
+    // Ends when niri has a wallpaper's layer, or in 2 s.
     Process {
         running: true
-        command: [Quickshell.env("CURTAIN_WAIT"), "150", 'Namespace: "quickshell-bar"', 'Namespace: "(wallpaper|awww-daemon)"']
+        command: [Quickshell.env("CURTAIN_WAIT"), "150", 'Namespace: "(wallpaper|awww-daemon)"']
         onExited: settle.start()
     }
 
