@@ -86,6 +86,11 @@ on greetd's screen: Enter on an empty field begins a round of it.
   recognised among them, while PAM goes on. The theme takes the refusal
   that follows such a message for the reader's, and the next one for the
   round's end.
+- SDDM also tells a refusal twice at a login's end, with PAM's verdict
+  ("Authentication failure") and again as the helper ends, 0.1 ms apart in
+  the journal of 2026-10-11. The theme takes the first, and does not show
+  the verdict: at the end of a round left alone it was a red line and
+  "wrong password".
 - A password typed during a round is sent when the round has ended, half a
   second later: a login sent while SDDM's helper is still there is dropped
   without an answer, and the screen would wait for good. pam_unix's delay
