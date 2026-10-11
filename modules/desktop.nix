@@ -79,12 +79,6 @@ in
     fprintAuth = true;
     unixAuth = false;
   };
-  # GDM's name for it, to go once ~/.dotfiles asks for the new one
-  # (notes/greeter.md).
-  security.pam.services.gdm-fingerprint = {
-    fprintAuth = true;
-    unixAuth = false;
-  };
 
   # Quickshell's polkit prompt: the reader gives way to the password after
   # 10 s, not 30.
