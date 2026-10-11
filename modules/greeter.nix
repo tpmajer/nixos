@@ -148,8 +148,12 @@ in
         ../patches/greetd/0002-fix-let-a-client-cancel-while-a-question-is-awaited.patch
         ../patches/greetd/0003-fix-do-not-fail-a-cancel-whose-worker-is-gone.patch
         ../patches/greetd/0004-fix-make-the-session-s-socket-non-blocking.patch
+        ../patches/greetd/0005-feat-hand-over-to-a-session-on-a-VT-of-its-own.patch
       ];
     });
+    # The session on a VT of its own, with the greeter kept until it is up
+    # (notes/greeter.md).
+    settings.terminal.handover = true;
     settings.default_session.command = "${pkgs.coreutils}/bin/env XDG_CACHE_HOME=${cache} ${run} greeter ${niri}/bin/niri --config ${niriConfig}";
   };
 

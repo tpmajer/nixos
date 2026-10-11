@@ -368,7 +368,8 @@ ShellRoot {
                 environment.push("XDG_CURRENT_DESKTOP=" + session.desktops);
             // greetd hands the command to a shell, after /etc/profile; the
             // session's output goes to the journal under its id.
-            root.launching = () => Greetd.launch([Quickshell.env("GREETER_RUN"), session.id, session.exec], environment, true);
+            // Not to exit: greetd ends this screen once the session is up.
+            root.launching = () => Greetd.launch([Quickshell.env("GREETER_RUN"), session.id, session.exec], environment, false);
             leave.start();
         }
 
@@ -405,7 +406,7 @@ ShellRoot {
     }
 
     // The session is started once the screen is in the session's backdrop
-    // colour: greetd shows the VT, in it too, until the session's compositor
+    // colour: that frame stays on the display until the session's compositor
     // is up (notes/greeter.md).
     property var launching: null
 
