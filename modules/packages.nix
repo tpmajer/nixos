@@ -190,6 +190,11 @@
       remotePlay.openFirewall = true;
       localNetworkGameTransfers.openFirewall = true;
       gamescopeSession.enable = true;
+      # Steam's "Switch to Desktop" runs SteamOS's command for it, which is
+      # not there: Steam is asked to exit, and its session ends with it.
+      extraPackages = [
+        (pkgs.writeShellScriptBin "steamos-session-select" "exec steam -shutdown")
+      ];
       # Proton from chaotic: its name in Steam stays the same across updates.
       extraCompatPackages = [ pkgs.proton-cachyos_x86_64_v3 ];
     };
