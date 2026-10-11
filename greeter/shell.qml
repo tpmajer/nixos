@@ -923,7 +923,7 @@ ShellRoot {
                     id: veil
                     NumberAnimation {
                         duration: veil.targetValue === 0 ? 600 : 250
-                        easing.type: veil.targetValue === 0 ? Easing.OutCubic : Easing.InQuad
+                        easing.type: veil.targetValue === 0 ? Easing.Linear : Easing.InQuad
                     }
                 }
             }
