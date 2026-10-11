@@ -129,7 +129,7 @@ Lanczos3.
 
 The session came up piece by piece within some 0.4 s: the wallpaper, the
 bar, the windows. `session-curtain`, a user service started with niri,
-covers it and lifts in a fade of 0.2 s (`curtain/shell.qml`, a Quickshell
+covers it and lifts in a fade of 0.4 s (`curtain/shell.qml`, a Quickshell
 of its own on the overlay layer, in niri's backdrop colour).
 
 - A Quickshell of its own, not the bar's: the bar's config is loaded some
