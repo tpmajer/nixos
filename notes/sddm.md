@@ -118,14 +118,31 @@ Lanczos3.
 - On an idle machine, in a headless sway at the panel's mode: swaybg with
   that copy has its first buffer in about 30 ms, a second awww-daemon has
   the image after 50 to 60, awww's restore of the original takes 160.
-- Drawn by swaybg at first, where the wallpaper came at once. Now by a
-  second awww-daemon (namespace `first`, no cache, the bottom layer), which
-  fades it in from black in a quarter of a second: black is what SDDM's
-  niri leaves. The bottom layer is above the session's awww, whose image
-  would else cut the fade short.
-- Its client writes the image's path into awww's cache, the session's
-  wallpapers among them: it is given a cache of its own in the runtime
-  directory.
+- A second awww-daemon in swaybg's place (namespace `first`, no cache, the
+  bottom layer), fading the copy in from black in a quarter of a second,
+  was tried 2026-10-11 and dropped: no difference to see. On two logins it
+  had its first buffer 107 and 214 ms after niri's socket, the session's
+  awww 145 and 183. Its client writes the image's path into awww's cache,
+  the session's wallpapers among them, unless given a cache of its own.
+
+## The curtain
+
+The session came up piece by piece within some 0.4 s: the wallpaper, the
+bar, the windows. `session-curtain`, a user service started with niri,
+covers it and lifts in a fade of 0.2 s (`curtain/shell.qml`, a Quickshell
+of its own on the overlay layer, in niri's backdrop colour).
+
+- A Quickshell of its own, not the bar's: the bar's config is loaded some
+  0.3 s after niri's socket, after the wallpaper. This one had its layer
+  77 and 85 ms after its start, in the running session.
+- The service counts as started once niri has the curtain's layer
+  (`layers-wait` as ExecStartPost), and awww-daemon and `wallpaper-first`
+  are ordered after it: nothing is drawn before the curtain is.
+- It lifts 80 ms after niri has the bar's layer and a wallpaper's, swaybg's
+  or awww's, asked through `niri msg layers` every 10 ms; after 3 s at the
+  latest. Then it ends.
+- The curtain under greetd (notes/greeter.md) was in the bar's Quickshell,
+  held awww back for it, and waited for awww's own image.
 
 Seen on a login 2026-10-11: the wallpaper is there as the session comes up.
 The black of SDDM's niri before the session's is still there: its window is
