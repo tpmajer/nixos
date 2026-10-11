@@ -623,15 +623,7 @@ ShellRoot {
 
             Item {
                 anchors.fill: parent
-                opacity: image.status === Image.Ready ? 1 : 0
-                visible: opacity > 0
-
-                Behavior on opacity {
-                    NumberAnimation {
-                        duration: 400
-                        easing.type: Easing.OutCubic
-                    }
-                }
+                visible: image.status === Image.Ready
 
                 MultiEffect {
                     anchors.fill: parent
@@ -919,16 +911,19 @@ ShellRoot {
                 }
             }
 
-            // Over everything, as the session is let in.
+            // Over everything in the colour of the greeter's niri, which the
+            // screen comes out of once its wallpaper is read, and goes back
+            // into as the session is let in.
             Rectangle {
                 anchors.fill: parent
                 color: "#11111b"
-                opacity: root.launching ? 1 : 0
+                opacity: root.launching || image.status === Image.Loading ? 1 : 0
 
                 Behavior on opacity {
+                    id: veil
                     NumberAnimation {
-                        duration: 250
-                        easing.type: Easing.InQuad
+                        duration: veil.targetValue === 0 ? 400 : 250
+                        easing.type: veil.targetValue === 0 ? Easing.OutCubic : Easing.InQuad
                     }
                 }
             }
