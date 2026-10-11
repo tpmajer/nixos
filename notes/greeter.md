@@ -170,6 +170,18 @@ the turns of the reader and the password described above.
   screen no longer exits at the launch: its last frame, the backdrop
   colour, is what stays on the display. A logout still ends the session's
   compositor on the VT in front, as under SDDM.
+- A session that ends with no compositor ever on its VT left that VT in
+  graphics mode with no process to ask for a switch, and the kernel ignores
+  every switch away from such a VT (`change_console`, `vt_ioctl.c`): the
+  next greeter waited for its VT for good, on a black screen that no key
+  left. Seen 2026-10-11, when `niri-session` refused to start ("A niri
+  session is already running"). The worker now puts the VT back in text
+  mode as the session ends, and greetd does it for the VT in front before a
+  greeter is started, should a worker have been killed. Not seen since.
+- `loginctl terminate-session` does not end a niri session: niri is a user
+  service, and stays while another session of the user is there, a TTY
+  login for one. The next login then finds it running. From a TTY the
+  session is ended with `systemctl --user stop niri.service`.
 - Seen on three logins 2026-10-11: no black and no console between the
   login screen and the session, the session on a VT of its own (tty2).
   A VT looked at from the login screen gets a getty, and the next session
