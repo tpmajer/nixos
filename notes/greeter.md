@@ -46,7 +46,10 @@ session is started with `-steamos3 -gamepadui`, and Steam's environment has
 three stand-ins (`packages.nix`): `steamos-session-select` asks Steam to
 exit, which ends gamescope and brings the login screen back with niri as
 the session to start; `steamos-update` says there is none (7);
-`steamos-select-branch` names one branch. Not tried in the session yet.
+`steamos-select-branch` names one branch. Seen to work 2026-10-11, after a
+reboot: the sessions the login screen offers come with greetd's config,
+which greetd reads at its start alone, so a change to them, or to the screen
+itself, is not there after a switch and a logout.
 
 greetd hands the entry's `Exec` to a shell after `/etc/profile`, so a bare
 `niri-session` is found. The session is started with
