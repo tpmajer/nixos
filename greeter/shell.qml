@@ -104,11 +104,10 @@ ShellRoot {
     // conversation, and so no reader, is begun by a key before that.
     property real barredUntil: 0
 
-    // The conversation is kept at the password while the reader is away.
-    function resting() {
-        return asked && answered === 0 && Date.now() < barredUntil;
-    }
     property bool readerAsked: false
+    // The conversation is a round of the reader: its question was answered
+    // with nothing (modules/greeter.nix).
+    property bool round: false
     // When someone came back to dark screens, in ms.
     property real wokeAt: 0
     // How long after one conversation was dropped the next is started, and
@@ -116,8 +115,9 @@ ShellRoot {
     property int delay: 250
     property bool heard: false
 
-    // A conversation is open whenever someone may be there: the reader waits
-    // in it, then PAM asks for the password (notes/greeter.md).
+    // A conversation is open whenever someone may be there. PAM asks for
+    // the password first: nothing is the reader's round, a password is
+    // checked at once (notes/greeter.md).
     function begin() {
         rearm.stop();
         heard = false;
@@ -125,8 +125,29 @@ ShellRoot {
         answered = 0;
         misses = 0;
         readerAsked = false;
-        finger = "";
+        round = false;
         Greetd.createSession(user);
+    }
+
+    // The reader's round, unless the screens are dark or the reader is kept
+    // away: the conversation rests at its question then.
+    function read() {
+        if (!asked || answered > 0 || entered || idle.isIdle)
+            return;
+        const wait = barredUntil - Date.now();
+        if (wait > 0) {
+            later(wait);
+            return;
+        }
+        round = true;
+        asked = false;
+        answered++;
+        Greetd.respond("");
+    }
+
+    function later(ms) {
+        rearm.interval = Math.max(100, ms);
+        rearm.restart();
     }
 
     // Not at once: Quickshell does not wait for greetd's answer to the
@@ -160,11 +181,16 @@ ShellRoot {
     function enter() {
         if (entered || accepted)
             return;
+        // Nothing typed is the reader's, which has it already.
+        if (buffer === "" && (answered === 0 || round))
+            return;
         entered = true;
         status = "";
-        // Else it is sent when PAM asks: the reader has its seconds first.
         if (asked)
             answer();
+        else if (round)
+            // The reader's round is dropped: sent when the next one asks.
+            restart();
     }
 
     // The red marks go, the field is empty again. They stay red while they
@@ -182,21 +208,20 @@ ShellRoot {
         }
     }
 
-    // What was typed is dropped, and the conversation with it, unless greetd
-    // is busy in it: the reader waits, or an answer is checked.
+    // What was typed is dropped, unless an answer is being checked. The
+    // reader's round goes on; a later question's conversation is dropped.
     function cancel() {
         if (accepted)
             return;
-        if (Greetd.state === GreetdState.Authenticating && !asked && answered > 0)
+        if (Greetd.state === GreetdState.Authenticating && !asked && answered > 0 && !round)
             return;
         endRejection();
         rejection = "";
-        const waits = Greetd.state === GreetdState.Authenticating && !asked && answered === 0;
-        const rests = resting();
+        const second = asked && answered > 0;
+        const rests = asked && !second;
         forget();
-        // The password is still asked for.
         asked = rests;
-        if (!waits && !rests)
+        if (second)
             restart();
     }
 
@@ -230,9 +255,6 @@ ShellRoot {
             break;
         case Qt.Key_Backspace:
             buffer = event.modifiers & Qt.ControlModifier ? "" : buffer.slice(0, -1);
-            // Nothing left to send: the reader again.
-            if (buffer === "" && asked && answered === 0 && !resting())
-                restart();
             break;
         default:
             // Printable characters only.
@@ -270,11 +292,11 @@ ShellRoot {
                 }
                 return;
             }
-            missShown.stop();
-            root.finger = "";
-            root.status = "";
             if (root.answered > 0) {
                 // A second question: typed, then entered.
+                missShown.stop();
+                root.finger = "";
+                root.status = "";
                 root.buffer = "";
                 root.entered = false;
                 root.asked = true;
@@ -286,21 +308,28 @@ ShellRoot {
             // back towards what it was.
             root.delay = Math.max(250, Math.round(root.delay * 3 / 4));
             root.asked = true;
-            if (root.misses >= 3)
-                root.barredUntil = Date.now() + rearm.interval;
             if (root.entered)
                 root.answer();
-            else if (root.buffer !== "" || idle.isIdle)
-                return;
-            else if (root.misses >= 3 || !root.readerAsked)
-                // Not at once: the reader's limit holds, and one that is not
-                // there, or still held, is tried again in a while.
-                rearm.restart();
             else
-                root.restart();
+                root.read();
         }
 
         function onAuthFailure(message) {
+            if (root.round) {
+                // The round's end: no finger in its time, or three it does
+                // not know, after which the reader's limit holds. One that
+                // is not there, or still held, is tried again in a while.
+                root.round = false;
+                if (!missShown.running)
+                    root.finger = "";
+                if (root.misses >= 3)
+                    root.barredUntil = Date.now() + 30000;
+                else if (!root.readerAsked)
+                    root.barredUntil = Date.now() + 5000;
+                // Quickshell cancels what is left of it.
+                starter.restart();
+                return;
+            }
             root.frozenMarks = root.buffer.length;
             root.forget();
             root.rejected = true;
@@ -330,7 +359,7 @@ ShellRoot {
             root.frozenMarks = root.buffer.length;
             root.buffer = "";
             root.accepted = true;
-            if (root.answered === 0)
+            if (root.round)
                 root.finger = "ok";
             // What a display manager says of the session; without the type
             // logind takes it for a tty, as greetd has a VT.
@@ -346,6 +375,9 @@ ShellRoot {
         // greetd's own, a session it could not start among them. Started
         // over in a while, not at once: it would be, without end.
         function onError(error) {
+            // The answer to what a cancel cut short: nothing went wrong.
+            if (error === "cancelled")
+                return;
             root.accepted = false;
             leave.stop();
             root.launching = null;
@@ -353,7 +385,7 @@ ShellRoot {
             root.forget();
             root.finger = "";
             root.status = error;
-            rearm.restart();
+            root.later(5000);
         }
     }
 
@@ -460,18 +492,21 @@ ShellRoot {
         id: missShown
         interval: 1500
         onTriggered: {
-            root.finger = "waiting";
+            root.finger = root.round ? "waiting" : "";
             root.status = "";
         }
     }
 
-    // The reader again: half a minute after three fingers it did not know,
-    // else in a few seconds.
+    // The reader again once it is no longer kept away, or a conversation
+    // after greetd's error.
     Timer {
         id: rearm
-        interval: root.misses >= 3 ? 30000 : 5000
-        onTriggered: if (Greetd.state === GreetdState.Inactive || (root.buffer === "" && !root.entered))
-            root.restart()
+        onTriggered: {
+            if (Greetd.state === GreetdState.Inactive)
+                root.restart();
+            else
+                root.read();
+        }
     }
 
     SystemClock {
@@ -490,9 +525,8 @@ ShellRoot {
                 return;
             }
             root.wokeAt = Date.now();
-            // Only one that rests: the reader waits in any other.
-            if (root.asked && root.answered === 0 && root.buffer === "" && !root.resting())
-                root.restart();
+            // A conversation that rests at its question: the reader again.
+            root.read();
         }
     }
 

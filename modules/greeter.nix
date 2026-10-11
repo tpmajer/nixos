@@ -42,6 +42,12 @@ let
     ];
   };
 
+  # Whether a password was given, for PAM: it is read from stdin.
+  typed = pkgs.writeShellScript "greetd-typed" ''
+    IFS= read -r -d "" password
+    [ -n "$password" ]
+  '';
+
   # Whatever greetd starts, with its output in the journal and no cursor on
   # the VT (notes/greeter.md). No PATH of its own: the session would keep it.
   run = pkgs.writeShellScript "greeter-session" ''
@@ -144,14 +150,29 @@ in
     settings.default_session.command = "${pkgs.coreutils}/bin/env XDG_CACHE_HOME=${cache} ${run} greeter ${niri}/bin/niri --config ${niriConfig}";
   };
 
-  # The reader for the login screen alone, ahead of login's rules; a TTY keeps
-  # to the password. 10 s is pam_fprintd's least (notes/greeter.md).
+  # The login screen alone has the reader; a TTY keeps to the password. PAM
+  # asks for the password first: one given goes to login's rules, none is a
+  # round of the reader and nothing else. 10 s is pam_fprintd's least
+  # (notes/greeter.md).
   security.pam.services.login.fprintAuth = false;
-  security.pam.services.greetd.rules.auth.fprintd = {
-    order = 10000;
-    control = "sufficient";
-    modulePath = "${config.services.fprintd.package}/lib/security/pam_fprintd.so";
-    settings.timeout = 10;
+  security.pam.services.greetd.rules.auth = {
+    typed = {
+      order = 10000;
+      control = "[success=1 default=ignore]";
+      modulePath = "${config.security.pam.package}/lib/security/pam_exec.so";
+      args = [
+        "expose_authtok"
+        "quiet"
+        "quiet_log"
+        "${typed}"
+      ];
+    };
+    fprintd = {
+      order = 10050;
+      control = "[success=done default=die]";
+      modulePath = "${config.services.fprintd.package}/lib/security/pam_fprintd.so";
+      settings.timeout = 10;
+    };
   };
 
   # The greeter cannot read the user's home: a copy of what awww shows, made
