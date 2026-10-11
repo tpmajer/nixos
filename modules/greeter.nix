@@ -25,6 +25,15 @@ let
     ];
   };
 
+  wallpaperFirst = script "wallpaper-first" {
+    inputs = [
+      pkgs.awww
+      pkgs.coreutils
+      pkgs.gnugrep
+      pkgs.swaybg
+    ];
+  };
+
   # Whatever greetd starts, with its output in the journal and no cursor on
   # the VT (notes/greeter.md). No PATH of its own: the session would keep it.
   run = pkgs.writeShellScript "greeter-session" ''
@@ -146,6 +155,15 @@ in
       Type = "oneshot";
       ExecStart = "${lib.getExe greeterWallpaper} ${wallpapers}";
     };
+  };
+  # The copy on the screen at once as the session starts, until awww has its
+  # own image up (notes/greeter.md).
+  systemd.user.services.wallpaper-first = {
+    description = "The wallpaper's first frame";
+    bindsTo = [ "niri.service" ];
+    after = [ "niri.service" ];
+    wantedBy = [ "niri.service" ];
+    serviceConfig.ExecStart = "${lib.getExe wallpaperFirst} ${wallpapers}";
   };
   systemd.user.paths.greeter-wallpaper = {
     wantedBy = [ "niri.service" ];
