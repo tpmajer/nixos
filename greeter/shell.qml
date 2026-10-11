@@ -848,7 +848,7 @@ ShellRoot {
                 Label {
                     anchors.horizontalCenter: parent.horizontalCenter
                     text: String.fromCodePoint(0xf0237)
-                    font.pixelSize: 36
+                    font.pixelSize: 44
                     opacity: root.finger === "" ? 0 : 1
                     color: root.finger === "ok" ? root.green : root.finger === "bad" ? root.red : root.subtext0
 
