@@ -24,7 +24,7 @@ Rectangle {
     readonly property var session: sessions[chosen] ?? null
 
     function nextSession() {
-        if (sessions.length > 1 && !checking && !accepted)
+        if (sessions.length > 1 && !checking && !reading && !accepted)
             chosen = (chosen + 1) % sessions.length;
     }
 
@@ -38,8 +38,20 @@ Rectangle {
     property int frozenMarks: -1
     property string rejection: ""
     readonly property int marks: frozenMarks >= 0 ? frozenMarks : buffer.length
-    // The line below the field: what SDDM had to say.
+    // The line below the field: what the reader or SDDM had to say.
     property string status: ""
+
+    // The reader's round, begun by Enter on an empty field: PAM waits at the
+    // reader, and SDDM takes no other login until it has ended.
+    property bool reading: false
+    property bool readerAsked: false
+    // The reader's icon: "" not asked, "waiting" for a finger, "bad" for a
+    // moment after one it does not know, "ok".
+    property string finger: ""
+    // SDDM tells a refusal with each error of the reader's: not the round's.
+    property bool echo: false
+    // A password entered during the round, sent when it has ended.
+    property bool queued: false
 
     // The red marks go, the field is empty again. They stay red while they
     // fade, unless a key has already started the next attempt.
@@ -59,8 +71,21 @@ Rectangle {
     function enter() {
         if (checking || accepted)
             return;
-        checking = true;
+        if (reading) {
+            if (buffer !== "") {
+                queued = true;
+                checking = true;
+            }
+            return;
+        }
         status = "";
+        if (buffer === "") {
+            reading = true;
+            readerAsked = false;
+            echo = false;
+        } else {
+            checking = true;
+        }
         sddm.login(config.user, buffer, chosen);
     }
 
@@ -97,6 +122,19 @@ Rectangle {
         target: sddm
 
         function onLoginFailed() {
+            if (root.reading) {
+                if (root.echo) {
+                    root.echo = false;
+                    return;
+                }
+                root.reading = false;
+                root.finger = "";
+                if (root.queued)
+                    sendQueued.start();
+                else if (!root.readerAsked)
+                    root.status = "the fingerprint reader did not answer";
+                return;
+            }
             root.frozenMarks = root.buffer.length;
             root.buffer = "";
             root.checking = false;
@@ -111,10 +149,50 @@ Rectangle {
             root.frozenMarks = root.buffer.length;
             root.buffer = "";
             root.accepted = true;
+            if (root.reading)
+                root.finger = "ok";
         }
 
         function onInformationMessage(message) {
-            root.status = message;
+            // pam_fprintd's are told by their words, English under the
+            // system's locale.
+            if (!root.reading || !/finger|swipe|sensor|reader|timed out|unknown error/i.test(message)) {
+                root.status = message;
+                return;
+            }
+            if (/timed out/i.test(message))
+                return;
+            if (/match|again|unknown error/i.test(message)) {
+                root.echo = true;
+                root.finger = "bad";
+                root.status = /match/i.test(message) ? "fingerprint not recognised" : "try again";
+                missShown.restart();
+            } else {
+                root.readerAsked = true;
+                if (root.finger !== "bad")
+                    root.finger = "waiting";
+            }
+        }
+    }
+
+    // How long the mark of a finger not recognised stays, and its line.
+    Timer {
+        id: missShown
+        interval: 800
+        onTriggered: {
+            root.finger = root.reading ? "waiting" : "";
+            root.status = "";
+        }
+    }
+
+    // Not at once: SDDM's helper of the round is still there for a moment,
+    // and a login sent meanwhile is dropped without an answer.
+    Timer {
+        id: sendQueued
+        interval: 500
+        onTriggered: {
+            root.queued = false;
+            sddm.login(config.user, root.buffer, root.chosen);
         }
     }
 
@@ -466,17 +544,30 @@ Rectangle {
             }
         }
 
-        // Where the lock has the reader's icon: its place is kept.
+        // The reader's icon. It keeps its place when not shown, so nothing
+        // moves.
         Label {
             anchors.horizontalCenter: parent.horizontalCenter
             text: String.fromCodePoint(0xf0237)
             font.pixelSize: 36
-            opacity: 0
+            opacity: root.finger === "" ? 0 : 1
+            color: root.finger === "ok" ? root.green : root.finger === "bad" ? root.red : root.subtext0
+
+            Behavior on opacity {
+                NumberAnimation {
+                    duration: 150
+                }
+            }
+            Behavior on color {
+                ColorAnimation {
+                    duration: 150
+                }
+            }
         }
 
         Label {
             anchors.horizontalCenter: parent.horizontalCenter
-            // Caps Lock, else what SDDM had to say. Keeps its line when
+            // Caps Lock, else what the reader or SDDM had to say. Keeps its line when
             // empty, so nothing moves.
             text: keyboard.capsLock ? "caps lock is on" : root.status !== "" ? root.status : " "
             color: keyboard.capsLock ? root.peach : root.red

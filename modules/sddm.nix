@@ -1,5 +1,6 @@
 # A trial: SDDM in place of greetd's login screen, for its hand-over to the
-# session. Drawn as the lock is (sddm/Main.qml), and the password alone.
+# session. Drawn as the lock is (sddm/Main.qml); the reader after Enter on an
+# empty field.
 # Background in notes/sddm.md.
 
 {
@@ -50,6 +51,12 @@ let
         };
       }
     } $dir/theme.conf
+  '';
+
+  # Whether a password was typed, for PAM: it is read from stdin.
+  typed = pkgs.writeShellScript "sddm-typed" ''
+    IFS= read -r -d "" password
+    [ -n "$password" ]
   '';
 
   # The greeter's compositor: niri as greeter.nix has it, so the mode, the
@@ -163,8 +170,30 @@ in
   };
   environment.systemPackages = [ theme ];
 
-  # As greeter.nix has it: a TTY and SDDM ask for the password.
+  # As greeter.nix has it: a TTY asks for the password.
   security.pam.services.login.fprintAuth = false;
+
+  # The reader for an empty password, ahead of `login`; one typed skips it
+  # (notes/sddm.md).
+  security.pam.services.sddm.rules.auth = {
+    typed = {
+      order = 10000;
+      control = "[success=1 default=ignore]";
+      modulePath = "${config.security.pam.package}/lib/security/pam_exec.so";
+      args = [
+        "expose_authtok"
+        "quiet"
+        "quiet_log"
+        "${typed}"
+      ];
+    };
+    fprintd = {
+      order = 10050;
+      control = "sufficient";
+      modulePath = "${config.services.fprintd.package}/lib/security/pam_fprintd.so";
+      settings.timeout = 10;
+    };
+  };
 
   # SDDM's user cannot read the user's home: a copy of what awww shows, made
   # as the session starts and whenever awww records another image.
