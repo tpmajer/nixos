@@ -68,7 +68,9 @@ with awww held for it, was tried under plain greetd 2026-10-10 and dropped:
 it showed no difference and only held the desktop back. The one on
 `greetd-fork` is another: `session-curtain`, a Quickshell of its own that
 is up before the wallpaper, with `wallpaper-first` drawing a copy at once
-(tried on the branch `sddm`, notes/sddm.md there).
+(tried on the branch `sddm`, notes/sddm.md there). It waited for the bar too at
+first; the bar pops in by itself now (`~/.dotfiles`, `PopupHost.qml`), and
+did so under the curtain, so the curtain lifts once a wallpaper is there.
 
 Of that gap, 0.5 to 0.6 s lie between the PAM session's close and logind
 removing the session, in every hand-over of that boot and the two before,
