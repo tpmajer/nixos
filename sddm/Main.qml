@@ -135,6 +135,10 @@ Rectangle {
                     root.status = "the fingerprint reader did not answer";
                 return;
             }
+            // SDDM tells a refusal twice, for PAM's verdict and for the
+            // login's end: the second has nothing left to refuse.
+            if (!root.checking || root.queued)
+                return;
             root.frozenMarks = root.buffer.length;
             root.buffer = "";
             root.checking = false;
@@ -154,6 +158,9 @@ Rectangle {
         }
 
         function onInformationMessage(message) {
+            // PAM's verdict: the screen says it in its own words.
+            if (/^authentication failure$/i.test(message.trim()))
+                return;
             // pam_fprintd's are told by their words, English under the
             // system's locale.
             if (!root.reading || !/finger|swipe|sensor|reader|timed out|unknown error/i.test(message)) {
@@ -169,6 +176,7 @@ Rectangle {
                 missShown.restart();
             } else {
                 root.readerAsked = true;
+                root.echo = false;
                 if (root.finger !== "bad")
                     root.finger = "waiting";
             }
