@@ -120,7 +120,7 @@ let
           skip-at-startup
       }
 
-      // Black under the login screen as it goes, as the VT after it is.
+      // The session's backdrop colour under the login screen as it goes.
       layout {
           background-color "#11111b"
       }

@@ -19,13 +19,13 @@ session's compositor takes it, and would go with the greeter.
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
 ---
- greetd/src/config/mod.rs     | 42 ++++++++++++++++
- greetd/src/context.rs        | 92 +++++++++++++++++++++++++++++++++++-
- greetd/src/server.rs         |  5 +-
- greetd/src/session/worker.rs | 31 ++++++++++++
- greetd/src/terminal/mod.rs   |  8 ++++
- man/greetd-5.scd             | 16 +++++++
- 6 files changed, 191 insertions(+), 3 deletions(-)
+ greetd/src/config/mod.rs     |  42 +++++++++++++
+ greetd/src/context.rs        | 111 ++++++++++++++++++++++++++++++++++-
+ greetd/src/server.rs         |   5 +-
+ greetd/src/session/worker.rs |  34 +++++++++++
+ greetd/src/terminal/mod.rs   |  12 +++-
+ man/greetd-5.scd             |  16 +++++
+ 6 files changed, 213 insertions(+), 7 deletions(-)
 
 diff --git a/greetd/src/config/mod.rs b/greetd/src/config/mod.rs
 index 2d1d645..20d7d52 100644
@@ -137,17 +137,17 @@ index 2d1d645..20d7d52 100644
                  default_session: ConfigSession {
                      command: "agreety".to_string(),
 diff --git a/greetd/src/context.rs b/greetd/src/context.rs
-index 6bd4d82..9a6a43b 100644
+index 6bd4d82..b2b2307 100644
 --- a/greetd/src/context.rs
 +++ b/greetd/src/context.rs
-@@ -13,6 +13,7 @@ use tokio::{sync::RwLock, time::sleep};
- use crate::{
-     error::Error,
-     scrambler::Scrambler,
-+    terminal::Terminal,
-     session::{
+@@ -17,6 +17,7 @@ use crate::{
          interface::{Session, SessionChild, SessionState},
          worker::{AuthMessageType as SessAuthMessageType, SessionClass, TerminalMode},
+     },
++    terminal::Terminal,
+ };
+ use greetd_ipc::AuthMessageType;
+ 
 @@ -35,8 +36,15 @@ struct ContextInner {
      current: Option<SessionChildSet>,
      scheduled: Option<SessionSet>,
@@ -224,7 +224,7 @@ index 6bd4d82..9a6a43b 100644
                      let mut inner = self.inner.write().await;
                      std::mem::swap(&mut session, &mut inner.scheduled);
                      drop(inner);
-@@ -298,11 +321,52 @@ impl Context {
+@@ -298,11 +321,68 @@ impl Context {
          }
      }
  
@@ -236,11 +236,7 @@ index 6bd4d82..9a6a43b 100644
 +            Err(e) => {
 +                // The worker may have switched VTs already: back to the
 +                // greeter's, which is still there to say what happened.
-+                if let TerminalMode::Terminal { path, vt, .. } = &self.term_mode {
-+                    if let Ok(term) = Terminal::open(path) {
-+                        let _ = term.vt_request(*vt);
-+                    }
-+                }
++                self.request_greeter_vt();
 +                return Err(format!("session start failed: {}", e).into());
 +            }
 +        };
@@ -257,6 +253,26 @@ index 6bd4d82..9a6a43b 100644
 +        });
 +        alarm::set(HANDOVER_GRACE);
 +        Ok(())
++    }
++
++    /// Ask for the greeter's VT, without waiting for it.
++    fn request_greeter_vt(&self) {
++        if let TerminalMode::Terminal { path, vt, .. } = &self.term_mode {
++            if let Ok(term) = Terminal::open(path) {
++                let _ = term.vt_request(*vt);
++            }
++        }
++    }
++
++    /// Start a greeter after a session. A hand-over left the greeter's VT,
++    /// and a greeter that does not switch would not come back to it.
++    async fn start_next_greeter(&self) -> Result<SessionChild, Error> {
++        if let (TerminalMode::Handover, TerminalMode::Terminal { switch: false, .. }) =
++            (&self.session_term_mode, &self.term_mode)
++        {
++            self.request_greeter_vt();
++        }
++        self.start_greeter().await
 +    }
 +
      /// Notify the Context of an alarm.
@@ -277,7 +293,7 @@ index 6bd4d82..9a6a43b 100644
          if let Some(mut p) = inner.scheduled.take() {
              if let Some(g) = inner.current.take() {
                  if p.time.elapsed() > Duration::from_secs(10) {
-@@ -344,6 +408,22 @@ impl Context {
+@@ -344,6 +424,22 @@ impl Context {
                  // We got an exit, see if it's something we need to clean up.
                  Ok(WaitStatus::Exited(pid, ..)) | Ok(WaitStatus::Signaled(pid, ..)) => {
                      let mut inner = self.inner.write().await;
@@ -289,7 +305,7 @@ index 6bd4d82..9a6a43b 100644
 +                            // So is the session it handed over to.
 +                            sleep(Duration::from_secs(1)).await;
 +                            inner.current = Some(SessionChildSet {
-+                                child: self.start_greeter().await?,
++                                child: self.start_next_greeter().await?,
 +                                time: Instant::now(),
 +                                is_greeter: true,
 +                            });
@@ -300,21 +316,28 @@ index 6bd4d82..9a6a43b 100644
                      let (was_greeter, sesion_length) = match &inner.current {
                          Some(s) if s.child.owns_pid(pid) => {
                              let res = (s.is_greeter, s.time.elapsed());
-@@ -373,6 +453,13 @@ impl Context {
+@@ -373,11 +469,19 @@ impl Context {
                              if was_greeter {
                                  return Err("greeter exited without creating a session".into());
                              }
 +                            if let Some(g) = &inner.outgoing {
 +                                // The session ended while the greeter that
 +                                // handed over to it is still up: a new one
-+                                // is started once that one is gone.
-+                                g.child.kill();
++                                // is started once that one is gone. The
++                                // alarm kills one that does not go.
++                                g.child.term();
 +                                continue;
 +                            }
                              if sesion_length < Duration::from_secs(1) {
                                  sleep(Duration::from_secs(1)).await;
                              }
-@@ -413,6 +500,9 @@ impl Context {
+                             inner.current = Some(SessionChildSet {
+-                                child: self.start_greeter().await?,
++                                child: self.start_next_greeter().await?,
+                                 time: Instant::now(),
+                                 is_greeter: true,
+                             });
+@@ -413,6 +517,9 @@ impl Context {
          if let Some(sess) = inner.current.take() {
              sess.child.term();
          }
@@ -325,7 +348,7 @@ index 6bd4d82..9a6a43b 100644
      }
  }
 diff --git a/greetd/src/server.rs b/greetd/src/server.rs
-index b18d5b1..58c9c44 100644
+index 9d3e13f..9b1271a 100644
 --- a/greetd/src/server.rs
 +++ b/greetd/src/server.rs
 @@ -27,7 +27,7 @@ fn reset_vt(term_mode: &TerminalMode) -> Result<(), Error> {
@@ -346,7 +369,7 @@ index b18d5b1..58c9c44 100644
      }
      Ok(())
  }
-@@ -308,6 +308,7 @@ pub async fn main(config: Config) -> Result<(), Error> {
+@@ -311,6 +311,7 @@ pub async fn main(config: Config) -> Result<(), Error> {
          greeter_service.to_string(),
          service.to_string(),
          term_mode.clone(),
@@ -355,7 +378,7 @@ index b18d5b1..58c9c44 100644
          config.file.general.runfile,
          listener_path,
 diff --git a/greetd/src/session/worker.rs b/greetd/src/session/worker.rs
-index 71c9d10..6b732cd 100644
+index 71c9d10..6821b66 100644
 --- a/greetd/src/session/worker.rs
 +++ b/greetd/src/session/worker.rs
 @@ -28,6 +28,9 @@ pub enum TerminalMode {
@@ -368,7 +391,7 @@ index 71c9d10..6b732cd 100644
      Stdin,
  }
  
-@@ -166,8 +169,29 @@ fn worker(sock: &UnixDatagram) -> Result<(), Error> {
+@@ -166,8 +169,23 @@ fn worker(sock: &UnixDatagram) -> Result<(), Error> {
      // Make this process a session leader.
      setsid().map_err(|e| format!("unable to become session leader: {}", e))?;
  
@@ -385,12 +408,6 @@ index 71c9d10..6b732cd 100644
 +
 +            let target_term = terminal::Terminal::open(&format!("/dev/tty{}", vt))?;
 +            target_term.term_clear()?;
-+
-+            // Graphics mode, so that the console draws nothing on this VT:
-+            // what the greeter last showed stays on the display until the
-+            // session's compositor takes it.
-+            target_term.kd_setmode(terminal::KdMode::Graphics)?;
-+
 +            target_term.term_connect_pipes()?;
 +            target_term.term_take_ctty()?;
 +            handover = Some((target_term, vt));
@@ -398,7 +415,7 @@ index 71c9d10..6b732cd 100644
          TerminalMode::Terminal { path, vt, switch } => {
              // Tell PAM what TTY we're targetting, which is used by logind.
              pam.set_item(PamItemType::TTY, &format!("tty{}", vt))?;
-@@ -221,6 +245,13 @@ fn worker(sock: &UnixDatagram) -> Result<(), Error> {
+@@ -221,6 +239,22 @@ fn worker(sock: &UnixDatagram) -> Result<(), Error> {
      // Session time!
      pam.open_session(PamFlag::NONE)?;
  
@@ -406,17 +423,36 @@ index 71c9d10..6b732cd 100644
 +    // and starts no getty on it, and little is left that can fail with the
 +    // greeter out of sight.
 +    if let Some((target_term, vt)) = handover {
-+        target_term.vt_setactivate(vt)?;
++        // Graphics mode, so that the console draws nothing on this VT: what
++        // the greeter last showed stays on the display until the session's
++        // compositor takes it. Not before this point, and undone if the
++        // switch fails: the VT of a session that does not start stays in
++        // text mode.
++        target_term.kd_setmode(terminal::KdMode::Graphics)?;
++        if let Err(e) = target_term.vt_setactivate(vt) {
++            let _ = target_term.kd_setmode(terminal::KdMode::Text);
++            return Err(e);
++        }
 +    }
 +
      // We are done with PAM, clear variables that the child will not need.
      _ = pam.putenv(&"XDG_SESSION_CLASS");
  
 diff --git a/greetd/src/terminal/mod.rs b/greetd/src/terminal/mod.rs
-index 987f6cc..eabdd06 100644
+index 987f6cc..fec5e77 100644
 --- a/greetd/src/terminal/mod.rs
 +++ b/greetd/src/terminal/mod.rs
-@@ -111,6 +111,14 @@ impl Terminal {
+@@ -102,15 +102,21 @@ impl Terminal {
+ 
+     /// Switches to the specified VT and waits for completion of switch.
+     fn vt_activate(&self, target_vt: usize) -> Result<(), Error> {
+-        if let Err(v) = unsafe { ioctl::vt_activate(self.fd, target_vt as i32) } {
+-            return Err(format!("terminal: unable to activate: {}", v).into());
+-        }
++        self.vt_request(target_vt)?;
+         if let Err(v) = unsafe { ioctl::vt_waitactive(self.fd, target_vt as i32) } {
+             return Err(format!("terminal: unable to wait for activation: {}", v).into());
+         }
          Ok(())
      }
  
