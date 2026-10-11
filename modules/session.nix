@@ -1,9 +1,16 @@
 # What runs with the niri session: the bar, the idle daemon, the wallpaper.
 # All start with niri.service and stop when it goes.
 
-{ pkgs, lib, ... }:
+{
+  pkgs,
+  lib,
+  config,
+  ...
+}:
 
 let
+  script = import ./script.nix { inherit pkgs; };
+
   # A service of the session, stopped when niri goes (notes/desktop.md).
   withNiri = {
     bindsTo = [ "niri.service" ];
@@ -89,5 +96,27 @@ in
           RestartSec = "2s";
         };
       };
+
+    # Firefox's files in the page cache before its first start (notes/desktop.md).
+    firefox-preload = {
+      description = "Firefox's files read into the page cache";
+      after = [ "niri.service" ];
+      wantedBy = [ "niri.service" ];
+      serviceConfig = {
+        Type = "oneshot";
+        ExecStart = "${
+          lib.getExe (
+            script "firefox-preload" {
+              inputs = [
+                pkgs.coreutils
+                pkgs.findutils
+              ];
+            }
+          )
+        } ${config.programs.firefox.package.unwrapped}/lib/firefox";
+        Nice = 19;
+        IOSchedulingClass = "idle";
+      };
+    };
   };
 }
