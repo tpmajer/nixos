@@ -110,6 +110,39 @@ pam_fprintd's messages are told from other modules' by their words, which
 are English under the system's locale (`LANG=en_US.UTF-8`). Under another
 language the reader's icon would stay dark.
 
+## The fork
+
+On the branch `greetd-fork` greetd is built with the changes of
+`~/Claude/greetd` (branch `handover`, from 0.10.3), kept here as patches
+(`patches/greetd`, `git format-patch 0.10.3..HEAD`). What follows replaces
+the turns of the reader and the password described above.
+
+- PAM asks for the password first (pam_exec, `greetd-typed`). One given
+  skips the reader and goes to login's rules at once. None is a round of
+  the reader and nothing else: a finger, or failure after 10 s or three it
+  does not know, with no pam_unix and so none of its delay.
+- The screen answers with nothing by itself, so the reader waits from the
+  start, round after round. Enter with a password typed cancels the round
+  and sends the password when the next conversation asks.
+- That needed three things of greetd. It read a client's requests one at a
+  time, so a cancel was not read while PAM waited; the socket to its worker
+  was blocking, which held the whole daemon at such a wait; and a cancelled
+  worker was left to PAM's timeout, the reader with it. A cancel of a
+  conversation already over was answered with an error, which the screen
+  showed.
+- A cancel that cuts a wait short is answered twice: the request it
+  interrupts with the error "cancelled", which the screen passes over, then
+  the cancel itself.
+
+Tried 2026-10-11 in a nested niri against a greetd built to run without
+root, with stand-ins for the reader and the password in a PAM directory of
+its own: a round and its timeout, a wrong password (refused 0.13 s after
+Enter, in the middle of a round), Esc, the right password and a finger both
+through to the session's start. On the real reader, three conversations
+cancelled in a row: answered within 1 ms, the next one asked for a finger
+0.3 s later. Not seen: the real PAM stack as root, a finger not recognised,
+the hand-over.
+
 ## greetd and Quickshell
 
 Read in their sources (greetd 0.10.3, Quickshell 0.3.1), not seen on a real
