@@ -32,6 +32,7 @@ let
       pkgs.awww
       pkgs.coreutils
       pkgs.gnugrep
+      pkgs.swaybg
     ];
   };
 
