@@ -34,6 +34,14 @@ let
     ];
   };
 
+  layersWait = script "layers-wait" {
+    inputs = [
+      niri
+      pkgs.coreutils
+      pkgs.gnugrep
+    ];
+  };
+
   # Whatever greetd starts, with its output in the journal and no cursor on
   # the VT (notes/greeter.md). No PATH of its own: the session would keep it.
   run = pkgs.writeShellScript "greeter-session" ''
@@ -164,6 +172,24 @@ in
     after = [ "niri.service" ];
     wantedBy = [ "niri.service" ];
     serviceConfig.ExecStart = "${lib.getExe wallpaperFirst} ${wallpapers}";
+  };
+  # A curtain over the session until the bar and the wallpaper are there
+  # (curtain/shell.qml). Started once it is on the screen: the wallpapers
+  # wait for that.
+  systemd.user.services.session-curtain = {
+    description = "A curtain over the session's first moments";
+    bindsTo = [ "niri.service" ];
+    after = [ "niri.service" ];
+    wantedBy = [ "niri.service" ];
+    before = [
+      "awww-daemon.service"
+      "wallpaper-first.service"
+    ];
+    environment.CURTAIN_WAIT = lib.getExe layersWait;
+    serviceConfig = {
+      ExecStart = "${lib.getExe pkgs.quickshell} --path ${../curtain}";
+      ExecStartPost = "${lib.getExe layersWait} 200 'Namespace: \"session-curtain\"'";
+    };
   };
   systemd.user.paths.greeter-wallpaper = {
     wantedBy = [ "niri.service" ];
