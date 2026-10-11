@@ -48,10 +48,11 @@ let
     [ -n "$password" ]
   '';
 
-  # Whatever greetd starts, with its output in the journal and no cursor on
-  # the VT (notes/greeter.md). No PATH of its own: the session would keep it.
+  # Whatever greetd starts, with its output in the journal, and the VT in the
+  # session's backdrop colour with no cursor: it shows between the two
+  # (notes/greeter.md). No PATH of its own: the session would keep it.
   run = pkgs.writeShellScript "greeter-session" ''
-    printf '\033[?25l'
+    printf '\033]P011111b\033[2J\033[?25l'
     identifier=$1
     shift
     exec ${pkgs.systemd}/bin/systemd-cat --identifier="$identifier" -- "$@"
@@ -121,7 +122,7 @@ let
 
       // Black under the login screen as it goes, as the VT after it is.
       layout {
-          background-color "#000000"
+          background-color "#11111b"
       }
 
       // No X11 for the login screen: it would take display :0 first.

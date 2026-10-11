@@ -56,8 +56,12 @@ The gap cannot be closed from here: greetd ends the greeter before it starts
 the session on the same VT, where GDM kept its greeter on one VT until the
 session's compositor was up on another. Measured 2026-10-10, some 1.1 s from
 the greeter's niri going to the session's niri taking the output. So the
-screen fades to black before the session is started, and the greeter's niri
-is black under it: black screen, black VT, then the desktop.
+screen fades to one colour before the session is started, and the greeter's
+niri is that colour under it. It was black; on `greetd-fork` it is the
+session's backdrop colour (`#11111b`), which the session's curtain has too,
+and the VT is given it as well: `greeter-session` sets the console's colour
+0 (`ESC ] P 0 11111b`) and clears, at the greeter's start already, so the VT
+has it at the first hand-over. The VT's part is not seen yet.
 
 A curtain over the session's first moments, lifted once the wallpaper was
 there, was tried the same day and dropped: it showed no difference and only

@@ -404,8 +404,9 @@ ShellRoot {
         }
     }
 
-    // The session is started once the screen is black: greetd shows the
-    // VT, black too, until the session's compositor is up (notes/greeter.md).
+    // The session is started once the screen is in the session's backdrop
+    // colour: greetd shows the VT, in it too, until the session's compositor
+    // is up (notes/greeter.md).
     property var launching: null
 
     Timer {
@@ -920,7 +921,7 @@ ShellRoot {
             // Over everything, as the session is let in.
             Rectangle {
                 anchors.fill: parent
-                color: "black"
+                color: "#11111b"
                 opacity: root.launching ? 1 : 0
 
                 Behavior on opacity {
