@@ -112,7 +112,7 @@ ShellRoot {
     property real wokeAt: 0
     // How long after one conversation was dropped the next is started, and
     // whether PAM has said anything in the one there is.
-    property int delay: 250
+    property int delay: 50
     property bool heard: false
 
     // A conversation is open whenever someone may be there. PAM asks for
@@ -306,7 +306,7 @@ ShellRoot {
             }
             // A conversation in order: the wait before the next one goes
             // back towards what it was.
-            root.delay = Math.max(250, Math.round(root.delay * 3 / 4));
+            root.delay = Math.max(50, Math.round(root.delay * 3 / 4));
             root.asked = true;
             if (root.entered)
                 root.answer();
