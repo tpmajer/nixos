@@ -49,6 +49,19 @@ LNA gate itself logs "auto_allow"; the request is killed anyway
 target domain; the source-domain side of SkipDomains is broken
 (https://bugzilla.mozilla.org/show_bug.cgi?id=2058449).
 
+## Firefox's first start
+
+Firefox has no way to stay running without a window on Linux, and a
+`--headless` instance opens its windows headless too, so it is not kept in the
+background as Ghostty is. `firefox-preload` reads its files into the page cache
+as the session starts instead: the libraries (about 390 MiB) and, of the
+profile last used, the files at its top, the extensions and the startup cache.
+
+Measured on 2026-10-11, from the spawn to the window in niri, with 38
+extensions: 1.3–2.3 s with those files dropped from the cache, 0.9–1.1 s after
+the preload, which took 0.5 s. A new window of a running Firefox takes 0.2 s;
+the rest of a start is the CPU's, not the disk's.
+
 ## Proton for Steam
 
 `proton-cachyos_x86_64_v3` from chaotic replaces builds installed by hand into
