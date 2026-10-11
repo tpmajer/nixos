@@ -87,4 +87,4 @@ within milliseconds, and getty's prompt again.
   anything else waits. A login waits for the daemon's answer, some 10 ms;
   2 s at most with `auto_start` and no daemon.
 
-Built, not tried on a TTY yet. To go once oo7 does it itself.
+Seen to work on a TTY 2026-10-11. To go once oo7 does it itself.
