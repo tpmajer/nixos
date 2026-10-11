@@ -19,7 +19,8 @@ first() {
     XDG_CACHE_HOME=$cache "$@" --namespace first
 }
 
-first awww-daemon --no-cache --layer bottom &
+# Not through first(): $! would be a shell's, and the daemon would stay.
+XDG_CACHE_HOME=$cache awww-daemon --no-cache --layer bottom --namespace first &
 daemon=$!
 
 # The daemon may still be starting.
