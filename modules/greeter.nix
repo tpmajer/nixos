@@ -134,6 +134,12 @@ in
 {
   services.greetd = {
     enable = true;
+    # greetd with the changes of ~/Claude/greetd (notes/greeter.md).
+    package = pkgs.greetd.overrideAttrs (old: {
+      patches = (old.patches or [ ]) ++ [
+        ../patches/greetd/0001-fix-end-the-session-worker-when-a-session-is-cancell.patch
+      ];
+    });
     settings.default_session.command = "${pkgs.coreutils}/bin/env XDG_CACHE_HOME=${cache} ${run} greeter ${niri}/bin/niri --config ${niriConfig}";
   };
 
