@@ -36,6 +36,14 @@ let
     ];
   };
 
+  layersWait = script "layers-wait" {
+    inputs = [
+      niri
+      pkgs.coreutils
+      pkgs.gnugrep
+    ];
+  };
+
   # The battery, for the theme: it can read settings, and no sysfs.
   battery = "${config.users.users.sddm.home}/battery.ini";
 
@@ -217,6 +225,24 @@ in
     after = [ "niri.service" ];
     wantedBy = [ "niri.service" ];
     serviceConfig.ExecStart = "${lib.getExe wallpaperFirst} ${wallpapers}";
+  };
+  # A curtain over the session until the bar and the wallpaper are there
+  # (curtain/shell.qml). Started once it is on the screen: the wallpapers
+  # wait for that.
+  systemd.user.services.session-curtain = {
+    description = "A curtain over the session's first moments";
+    bindsTo = [ "niri.service" ];
+    after = [ "niri.service" ];
+    wantedBy = [ "niri.service" ];
+    before = [
+      "awww-daemon.service"
+      "wallpaper-first.service"
+    ];
+    environment.CURTAIN_WAIT = lib.getExe layersWait;
+    serviceConfig = {
+      ExecStart = "${lib.getExe pkgs.quickshell} --path ${../curtain}";
+      ExecStartPost = "${lib.getExe layersWait} 200 'Namespace: \"session-curtain\"'";
+    };
   };
   systemd.user.paths.greeter-wallpaper = {
     wantedBy = [ "niri.service" ];
