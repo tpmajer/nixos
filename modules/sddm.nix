@@ -103,8 +103,10 @@ let
           skip-at-startup
       }
 
+      // The session's backdrop colour: it shows once the greeter's window
+      // is closed, until the session's niri and its curtain.
       layout {
-          background-color "#000000"
+          background-color "#11111b"
       }
 
       animations {

@@ -145,8 +145,10 @@ of its own on the overlay layer, in niri's backdrop colour).
   held awww back for it, and waited for awww's own image.
 
 Seen on a login 2026-10-11: the wallpaper is there as the session comes up.
-The black of SDDM's niri before the session's is still there: its window is
-closed at the login.
+SDDM's niri shows its background before the session's, as its window is
+closed at the login. It was black, a step darker than the session's
+backdrop and curtain (`#11111b`), which showed as a flash; it has their
+colour now.
 
 ## Trying the theme without a rebuild
 
