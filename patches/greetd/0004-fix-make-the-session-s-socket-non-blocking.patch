@@ -1,0 +1,33 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Tomasz Majer <17414256+tpmajer@users.noreply.github.com>
+Date: Sun, 11 Oct 2026 09:41:33 +0200
+Subject: [PATCH] fix: make the session's socket non-blocking
+
+The socket to a session worker was handed to tokio as it was created,
+blocking. A recv made while tokio still took the socket for readable,
+right after a message of the worker's, blocked the whole runtime
+until the next one: no other client was served, and a cancel sent
+during a PAM module's wait was not read, for all that requests are
+read as they come.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ greetd/src/session/interface.rs | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/greetd/src/session/interface.rs b/greetd/src/session/interface.rs
+index 9a77ca0..93a405a 100644
+--- a/greetd/src/session/interface.rs
++++ b/greetd/src/session/interface.rs
+@@ -124,6 +124,11 @@ impl Session {
+             }
+         };
+ 
++        // tokio expects a non-blocking socket: on a blocking one a recv
++        // made while it still takes the socket for readable blocks the
++        // whole runtime until the worker's next message.
++        parentfd.set_nonblocking(true)?;
++
+         Ok(Session {
+             task: child,
+             sock: TokioUnixDatagram::from_std(parentfd)?,

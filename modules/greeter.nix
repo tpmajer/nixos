@@ -145,6 +145,8 @@ in
       patches = (old.patches or [ ]) ++ [
         ../patches/greetd/0001-fix-end-the-session-worker-when-a-session-is-cancell.patch
         ../patches/greetd/0002-fix-let-a-client-cancel-while-a-question-is-awaited.patch
+        ../patches/greetd/0003-fix-do-not-fail-a-cancel-whose-worker-is-gone.patch
+        ../patches/greetd/0004-fix-make-the-session-s-socket-non-blocking.patch
       ];
     });
     settings.default_session.command = "${pkgs.coreutils}/bin/env XDG_CACHE_HOME=${cache} ${run} greeter ${niri}/bin/niri --config ${niriConfig}";

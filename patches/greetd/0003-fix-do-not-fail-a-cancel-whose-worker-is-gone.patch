@@ -1,0 +1,41 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Tomasz Majer <17414256+tpmajer@users.noreply.github.com>
+Date: Sun, 11 Oct 2026 09:37:37 +0200
+Subject: [PATCH] fix: do not fail a cancel whose worker is gone
+
+After a failed authentication the worker has exited, and the cancel a
+greeter sends next could not be delivered: it was answered with
+"unable to send message: Connection refused", which a greeter shows
+as an error of greetd's.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ greetd/src/session/interface.rs | 11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
+
+diff --git a/greetd/src/session/interface.rs b/greetd/src/session/interface.rs
+index 7141e9e..9a77ca0 100644
+--- a/greetd/src/session/interface.rs
++++ b/greetd/src/session/interface.rs
+@@ -180,13 +180,18 @@ impl Session {
+     /// Cancel the session.
+     pub async fn cancel(&mut self) -> Result<(), Error> {
+         self.last_msg = None;
++        // A worker that is gone, after a failed authentication for one, has
++        // nothing left to cancel: that is not an error.
+         let sent = ParentToSessionChild::Cancel.send(&mut self.sock).await;
+         // The worker only reads Cancel between PAM's questions, so a module
+         // that waits, such as a fingerprint reader's, would hold it until
+         // its timeout. A session that has not been started has nothing to
+-        // tear down, so end the worker instead.
+-        let _ = nix::sys::signal::kill(self.task, Signal::SIGTERM);
+-        sent
++        // tear down, so end the worker instead. Only one that took the
++        // message: the PID of one that is gone may be another process's.
++        if sent.is_ok() {
++            let _ = nix::sys::signal::kill(self.task, Signal::SIGTERM);
++        }
++        Ok(())
+     }
+ 
+     /// Send a response to an authentication question, or None to cancel the
