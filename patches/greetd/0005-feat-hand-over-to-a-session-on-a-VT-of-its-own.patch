@@ -19,13 +19,14 @@ session's compositor takes it, and would go with the greeter.
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
 ---
- greetd/src/config/mod.rs     |  42 +++++++++++++
- greetd/src/context.rs        | 111 ++++++++++++++++++++++++++++++++++-
+ greetd/src/config/mod.rs     |  42 +++++++++++
+ greetd/src/context.rs        | 135 ++++++++++++++++++++++++++++++++++-
  greetd/src/server.rs         |   5 +-
- greetd/src/session/worker.rs |  34 +++++++++++
- greetd/src/terminal/mod.rs   |  12 +++-
+ greetd/src/session/worker.rs |  46 ++++++++++++
+ greetd/src/terminal/ioctl.rs |   2 +
+ greetd/src/terminal/mod.rs   |  27 ++++++-
  man/greetd-5.scd             |  16 +++++
- 6 files changed, 213 insertions(+), 7 deletions(-)
+ 7 files changed, 266 insertions(+), 7 deletions(-)
 
 diff --git a/greetd/src/config/mod.rs b/greetd/src/config/mod.rs
 index 2d1d645..20d7d52 100644
@@ -137,7 +138,7 @@ index 2d1d645..20d7d52 100644
                  default_session: ConfigSession {
                      command: "agreety".to_string(),
 diff --git a/greetd/src/context.rs b/greetd/src/context.rs
-index 6bd4d82..b2b2307 100644
+index 6bd4d82..d8bd7f4 100644
 --- a/greetd/src/context.rs
 +++ b/greetd/src/context.rs
 @@ -17,6 +17,7 @@ use crate::{
@@ -224,7 +225,7 @@ index 6bd4d82..b2b2307 100644
                      let mut inner = self.inner.write().await;
                      std::mem::swap(&mut session, &mut inner.scheduled);
                      drop(inner);
-@@ -298,11 +321,68 @@ impl Context {
+@@ -298,11 +321,92 @@ impl Context {
          }
      }
  
@@ -267,12 +268,36 @@ index 6bd4d82..b2b2307 100644
 +    /// Start a greeter after a session. A hand-over left the greeter's VT,
 +    /// and a greeter that does not switch would not come back to it.
 +    async fn start_next_greeter(&self) -> Result<SessionChild, Error> {
-+        if let (TerminalMode::Handover, TerminalMode::Terminal { switch: false, .. }) =
-+            (&self.session_term_mode, &self.term_mode)
-+        {
-+            self.request_greeter_vt();
++        if let TerminalMode::Handover = self.session_term_mode {
++            self.release_stuck_vt();
++            if let TerminalMode::Terminal { switch: false, .. } = self.term_mode {
++                self.request_greeter_vt();
++            }
 +        }
 +        self.start_greeter().await
++    }
++
++    /// A session's worker that was killed did not put its VT back in text
++    /// mode. If the VT in front is in graphics mode with no process to ask
++    /// for a switch, the kernel ignores every switch away from it, and the
++    /// greeter would wait for its VT for good: back to text.
++    fn release_stuck_vt(&self) {
++        let greeter_vt = match &self.term_mode {
++            TerminalMode::Terminal { vt, .. } => *vt,
++            _ => return,
++        };
++        let current = match Terminal::open("/dev/tty0").and_then(|t| t.vt_get_current()) {
++            Ok(vt) => vt,
++            Err(_) => return,
++        };
++        if current == greeter_vt {
++            return;
++        }
++        if let Ok(term) = Terminal::open(&format!("/dev/tty{}", current)) {
++            if let Ok(true) = term.vt_is_auto() {
++                let _ = term.kd_setmode(crate::terminal::KdMode::Text);
++            }
++        }
 +    }
 +
      /// Notify the Context of an alarm.
@@ -293,7 +318,7 @@ index 6bd4d82..b2b2307 100644
          if let Some(mut p) = inner.scheduled.take() {
              if let Some(g) = inner.current.take() {
                  if p.time.elapsed() > Duration::from_secs(10) {
-@@ -344,6 +424,22 @@ impl Context {
+@@ -344,6 +448,22 @@ impl Context {
                  // We got an exit, see if it's something we need to clean up.
                  Ok(WaitStatus::Exited(pid, ..)) | Ok(WaitStatus::Signaled(pid, ..)) => {
                      let mut inner = self.inner.write().await;
@@ -316,7 +341,7 @@ index 6bd4d82..b2b2307 100644
                      let (was_greeter, sesion_length) = match &inner.current {
                          Some(s) if s.child.owns_pid(pid) => {
                              let res = (s.is_greeter, s.time.elapsed());
-@@ -373,11 +469,19 @@ impl Context {
+@@ -373,11 +493,19 @@ impl Context {
                              if was_greeter {
                                  return Err("greeter exited without creating a session".into());
                              }
@@ -337,7 +362,7 @@ index 6bd4d82..b2b2307 100644
                                  time: Instant::now(),
                                  is_greeter: true,
                              });
-@@ -413,6 +517,9 @@ impl Context {
+@@ -413,6 +541,9 @@ impl Context {
          if let Some(sess) = inner.current.take() {
              sess.child.term();
          }
@@ -378,7 +403,7 @@ index 9d3e13f..9b1271a 100644
          config.file.general.runfile,
          listener_path,
 diff --git a/greetd/src/session/worker.rs b/greetd/src/session/worker.rs
-index 71c9d10..6821b66 100644
+index 71c9d10..2c1992a 100644
 --- a/greetd/src/session/worker.rs
 +++ b/greetd/src/session/worker.rs
 @@ -28,6 +28,9 @@ pub enum TerminalMode {
@@ -391,12 +416,13 @@ index 71c9d10..6821b66 100644
      Stdin,
  }
  
-@@ -166,8 +169,23 @@ fn worker(sock: &UnixDatagram) -> Result<(), Error> {
+@@ -166,8 +169,24 @@ fn worker(sock: &UnixDatagram) -> Result<(), Error> {
      // Make this process a session leader.
      setsid().map_err(|e| format!("unable to become session leader: {}", e))?;
  
-+    // The VT to switch to once the PAM session is open.
++    // The VT to switch to once the PAM session is open, and the VT that was.
 +    let mut handover = None;
++    let mut handover_vt = None;
 +
      match tty {
          TerminalMode::Stdin => (),
@@ -415,7 +441,7 @@ index 71c9d10..6821b66 100644
          TerminalMode::Terminal { path, vt, switch } => {
              // Tell PAM what TTY we're targetting, which is used by logind.
              pam.set_item(PamItemType::TTY, &format!("tty{}", vt))?;
-@@ -221,6 +239,22 @@ fn worker(sock: &UnixDatagram) -> Result<(), Error> {
+@@ -221,6 +240,23 @@ fn worker(sock: &UnixDatagram) -> Result<(), Error> {
      // Session time!
      pam.open_session(PamFlag::NONE)?;
  
@@ -433,13 +459,51 @@ index 71c9d10..6821b66 100644
 +            let _ = target_term.kd_setmode(terminal::KdMode::Text);
 +            return Err(e);
 +        }
++        handover_vt = Some(vt);
 +    }
 +
      // We are done with PAM, clear variables that the child will not need.
      _ = pam.putenv(&"XDG_SESSION_CLASS");
  
+@@ -300,6 +336,16 @@ fn worker(sock: &UnixDatagram) -> Result<(), Error> {
+         }
+     }
+ 
++    // A session that ended with no compositor ever on its VT has left it in
++    // graphics mode, with nobody to ask for a switch: the kernel ignores
++    // every switch away from such a VT, the next greeter's included. A
++    // compositor's VT is in text mode again by now, and this does nothing.
++    if let Some(vt) = handover_vt {
++        if let Ok(term) = terminal::Terminal::open(&format!("/dev/tty{}", vt)) {
++            let _ = term.kd_setmode(terminal::KdMode::Text);
++        }
++    }
++
+     // Close the session. This step requires root privileges to run, as it
+     // will result in various forms of login teardown (including unmounting
+     // home folders, telling logind that the session ended, etc.). This is
+diff --git a/greetd/src/terminal/ioctl.rs b/greetd/src/terminal/ioctl.rs
+index 4c072b4..a7ef931 100644
+--- a/greetd/src/terminal/ioctl.rs
++++ b/greetd/src/terminal/ioctl.rs
+@@ -4,6 +4,7 @@ pub const KDSETMODE: u16 = 0x4B3A;
+ pub const KDTEXT: i32 = 0x00;
+ pub const KDGRAPHICS: i32 = 0x01;
+ pub const VT_OPENQRY: u16 = 0x5600;
++pub const VT_GETMODE: u16 = 0x5601;
+ pub const VT_SETMODE: u16 = 0x5602;
+ pub const VT_GETSTATE: u16 = 0x5603;
+ pub const VT_ACTIVATE: u16 = 0x5606;
+@@ -15,6 +16,7 @@ pub const TIOCSCTTY: u16 = 0x540E;
+ ioctl_write_int_bad!(kd_setmode, KDSETMODE);
+ ioctl_write_int_bad!(vt_activate, VT_ACTIVATE);
+ ioctl_write_int_bad!(vt_waitactive, VT_WAITACTIVE);
++ioctl_read_bad!(vt_getmode, VT_GETMODE, vt_mode);
+ ioctl_write_ptr_bad!(vt_setmode, VT_SETMODE, vt_mode);
+ ioctl_write_ptr_bad!(vt_setactivate, VT_SETACTIVATE, vt_setactivate);
+ ioctl_read_bad!(vt_openqry, VT_OPENQRY, i64);
 diff --git a/greetd/src/terminal/mod.rs b/greetd/src/terminal/mod.rs
-index 987f6cc..fec5e77 100644
+index 987f6cc..accac79 100644
 --- a/greetd/src/terminal/mod.rs
 +++ b/greetd/src/terminal/mod.rs
 @@ -102,15 +102,21 @@ impl Terminal {
@@ -467,6 +531,28 @@ index 987f6cc..fec5e77 100644
      /// Waits for specified VT to become active.
      pub fn vt_waitactive(&self, target_vt: usize) -> Result<(), Error> {
          if let Err(v) = unsafe { ioctl::vt_waitactive(self.fd, target_vt as i32) } {
+@@ -119,6 +125,21 @@ impl Terminal {
+         Ok(())
+     }
+ 
++    /// Whether the kernel switches this VT by itself, with no process to ask.
++    pub fn vt_is_auto(&self) -> Result<bool, Error> {
++        let mut mode = ioctl::vt_mode {
++            mode: ioctl::VT_AUTO,
++            waitv: 0,
++            relsig: 0,
++            acqsig: 0,
++            frsig: 0,
++        };
++        match unsafe { ioctl::vt_getmode(self.fd, &mut mode as *mut ioctl::vt_mode) } {
++            Ok(_) => Ok(mode.mode == ioctl::VT_AUTO),
++            Err(v) => Err(format!("terminal: unable to get vt mode: {}", v).into()),
++        }
++    }
++
+     /// Set the VT mode to VT_AUTO with everything cleared.
+     fn vt_mode_clean(&self) -> Result<(), Error> {
+         let mode = ioctl::vt_mode {
 diff --git a/man/greetd-5.scd b/man/greetd-5.scd
 index 29b7045..c695530 100644
 --- a/man/greetd-5.scd
