@@ -35,11 +35,18 @@ niri and Steam's gamescope. The one named in the corner is started; a click
 or Tab makes it the next. It is niri at every start: the last one is not
 kept, unlike under GDM.
 
-Steam's "Switch to Desktop" runs `steamos-session-select`, SteamOS's, and
-shows a window that stays when there is none. One is put in Steam's
-environment (`packages.nix`) that asks Steam to exit: gamescope ends with
-it, and the login screen is back, with niri as the session to start. Not
-tried in the session yet.
+Steam's gamescope session has one way out, "Switch to Desktop": in
+gamescope the menu has no "Exit Steam". The entry sends Steam's own
+`SteamOSManager.SwitchToDesktop`, which the client only answers as SteamOS
+(`-steamos3`): under `-tenfoot`, nixpkgs' default, its "Switching to
+Desktop" window came up and nothing followed, and nothing was logged
+(read in `steamui/sp.js` and `steamui.so`, 2026-10-11). As SteamOS, with no
+SteamOSManager on the bus, it runs `steamos-session-select plasma`. So the
+session is started with `-steamos3 -gamepadui`, and Steam's environment has
+three stand-ins (`packages.nix`): `steamos-session-select` asks Steam to
+exit, which ends gamescope and brings the login screen back with niri as
+the session to start; `steamos-update` says there is none (7);
+`steamos-select-branch` names one branch. Not tried in the session yet.
 
 greetd hands the entry's `Exec` to a shell after `/etc/profile`, so a bare
 `niri-session` is found. The session is started with
