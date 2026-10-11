@@ -64,3 +64,27 @@ under a 256 MiB limit and fails at 261.6 MiB.
 user namespace. A user unit cannot exceed the hard limit of `user@.service`,
 so that is raised to 2G, with `DefaultLimitMEMLOCK=8M` keeping every other user
 service at the default and an override giving oo7-daemon the 2G.
+
+## A TTY login that ended at once
+
+A login on a TTY was over as soon as the password was taken (seen
+2026-10-02, 2026-10-10, 2026-10-11): `session opened`, then `session closed`
+within milliseconds, and getty's prompt again.
+
+- pam_oo7 sends the password to the daemon from `pam_sm_open_session` in a
+  thread of its own, and forks a helper for it, to connect as the user. The
+  session is "open" before the helper is done.
+- login(1), shadow's, then forks the shell and waits with `wait(NULL)`, for
+  any child. The helper's exit ends that wait: login closes the session and
+  exits, and the thread's own `waitpid` finds no child ("Failed to wait for
+  child process: No child processes" in the journal, right after
+  `session closed`).
+- greetd's worker waits for its own child by PID, so the login screen never
+  showed it. 0.6.0 and upstream's main (2026-10-11) both have the thread.
+- `patches/oo7/pam-send-before-returning.patch`, on `oo7-pam` through an
+  overlay (`desktop.nix`): the password is sent before the module returns,
+  at a login and at a password change, so the helper is gone by the time
+  anything else waits. A login waits for the daemon's answer, some 10 ms;
+  2 s at most with `auto_start` and no daemon.
+
+Built, not tried on a TTY yet. To go once oo7 does it itself.
