@@ -11,6 +11,16 @@ ShellRoot {
 
     property bool lifting: false
 
+    // niri's backdrop: the base of the palette the session left for the
+    // login screen, Catppuccin's crust with none.
+    FileView {
+        id: paletteFile
+        path: Quickshell.env("CURTAIN_PALETTE")
+        blockLoading: true
+        printErrors: false
+    }
+    readonly property color backdrop: paletteFile.text().match(/^base=(#[0-9a-fA-F]{6})$/m)?.[1] ?? "#11111b"
+
     // Ends when niri has a wallpaper's layer, or in 2 s.
     Process {
         running: true
@@ -56,7 +66,7 @@ ShellRoot {
 
             Rectangle {
                 anchors.fill: parent
-                color: "#11111b"
+                color: root.backdrop
                 opacity: root.lifting ? 0 : 1
 
                 Behavior on opacity {

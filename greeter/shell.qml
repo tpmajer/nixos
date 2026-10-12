@@ -86,6 +86,9 @@ ShellRoot {
     // Catppuccin Mocha for what the palette does not name, and the bar's
     // font, as Theme.qml in ~/.dotfiles.
     readonly property color base: palette.base ?? "#1e1e2e"
+    // What the screen comes out of and goes into: the session's backdrop,
+    // a palette's base or Catppuccin's crust, as the greeter's niri has.
+    readonly property color backdrop: palette.base ?? "#11111b"
     readonly property color subtext1: palette.subtext1 ?? "#bac2de"
     readonly property color subtext0: palette.subtext0 ?? "#a6adc8"
     readonly property color green: palette.green ?? "#a6e3a1"
@@ -936,7 +939,7 @@ ShellRoot {
             // into as the session is let in.
             Rectangle {
                 anchors.fill: parent
-                color: "#11111b"
+                color: root.backdrop
                 opacity: root.launching || image.status === Image.Loading ? 1 : 0
 
                 Behavior on opacity {

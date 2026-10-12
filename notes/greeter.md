@@ -15,8 +15,11 @@ Its colours are the session's palette: `palette-apply.sh` in `~/.dotfiles`
 leaves the six it draws with in `/var/cache/greeter/palette`, next to the
 wallpapers, and the screen reads them at its start, with Catppuccin Mocha
 for any it does not find. The backdrop between the screen and the session
-(`#11111b`: the VT, the greeter's niri, the veil, the curtain) is not the
-palette's.
+(the VT, the greeter's niri, the veil, the curtain) is the palette's base,
+as the session's niri has it, and Catppuccin's crust (`#11111b`) with none.
+The greeter's niri takes it from a file its config includes, written into
+the greeter's own cache at each start from a colour checked as `rrggbb`:
+the palette's file is the session's to write, and is not included itself.
 
 Its niri has no binds. The VT keys are niri's own, so a TTY is still there if
 the screen fails; greetd starts the greeter again when it exits. niri starts

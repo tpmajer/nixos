@@ -48,11 +48,22 @@ let
     [ -n "$password" ]
   '';
 
+  # The backdrop between the login screen and the session, as rrggbb: the
+  # base of the palette the session left (greeter/shell.qml), which its niri
+  # has for one too; Catppuccin's crust with none.
+  backdrop = ''
+    backdrop=11111b
+    while IFS= read -r line; do
+      [[ $line =~ ^base=#([0-9a-fA-F]{6})$ ]] && backdrop=''${BASH_REMATCH[1]}
+    done 2> /dev/null < ${wallpapers}/palette
+  '';
+
   # Whatever greetd starts, with its output in the journal, and the VT in the
   # session's backdrop colour with no cursor: it shows between the two
   # (notes/greeter.md). No PATH of its own: the session would keep it.
   run = pkgs.writeShellScript "greeter-session" ''
-    printf '\033]P011111b\033[2J\033[?25l'
+    ${backdrop}
+    printf '\033]P0%s\033[2J\033[?25l' "$backdrop"
     identifier=$1
     shift
     exec ${pkgs.systemd}/bin/systemd-cat --identifier="$identifier" -- "$@"
@@ -120,10 +131,12 @@ let
           skip-at-startup
       }
 
-      // The session's backdrop colour under the login screen as it goes.
+      // The session's backdrop colour under the login screen as it goes:
+      // a palette's from the file greeter-niri writes.
       layout {
           background-color "#11111b"
       }
+      include optional=true "${cache}/backdrop.kdl"
 
       // No X11 for the login screen: it would take display :0 first.
       xwayland-satellite {
@@ -136,6 +149,13 @@ let
       spawn-at-startup "${greeter}"
     '';
   };
+
+  # The greeter's niri, with the backdrop in a file its config includes.
+  greeterNiri = pkgs.writeShellScript "greeter-niri" ''
+    ${backdrop}
+    printf 'layout {\n    background-color "#%s"\n}\n' "$backdrop" > ${cache}/backdrop.kdl
+    exec ${niri}/bin/niri --config ${niriConfig}
+  '';
 in
 
 {
@@ -154,7 +174,7 @@ in
     # The session on a VT of its own, with the greeter kept until it is up
     # (notes/greeter.md).
     settings.terminal.handover = true;
-    settings.default_session.command = "${pkgs.coreutils}/bin/env XDG_CACHE_HOME=${cache} ${run} greeter ${niri}/bin/niri --config ${niriConfig}";
+    settings.default_session.command = "${pkgs.coreutils}/bin/env XDG_CACHE_HOME=${cache} ${run} greeter ${greeterNiri}";
   };
 
   # The login screen alone has the reader; a TTY keeps to the password. PAM
@@ -221,6 +241,7 @@ in
       "wallpaper-first.service"
     ];
     environment.CURTAIN_WAIT = lib.getExe layersWait;
+    environment.CURTAIN_PALETTE = "${wallpapers}/palette";
     serviceConfig = {
       ExecStart = "${lib.getExe pkgs.quickshell} --path ${../curtain}";
       ExecStartPost = "${lib.getExe layersWait} 200 'Namespace: \"session-curtain\"'";
