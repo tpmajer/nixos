@@ -34,6 +34,11 @@ in
     tlp = {
       enable = true;
       pd.enable = true;
+      # Cooler on battery: lower firmware power limits, slower frequency ramp.
+      settings = {
+        PLATFORM_PROFILE_ON_BAT = "low-power";
+        CPU_ENERGY_PERF_POLICY_ON_BAT = "power";
+      };
     };
     # The power key opens Quickshell's power menu, bound in niri's config.
     logind.settings.Login.HandlePowerKey = "ignore";
