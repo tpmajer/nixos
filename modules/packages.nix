@@ -21,7 +21,6 @@
     brightnessctl
     btop
     cachix
-    calcure
     caligula # TUI for disk imaging
     candy-icons
     (catppuccin-papirus-folders.override {
