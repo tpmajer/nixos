@@ -48,22 +48,28 @@ let
     [ -n "$password" ]
   '';
 
-  # The backdrop between the login screen and the session, as rrggbb: the
-  # crust of the palette the session left (greeter/shell.qml), which its niri
-  # has for one too; Catppuccin's with none.
+  # The palette the session left (greeter/shell.qml), as rrggbb, Catppuccin's
+  # with none. Its crust is the backdrop between the login screen and the
+  # session, which its niri has for one too; the rest colour the VT's text.
   backdrop = ''
-    backdrop=11111b
+    crust=11111b subtext1=bac2de text=cdd6f4 green=a6e3a1 peach=fab387 red=f38ba8
     while IFS= read -r line; do
-      [[ $line =~ ^crust=#([0-9a-fA-F]{6})$ ]] && backdrop=''${BASH_REMATCH[1]}
+      [[ $line =~ ^(crust|subtext1|text|green|peach|red)=#([0-9a-fA-F]{6})$ ]] &&
+        declare "''${BASH_REMATCH[1]}=''${BASH_REMATCH[2]}"
     done 2> /dev/null < ${wallpapers}/palette
+    backdrop=$crust
   '';
 
   # Whatever greetd starts, with its output in the journal, and the VT in the
-  # session's backdrop colour with no cursor: it shows between the two
-  # (notes/greeter.md). No PATH of its own: the session would keep it.
+  # palette's colours with no cursor: it shows between the two, and systemd's
+  # status as the machine goes down (notes/greeter.md). No PATH of its own:
+  # the session would keep it.
   run = pkgs.writeShellScript "greeter-session" ''
     ${backdrop}
-    printf '\033]P0%s\033[2J\033[?25l' "$backdrop"
+    # Plain text, bold, OK, failed, warnings: each colour and its bright one.
+    printf '\033]P%s' "0$backdrop" "7$subtext1" "F$text" "2$green" "A$green" \
+      "1$red" "9$red" "3$peach" "B$peach"
+    printf '\033[2J\033[?25l'
     identifier=$1
     shift
     exec ${pkgs.systemd}/bin/systemd-cat --identifier="$identifier" -- "$@"
