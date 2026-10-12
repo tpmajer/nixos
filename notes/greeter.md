@@ -11,6 +11,13 @@ copied, not shared: a change to it needs a rebuild, and an edit to the bar
 cannot break it. The weather and the notifications of the lock's row are the
 session's, so only the battery is there.
 
+Its colours are the session's palette: `palette-apply.sh` in `~/.dotfiles`
+leaves the six it draws with in `/var/cache/greeter/palette`, next to the
+wallpapers, and the screen reads them at its start, with Catppuccin Mocha
+for any it does not find. The backdrop between the screen and the session
+(`#11111b`: the VT, the greeter's niri, the veil, the curtain) is not the
+palette's.
+
 Its niri has no binds. The VT keys are niri's own, so a TTY is still there if
 the screen fails; greetd starts the greeter again when it exits. niri starts
 with its default config, binds included, on one it cannot parse, so the

@@ -64,13 +64,33 @@ ShellRoot {
     // Where the session leaves what awww shows, a file per output.
     readonly property string wallpapers: Quickshell.env("GREETER_WALLPAPERS")
 
-    // Catppuccin Mocha and the bar's font, as Theme.qml in ~/.dotfiles.
-    readonly property color base: "#1e1e2e"
-    readonly property color subtext1: "#bac2de"
-    readonly property color subtext0: "#a6adc8"
-    readonly property color green: "#a6e3a1"
-    readonly property color peach: "#fab387"
-    readonly property color red: "#f38ba8"
+    // The session's palette, left next to the wallpapers as lines of
+    // name=#rrggbb (palette-apply.sh in ~/.dotfiles). Anyone's to write:
+    // nothing else is taken from it.
+    FileView {
+        id: paletteFile
+        path: root.wallpapers + "/palette"
+        blockLoading: true
+        printErrors: false
+    }
+    readonly property var palette: {
+        const colors = {};
+        for (const line of paletteFile.text().split("\n")) {
+            const pair = line.match(/^([a-z0-9]+)=(#[0-9a-fA-F]{6})$/);
+            if (pair)
+                colors[pair[1]] = pair[2];
+        }
+        return colors;
+    }
+
+    // Catppuccin Mocha for what the palette does not name, and the bar's
+    // font, as Theme.qml in ~/.dotfiles.
+    readonly property color base: palette.base ?? "#1e1e2e"
+    readonly property color subtext1: palette.subtext1 ?? "#bac2de"
+    readonly property color subtext0: palette.subtext0 ?? "#a6adc8"
+    readonly property color green: palette.green ?? "#a6e3a1"
+    readonly property color peach: palette.peach ?? "#fab387"
+    readonly property color red: palette.red ?? "#f38ba8"
     readonly property string font: "JetBrainsMono Nerd Font Propo"
     readonly property int fontSize: 17
 
