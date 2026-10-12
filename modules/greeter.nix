@@ -49,12 +49,12 @@ let
   '';
 
   # The backdrop between the login screen and the session, as rrggbb: the
-  # base of the palette the session left (greeter/shell.qml), which its niri
-  # has for one too; Catppuccin's crust with none.
+  # crust of the palette the session left (greeter/shell.qml), which its niri
+  # has for one too; Catppuccin's with none.
   backdrop = ''
     backdrop=11111b
     while IFS= read -r line; do
-      [[ $line =~ ^base=#([0-9a-fA-F]{6})$ ]] && backdrop=''${BASH_REMATCH[1]}
+      [[ $line =~ ^crust=#([0-9a-fA-F]{6})$ ]] && backdrop=''${BASH_REMATCH[1]}
     done 2> /dev/null < ${wallpapers}/palette
   '';
 

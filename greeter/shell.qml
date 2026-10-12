@@ -87,8 +87,8 @@ ShellRoot {
     // font, as Theme.qml in ~/.dotfiles.
     readonly property color base: palette.base ?? "#1e1e2e"
     // What the screen comes out of and goes into: the session's backdrop,
-    // a palette's base or Catppuccin's crust, as the greeter's niri has.
-    readonly property color backdrop: palette.base ?? "#11111b"
+    // a palette's crust or Catppuccin's, as the greeter's niri has.
+    readonly property color backdrop: palette.crust ?? "#11111b"
     readonly property color subtext1: palette.subtext1 ?? "#bac2de"
     readonly property color subtext0: palette.subtext0 ?? "#a6adc8"
     readonly property color green: palette.green ?? "#a6e3a1"
