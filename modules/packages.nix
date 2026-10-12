@@ -60,7 +60,6 @@
     gnome-font-viewer
     gnome-logs
     gnome-network-displays
-    gnome-tweaks
     gnome-weather
     gocryptfs
     google-chrome
