@@ -22,11 +22,11 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
  greetd/src/config/mod.rs     |  42 +++++++++++
  greetd/src/context.rs        | 135 ++++++++++++++++++++++++++++++++++-
  greetd/src/server.rs         |   5 +-
- greetd/src/session/worker.rs |  46 ++++++++++++
+ greetd/src/session/worker.rs |  56 +++++++++++++++
  greetd/src/terminal/ioctl.rs |   2 +
  greetd/src/terminal/mod.rs   |  27 ++++++-
  man/greetd-5.scd             |  16 +++++
- 7 files changed, 266 insertions(+), 7 deletions(-)
+ 7 files changed, 276 insertions(+), 7 deletions(-)
 
 diff --git a/greetd/src/config/mod.rs b/greetd/src/config/mod.rs
 index 2d1d645..20d7d52 100644
@@ -373,7 +373,7 @@ index 6bd4d82..d8bd7f4 100644
      }
  }
 diff --git a/greetd/src/server.rs b/greetd/src/server.rs
-index 9d3e13f..9b1271a 100644
+index 14f0aed..3a5b0a3 100644
 --- a/greetd/src/server.rs
 +++ b/greetd/src/server.rs
 @@ -27,7 +27,7 @@ fn reset_vt(term_mode: &TerminalMode) -> Result<(), Error> {
@@ -394,7 +394,7 @@ index 9d3e13f..9b1271a 100644
      }
      Ok(())
  }
-@@ -311,6 +311,7 @@ pub async fn main(config: Config) -> Result<(), Error> {
+@@ -313,6 +313,7 @@ pub async fn main(config: Config) -> Result<(), Error> {
          greeter_service.to_string(),
          service.to_string(),
          term_mode.clone(),
@@ -403,7 +403,7 @@ index 9d3e13f..9b1271a 100644
          config.file.general.runfile,
          listener_path,
 diff --git a/greetd/src/session/worker.rs b/greetd/src/session/worker.rs
-index 71c9d10..2c1992a 100644
+index 71c9d10..0579ec5 100644
 --- a/greetd/src/session/worker.rs
 +++ b/greetd/src/session/worker.rs
 @@ -28,6 +28,9 @@ pub enum TerminalMode {
@@ -416,13 +416,34 @@ index 71c9d10..2c1992a 100644
      Stdin,
  }
  
-@@ -166,8 +169,24 @@ fn worker(sock: &UnixDatagram) -> Result<(), Error> {
+@@ -95,6 +98,19 @@ impl SessionChildToParent {
+     }
+ }
+ 
++/// A session's VT in graphics mode, put back in text mode when dropped. One
++/// left in graphics mode with nobody to ask for a switch cannot be left:
++/// the kernel ignores every switch away from it, the greeter's included.
++struct GraphicsVt(usize);
++
++impl Drop for GraphicsVt {
++    fn drop(&mut self) {
++        if let Ok(term) = terminal::Terminal::open(&format!("/dev/tty{}", self.0)) {
++            let _ = term.kd_setmode(terminal::KdMode::Text);
++        }
++    }
++}
++
+ /// The entry point for the session worker process. The session worker is
+ /// responsible for the entirety of the session setup and execution. It is
+ /// started by Session::start.
+@@ -166,8 +182,25 @@ fn worker(sock: &UnixDatagram) -> Result<(), Error> {
      // Make this process a session leader.
      setsid().map_err(|e| format!("unable to become session leader: {}", e))?;
  
-+    // The VT to switch to once the PAM session is open, and the VT that was.
++    // The VT to switch to once the PAM session is open, and the VT that was:
++    // in text mode again however this ends, an error after the switch too.
 +    let mut handover = None;
-+    let mut handover_vt = None;
++    let mut handover_vt: Option<GraphicsVt> = None;
 +
      match tty {
          TerminalMode::Stdin => (),
@@ -441,7 +462,7 @@ index 71c9d10..2c1992a 100644
          TerminalMode::Terminal { path, vt, switch } => {
              // Tell PAM what TTY we're targetting, which is used by logind.
              pam.set_item(PamItemType::TTY, &format!("tty{}", vt))?;
-@@ -221,6 +240,23 @@ fn worker(sock: &UnixDatagram) -> Result<(), Error> {
+@@ -221,6 +254,23 @@ fn worker(sock: &UnixDatagram) -> Result<(), Error> {
      // Session time!
      pam.open_session(PamFlag::NONE)?;
  
@@ -459,13 +480,13 @@ index 71c9d10..2c1992a 100644
 +            let _ = target_term.kd_setmode(terminal::KdMode::Text);
 +            return Err(e);
 +        }
-+        handover_vt = Some(vt);
++        handover_vt = Some(GraphicsVt(vt));
 +    }
 +
      // We are done with PAM, clear variables that the child will not need.
      _ = pam.putenv(&"XDG_SESSION_CLASS");
  
-@@ -300,6 +336,16 @@ fn worker(sock: &UnixDatagram) -> Result<(), Error> {
+@@ -300,6 +350,12 @@ fn worker(sock: &UnixDatagram) -> Result<(), Error> {
          }
      }
  
@@ -473,11 +494,7 @@ index 71c9d10..2c1992a 100644
 +    // graphics mode, with nobody to ask for a switch: the kernel ignores
 +    // every switch away from such a VT, the next greeter's included. A
 +    // compositor's VT is in text mode again by now, and this does nothing.
-+    if let Some(vt) = handover_vt {
-+        if let Ok(term) = terminal::Terminal::open(&format!("/dev/tty{}", vt)) {
-+            let _ = term.kd_setmode(terminal::KdMode::Text);
-+        }
-+    }
++    drop(handover_vt.take());
 +
      // Close the session. This step requires root privileges to run, as it
      // will result in various forms of login teardown (including unmounting
