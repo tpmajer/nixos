@@ -1,0 +1,18 @@
+A reload of the configuration while the session is locked made new lock
+surfaces before taking over the old ones: the surfaces made ahead of the
+lock were given no old instance, and those made after it, which were,
+found the screens taken. The second surface for an output is a protocol
+error (ext_session_lock_v1: duplicate_output), which ends the process
+with the session locked.
+
+--- a/src/wayland/session_lock.cpp
++++ b/src/wayland/session_lock.cpp
+@@ -146,7 +146,7 @@
+ 
+ 			// preload initial surfaces to make the chance of the compositor displaying a blank
+ 			// frame before the lock surfaces are shown as low as possible.
+-			this->updateSurfaces(false);
++			this->updateSurfaces(false, old);
+ 
+ 			auto wasLocked = this->isLocked();
+ 			if (!this->manager->lock()) {

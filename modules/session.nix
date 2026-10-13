@@ -23,6 +23,16 @@ let
 in
 
 {
+  # A reload while locked made a second lock surface for an output, which
+  # ended the bar with the session locked (notes/desktop.md).
+  nixpkgs.overlays = [
+    (final: prev: {
+      quickshell = prev.quickshell.overrideAttrs (old: {
+        patches = (old.patches or [ ]) ++ [ ../patches/quickshell/session-lock-reload.patch ];
+      });
+    })
+  ];
+
   services.hypridle.enable = true;
 
   systemd.user.services = {
