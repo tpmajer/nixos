@@ -15,11 +15,11 @@ answered with the error "cancelled", then the cancel is handled.
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
 ---
- greetd/src/server.rs | 110 ++++++++++++++++++++++++++++++++++---------
- 1 file changed, 89 insertions(+), 21 deletions(-)
+ greetd/src/server.rs | 112 +++++++++++++++++++++++++++++++++++--------
+ 1 file changed, 91 insertions(+), 21 deletions(-)
 
 diff --git a/greetd/src/server.rs b/greetd/src/server.rs
-index b215c4a..9d3e13f 100644
+index b215c4a..14f0aed 100644
 --- a/greetd/src/server.rs
 +++ b/greetd/src/server.rs
 @@ -4,6 +4,7 @@ use nix::unistd::{chown, getpid, Gid, Uid};
@@ -30,7 +30,7 @@ index b215c4a..9d3e13f 100644
      task,
  };
  
-@@ -66,31 +67,98 @@ async fn client_get_question(ctx: &Context) -> Response {
+@@ -66,31 +67,100 @@ async fn client_get_question(ctx: &Context) -> Response {
      }
  }
  
@@ -53,7 +53,9 @@ index b215c4a..9d3e13f 100644
 +        biased;
 +        resp = client_get_question(ctx) => resp,
 +        req = requests.recv() => match req {
-+            Some(Request::CancelSession) => {
++            // A client that is gone has cancelled as well: nobody is left
++            // to answer, and the wait would hold the context for its time.
++            Some(Request::CancelSession) | None => {
 +                *next = Some(Request::CancelSession);
 +                Response::Error {
 +                    error_type: ErrorType::Error,
