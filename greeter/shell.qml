@@ -298,6 +298,9 @@ ShellRoot {
         target: Greetd
 
         function onAuthMessage(message, error, responseRequired, echoResponse) {
+            // Of a conversation Quickshell has dropped: not answered.
+            if (Greetd.state !== GreetdState.Authenticating)
+                return;
             root.heard = true;
             if (!responseRequired) {
                 // pam_fprintd's are told by their words, English under the
@@ -405,8 +408,16 @@ ShellRoot {
         // over in a while, not at once: it would be, without end.
         function onError(error) {
             // The answer to what a cancel cut short: nothing went wrong.
-            if (error === "cancelled")
+            // Come after the next conversation was begun, it ends that one
+            // for Quickshell and not for greetd: once more, with a longer
+            // wait.
+            if (error === "cancelled") {
+                if (!starter.running && !root.accepted) {
+                    root.delay = Math.min(root.delay * 2, 4000);
+                    starter.restart();
+                }
                 return;
+            }
             root.accepted = false;
             leave.stop();
             root.launching = null;
