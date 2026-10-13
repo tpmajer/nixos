@@ -175,6 +175,7 @@ in
         ../patches/greetd/0003-fix-do-not-fail-a-cancel-whose-worker-is-gone.patch
         ../patches/greetd/0004-fix-make-the-session-s-socket-non-blocking.patch
         ../patches/greetd/0005-feat-hand-over-to-a-session-on-a-VT-of-its-own.patch
+        ../patches/greetd/0006-fix-notice-a-session-worker-that-is-gone.patch
       ];
     });
     # The session on a VT of its own, with the greeter kept until it is up

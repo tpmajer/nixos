@@ -1,0 +1,183 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Tomasz Majer <17414256+tpmajer@users.noreply.github.com>
+Date: Tue, 13 Oct 2026 21:47:51 +0200
+Subject: [PATCH] fix: notice a session worker that is gone
+
+greetd and a session's worker talk over a pair of datagram sockets,
+and such a socket is not told that its peer is gone: with the worker
+killed, or crashed in a PAM module, greetd waited for its next message
+without end, a question's wait with the context locked, so that
+neither a new greeter nor a hand-over's failure came of it.
+
+The pair is one of sequenced packets now, read and written as before,
+where the end of the socket is the worker's. A worker killed during a
+hand-over may have left its VT in graphics mode: it is put back in
+text mode before the greeter's VT is asked for.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ greetd/src/context.rs           |  4 +-
+ greetd/src/session/interface.rs | 96 +++++++++++++++++++++++++++++++--
+ greetd/src/session/worker.rs    |  4 ++
+ 3 files changed, 100 insertions(+), 4 deletions(-)
+
+diff --git a/greetd/src/context.rs b/greetd/src/context.rs
+index d8bd7f4..db72593 100644
+--- a/greetd/src/context.rs
++++ b/greetd/src/context.rs
+@@ -328,7 +328,9 @@ impl Context {
+             Ok(child) => child,
+             Err(e) => {
+                 // The worker may have switched VTs already: back to the
+-                // greeter's, which is still there to say what happened.
++                // greeter's, which is still there to say what happened. One
++                // that was killed left its VT in graphics mode.
++                self.release_stuck_vt();
+                 self.request_greeter_vt();
+                 return Err(format!("session start failed: {}", e).into());
+             }
+diff --git a/greetd/src/session/interface.rs b/greetd/src/session/interface.rs
+index 93a405a..8d72ebc 100644
+--- a/greetd/src/session/interface.rs
++++ b/greetd/src/session/interface.rs
+@@ -1,6 +1,9 @@
+ use std::{
+     ffi::CString,
+-    os::unix::{io::AsRawFd, net::UnixDatagram},
++    os::unix::{
++        io::{AsRawFd, FromRawFd},
++        net::UnixDatagram,
++    },
+ };
+ 
+ use nix::{
+@@ -49,12 +52,45 @@ impl AsyncRecv<SessionChildToParent> for SessionChildToParent {
+             .recv(&mut data[..])
+             .await
+             .map_err(|e| format!("unable to recieve message: {}", e))?;
++        // The end of the socket: the worker has exited, or was killed.
++        if len == 0 {
++            return Err("the session worker is gone".into());
++        }
+         let msg = serde_json::from_slice(&data[..len])
+             .map_err(|e| format!("unable to deserialize message: {}", e))?;
+         Ok(msg)
+     }
+ }
+ 
++/// The sockets greetd and a session worker talk over. A pair of sequenced
++/// packets, not of datagrams, which it is handled as: a datagram socket is
++/// not told that its peer is gone, and a worker that died would be waited
++/// for without end.
++fn worker_pair() -> Result<(UnixDatagram, UnixDatagram), Error> {
++    let mut fds = [0; 2];
++    if unsafe {
++        libc::socketpair(
++            libc::AF_UNIX,
++            libc::SOCK_SEQPACKET | libc::SOCK_CLOEXEC,
++            0,
++            fds.as_mut_ptr(),
++        )
++    } != 0
++    {
++        return Err(format!(
++            "could not create pipe: {}",
++            std::io::Error::last_os_error()
++        )
++        .into());
++    }
++    Ok(unsafe {
++        (
++            UnixDatagram::from_raw_fd(fds[0]),
++            UnixDatagram::from_raw_fd(fds[1]),
++        )
++    })
++}
++
+ /// SessionChild tracks the processes spawned by a session
+ pub struct SessionChild {
+     pub task: Pid,
+@@ -96,8 +132,7 @@ impl Session {
+     /// Create a session started as an external process.
+     pub fn new_external() -> Result<Session, Error> {
+         // Pipe used to communicate the true PID of the final child.
+-        let (parentfd, childfd) =
+-            UnixDatagram::pair().map_err(|e| format!("could not create pipe: {}", e))?;
++        let (parentfd, childfd) = worker_pair()?;
+ 
+         let raw_child = childfd.as_raw_fd();
+         let mut cur_flags = FdFlag::from_bits_retain(fcntl(raw_child, FcntlArg::F_GETFD)?);
+@@ -270,3 +305,58 @@ impl Session {
+         })
+     }
+ }
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++
++    #[tokio::test]
++    async fn worker_messages_arrive_whole() {
++        let (parent, child) = worker_pair().unwrap();
++        parent.set_nonblocking(true).unwrap();
++        let mut parent = TokioUnixDatagram::from_std(parent).unwrap();
++
++        SessionChildToParent::Success.send(&child).unwrap();
++        SessionChildToParent::FinalChildPid(7).send(&child).unwrap();
++        assert!(matches!(
++            SessionChildToParent::recv(&mut parent).await,
++            Ok(SessionChildToParent::Success)
++        ));
++        assert!(matches!(
++            SessionChildToParent::recv(&mut parent).await,
++            Ok(SessionChildToParent::FinalChildPid(7))
++        ));
++
++        ParentToSessionChild::Start.send(&mut parent).await.unwrap();
++        let mut data = [0; 10240];
++        assert!(matches!(
++            ParentToSessionChild::recv(&child, &mut data),
++            Ok(ParentToSessionChild::Start)
++        ));
++    }
++
++    #[tokio::test]
++    async fn a_worker_that_is_gone_is_an_error() {
++        let (parent, child) = worker_pair().unwrap();
++        parent.set_nonblocking(true).unwrap();
++        let mut parent = TokioUnixDatagram::from_std(parent).unwrap();
++
++        // What it sent before it went is still read.
++        SessionChildToParent::Success.send(&child).unwrap();
++        drop(child);
++        assert!(matches!(
++            SessionChildToParent::recv(&mut parent).await,
++            Ok(SessionChildToParent::Success)
++        ));
++        assert!(SessionChildToParent::recv(&mut parent).await.is_err());
++        assert!(ParentToSessionChild::Cancel.send(&mut parent).await.is_err());
++    }
++
++    #[tokio::test]
++    async fn greetd_gone_ends_the_worker() {
++        let (parent, child) = worker_pair().unwrap();
++        drop(parent);
++        let mut data = [0; 10240];
++        assert!(ParentToSessionChild::recv(&child, &mut data).is_err());
++    }
++}
+diff --git a/greetd/src/session/worker.rs b/greetd/src/session/worker.rs
+index 0579ec5..0a6f84f 100644
+--- a/greetd/src/session/worker.rs
++++ b/greetd/src/session/worker.rs
+@@ -77,6 +77,10 @@ impl<'a> ParentToSessionChild<'a> {
+         data: &'a mut [u8; 10240],
+     ) -> Result<ParentToSessionChild<'a>, Error> {
+         let len = sock.recv(&mut data[..])?;
++        // The end of the socket: nobody is left to start a session for.
++        if len == 0 {
++            return Err("greetd is gone".into());
++        }
+         let msg = serde_json::from_slice(&data[..len])?;
+         Ok(msg)
+     }
