@@ -36,7 +36,9 @@ The power key is the reader too, and niri would suspend at it: its niri is
 told not to handle it. Left alone for a minute the screen turns the outputs
 off, for ten it suspends the machine, as hypridle does in the session. Idle
 is told once per stretch without input, so the count is begun anew a minute
-after each suspend: a machine woken untouched sleeps again.
+after each suspend: a machine woken untouched sleeps again. The key or the
+click that lights the outputs does nothing else: with the pointer left on
+the power button, a tap to wake the screen would turn the machine off.
 
 ## Sessions
 
@@ -83,7 +85,7 @@ the session on the same VT, where GDM kept its greeter on one VT until the
 session's compositor was up on another. Measured 2026-10-10, some 1.1 s from
 the greeter's niri going to the session's niri taking the output. So the
 screen fades to one colour before the session is started, and the greeter's
-niri is that colour under it. It was black; on `greetd-fork` it is the
+niri is that colour under it. It was black; with the fork it is the
 session's backdrop colour (`#11111b`), which the session's curtain has too,
 and the VT is given it as well: `greeter-session` sets the console's colour
 0 (`ESC ] P 0 11111b`) and clears, at the greeter's start already, so the VT
@@ -99,8 +101,8 @@ in under them (seen in a nested niri, not on the real screen).
 
 A curtain over the session's first moments, in the bar's Quickshell and
 with awww held for it, was tried under plain greetd 2026-10-10 and dropped:
-it showed no difference and only held the desktop back. The one on
-`greetd-fork` is another: `session-curtain`, a Quickshell of its own that
+it showed no difference and only held the desktop back. The one there is
+now is another: `session-curtain`, a Quickshell of its own that
 is up before the wallpaper, with `wallpaper-first` drawing a copy at once
 (tried on the branch `sddm`, notes/sddm.md there). It waited for the bar too at
 first; the bar pops in by itself now (`~/.dotfiles`, `PopupHost.qml`), and
@@ -155,10 +157,11 @@ language the reader's icon would stay dark.
 
 ## The fork
 
-On the branch `greetd-fork` greetd is built with the changes of
-`~/Claude/greetd` (branch `handover`, from 0.10.3), kept here as patches
-(`patches/greetd`, `git format-patch 0.10.3..HEAD`). What follows replaces
-the turns of the reader and the password described above.
+greetd is built with the changes of `~/Claude/greetd` (branch `handover`,
+from 0.10.3), kept here as patches (`patches/greetd`,
+`git format-patch --zero-commit -N --no-signature 0.10.3..HEAD`). It was
+tried on the branch `greetd-fork` and is on `main` since. What follows
+replaces the turns of the reader and the password described above.
 
 - PAM asks for the password first (pam_exec, `greetd-typed`). One given
   skips the reader and goes to login's rules at once. None is a round of
@@ -175,7 +178,19 @@ the turns of the reader and the password described above.
   showed.
 - A cancel that cuts a wait short is answered twice: the request it
   interrupts with the error "cancelled", which the screen passes over, then
-  the cancel itself.
+  the cancel itself. Quickshell takes any error for the end of the
+  conversation it has, so a "cancelled" that came after the next one was
+  begun would leave greetd with a conversation Quickshell does not know of:
+  the screen then begins once more, with a longer wait, and answers nothing
+  PAM says while Quickshell has no conversation.
+- A client that goes during such a wait has cancelled too. The wait holds
+  greetd's context, and a greeter that died would not be seen to for the
+  rest of the reader's round.
+- greetd and a session's worker talk over a pair of sequenced packets, not
+  of datagrams (2026-10-13): a datagram socket is not told that its peer
+  is gone, and greetd waited without end for a worker that was killed or
+  had crashed in PAM. Now that is an error, which the screen shows, and
+  starts over after.
 
 - The hand-over (`terminal.handover`): the session is started at once on
   the next free VT, in graphics mode, and switched to once its PAM session
@@ -193,6 +208,10 @@ the turns of the reader and the password described above.
   session is already running"). The worker now puts the VT back in text
   mode as the session ends, and greetd does it for the VT in front before a
   greeter is started, should a worker have been killed. Not seen since.
+  The same on every other way out of the worker once it has switched, an
+  error between the switch and the session's start among them, and for a
+  hand-over whose worker was killed (2026-10-13; not seen, read in the
+  code).
 - `loginctl terminate-session` does not end a niri session: niri is a user
   service, and stays while another session of the user is there, a TTY
   login for one. The next login then finds it running. From a TTY the
@@ -213,22 +232,24 @@ finger not recognised, and the reader kept away after three.
 
 ## greetd and Quickshell
 
-Read in their sources (greetd 0.10.3, Quickshell 0.3.1), not seen on a real
-login yet:
+Read in their sources (greetd 0.10.3, Quickshell 0.3.1):
 
 - greetd answers a client's requests in order, one answer each.
-- greetd does not stop a cancelled conversation's worker. One cancelled
-  while pam_fprintd waits holds the reader until its timeout, and one
-  cancelled while PAM checks an answer still sends its refusal. So Esc
-  cancels nothing then; the screen cancels at the password prompt alone,
-  and tries again every 5 s when the reader did not ask.
-- Each conversation dropped at the password makes pam_unix log two lines at
-  err, "conversation failed" and "auth could not identify password", every
-  10 s for as long as someone is at the screen with nothing typed. They are
-  the reader's rounds, not failed logins.
 - Quickshell does not wait for greetd's answer to a cancel and logs it as
   unexpected; a conversation started before it comes takes it for a success.
   Hence the screen's wait before each new one, longer after a late answer.
+
+Of greetd as it comes, and no longer so with the fork:
+
+- It does not stop a cancelled conversation's worker. One cancelled while
+  pam_fprintd waits holds the reader until its timeout, and one cancelled
+  while PAM checks an answer still sends its refusal. So Esc cancelled
+  nothing then; the screen cancelled at the password prompt alone, and
+  tried again every 5 s when the reader did not ask.
+- Each conversation dropped at the password made pam_unix log two lines at
+  err, "conversation failed" and "auth could not identify password", every
+  10 s for as long as someone was at the screen with nothing typed: the
+  reader's rounds, not failed logins. A round has no pam_unix now.
 
 ## The wallpaper
 
