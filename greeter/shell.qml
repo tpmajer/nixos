@@ -27,7 +27,7 @@ ShellRoot {
 
     Process {
         running: true
-        command: ["sh", "-c", 'for f in "$1"/*.desktop; do echo "[$f]"; cat "$f"; done', "sh", Quickshell.env("GREETER_SESSIONS")]
+        command: ["sh", "-c", 'for f in "$1"/*.desktop; do echo "[$f]"; cat "$f"; echo; done', "sh", Quickshell.env("GREETER_SESSIONS")]
         stdout: StdioCollector {
             onStreamFinished: {
                 const found = [];
