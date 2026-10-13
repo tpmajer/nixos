@@ -248,10 +248,15 @@ ShellRoot {
             restart();
     }
 
+    // Not while the screens are dark, nor right after: the key or the
+    // click that lights them is neither typed nor a button's.
+    function awake() {
+        return !idle.isIdle && Date.now() - wokeAt >= 300;
+    }
+
     function key(event) {
         event.accepted = true;
-        // The key that lights the screens is not typed.
-        if (idle.isIdle || Date.now() - wokeAt < 300)
+        if (!awake())
             return;
         if (event.key === Qt.Key_Tab) {
             nextSession();
@@ -601,7 +606,8 @@ ShellRoot {
             anchors.fill: parent
             anchors.margins: -8
             hoverEnabled: true
-            onClicked: Quickshell.execDetached(button.command)
+            onClicked: if (root.awake())
+                Quickshell.execDetached(button.command)
         }
     }
 
@@ -913,7 +919,8 @@ ShellRoot {
                     anchors.fill: parent
                     anchors.margins: -8
                     hoverEnabled: true
-                    onClicked: root.nextSession()
+                    onClicked: if (root.awake())
+                        root.nextSession()
                 }
             }
 
