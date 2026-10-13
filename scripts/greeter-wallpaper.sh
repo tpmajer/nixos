@@ -17,6 +17,15 @@ for _ in 1 2 3 4 5; do
     sleep 1
 done
 
+# Not each of the wallpapers flipped through: the one still there 2 s on.
+settle() {
+    local next
+    while [ -n "$now" ] && sleep 2 && next=$(shown) && [ "$next" != "$now" ]; do
+        now=$next
+    done
+}
+settle
+
 # Again if awww shows something else by the end: a change while this runs
 # does not start it anew.
 while [ -n "$now" ]; do
@@ -37,4 +46,5 @@ while [ -n "$now" ]; do
     before=$now
     now=$(shown)
     [ "$now" = "$before" ] && break
+    settle
 done
