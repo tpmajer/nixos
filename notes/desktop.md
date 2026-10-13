@@ -25,6 +25,17 @@ it goes while the session is locked, even cleanly (`qs kill`, SIGTERM), niri
 keeps the session locked with nothing to unlock it; the next process locks
 again by its marker. `systemctl stop` still stops it.
 
+Quickshell 0.3.2 went that way at any reload of its configuration while
+locked, a saved QML file being enough (2026-10-13): `ext_session_lock_v1:
+error 3: Output is already locked`, then two seconds of niri's red screen
+until the next process locked again. `WlSessionLock::realizeLockTarget` makes
+the lock surfaces ahead of the lock without the old instance, so a reload's
+are new windows and not the old ones taken over: a second surface for an
+output. `patches/quickshell/session-lock-reload.patch` passes the old
+instance there; upstream's master had the same line then. With it a reload
+keeps the process and the lock, and still logs "Session lock object was
+destroyed without unlocking" for the old instance, which no longer holds it.
+
 ## OpenLogi
 
 - Its udev rules (uaccess for Logitech HID++ hidraw/event nodes) are in
