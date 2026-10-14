@@ -704,11 +704,25 @@ ShellRoot {
                 }
 
                 // The lock's row, of which only the battery is known here.
-                // It keeps its line without one, so nothing moves.
-                Label {
+                // It keeps its line without one, so nothing moves. The icon
+                // a little larger than the text, as in the bar.
+                Row {
                     anchors.horizontalCenter: parent.horizontalCenter
-                    text: battery.known ? battery.icon + " " + battery.capacity + "%" : " "
-                    color: battery.color
+                    spacing: 6
+
+                    Label {
+                        text: battery.known ? battery.icon : " "
+                        color: battery.color
+                        font.pixelSize: root.fontSize + 3
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+
+                    Label {
+                        visible: battery.known
+                        text: battery.capacity + "%"
+                        color: battery.color
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
                 }
 
                 Item {
