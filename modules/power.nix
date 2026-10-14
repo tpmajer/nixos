@@ -91,7 +91,11 @@ in
     };
   };
   # The launcher entry in ~/.local/share/applications points at this.
-  environment.systemPackages = [ (script "geforcenow" { }) ];
+  # GFN reads the Wi-Fi link with the host's iw; without it, nmcli rescans.
+  environment.systemPackages = [
+    (script "geforcenow" { })
+    pkgs.iw
+  ];
 
   # The battery's charge limit, 80 or 100, from Quickshell's battery popup.
   # Nothing sets it at boot: the firmware is back at 80 by itself.
