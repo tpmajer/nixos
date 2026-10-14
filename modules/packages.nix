@@ -226,6 +226,10 @@
               gtk-theme = "adw-gtk3-dark";
               icon-theme = "Papirus";
             };
+            # "Paste as Link" and "Create Link" in the context menu.
+            "org/gnome/nautilus/preferences" = {
+              show-create-link = true;
+            };
           };
         }
       ];
