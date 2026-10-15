@@ -402,6 +402,7 @@ ShellRoot {
             // Not to exit: greetd ends this screen once the session is up.
             root.launching = () => Greetd.launch([Quickshell.env("GREETER_RUN"), session.id, session.exec], environment, false);
             leave.start();
+            dissolve.restart();
         }
 
         // greetd's own, a session it could not start among them. Started
@@ -420,6 +421,11 @@ ShellRoot {
             }
             root.accepted = false;
             leave.stop();
+            dissolve.stop();
+            root.leaving = 0;
+            // Back out of the backdrop: the lines come in again.
+            root.concealed = true;
+            arrival.restart();
             root.launching = null;
             root.frozenMarks = -1;
             root.forget();
@@ -448,6 +454,18 @@ ShellRoot {
     // colour: that frame stays on the display until the session's compositor
     // is up (notes/greeter.md).
     property var launching: null
+    // Let in: 0 to 1 while the screen goes into the backdrop. The lines grow
+    // a little; the green marks stay as they are.
+    property real leaving: 0
+
+    NumberAnimation {
+        id: dissolve
+        target: root
+        property: "leaving"
+        from: 0
+        to: 1
+        duration: 250
+    }
 
     Timer {
         id: leave
@@ -799,6 +817,7 @@ ShellRoot {
             Column {
                 anchors.centerIn: parent
                 spacing: 24
+                scale: 1 + 0.06 * root.ease(root.leaving)
 
                 Step {
                     order: 0
