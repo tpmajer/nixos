@@ -555,6 +555,73 @@ ShellRoot {
         precision: SystemClock.Minutes
     }
 
+    // Hidden while the screens are dark; lit again, the lines come in one
+    // after another, as on the lock in ~/.dotfiles.
+    property bool concealed: false
+    // The cascade's time, 0 to 1.
+    property real entrance: 1
+
+    readonly property int stepDelay: 60
+    readonly property int stepTime: 250
+    readonly property int steps: 6
+    readonly property int cascadeTime: stepTime + (steps - 1) * stepDelay
+
+    function ease(t) {
+        const c = Math.max(0, Math.min(1, t));
+        return 1 - Math.pow(1 - c, 3);
+    }
+
+    // How far in the line at the given place in the cascade is.
+    function stage(order) {
+        return ease((entrance * cascadeTime - order * stepDelay) / stepTime);
+    }
+
+    onConcealedChanged: {
+        entering.stop();
+        if (concealed)
+            entrance = 0;
+        else
+            entering.restart();
+    }
+
+    NumberAnimation {
+        id: entering
+        target: root
+        property: "entrance"
+        from: 0
+        to: 1
+        duration: root.cascadeTime
+    }
+
+    // A line of the cascade: fades in, 12 px up into its place.
+    component Step: Item {
+        id: step
+
+        property int order: 0
+        default property alias content: holder.data
+        readonly property real shown: root.stage(order)
+
+        anchors.horizontalCenter: parent?.horizontalCenter
+        implicitWidth: holder.childrenRect.width
+        implicitHeight: holder.childrenRect.height
+        opacity: shown
+        transform: Translate {
+            y: 12 * (1 - step.shown)
+        }
+
+        Item {
+            id: holder
+            anchors.fill: parent
+        }
+    }
+
+    // The screens first, then the lines.
+    Timer {
+        id: concealDelay
+        interval: 250
+        onTriggered: root.concealed = true
+    }
+
     // The screens go dark after a minute; niri lights them at the next key.
     // Meanwhile the conversation rests at the password.
     IdleMonitor {
@@ -563,8 +630,11 @@ ShellRoot {
         onIsIdleChanged: {
             if (isIdle) {
                 Quickshell.execDetached(["niri", "msg", "action", "power-off-monitors"]);
+                concealDelay.restart();
                 return;
             }
+            concealDelay.stop();
+            root.concealed = false;
             root.wokeAt = Date.now();
             // A conversation that rests at its question: the reader again.
             root.read();
@@ -686,42 +756,51 @@ ShellRoot {
                 anchors.centerIn: parent
                 spacing: 24
 
-                Label {
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    text: Qt.formatDateTime(clock.date, "HH:mm")
-                    font.pixelSize: 96
-                    font.bold: true
-                    color: root.subtext1
-                    opacity: 0.9
-                    // Qt's default renderer leaves text this large with
-                    // rough, colour-fringed edges.
-                    renderType: Text.CurveRendering
-                }
-
-                Label {
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    text: Qt.formatDateTime(clock.date, "dddd, d MMMM")
-                }
-
-                // The lock's row, of which only the battery is known here.
-                // It keeps its line without one, so nothing moves. The icon
-                // a little larger than the text, as in the bar.
-                Row {
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    spacing: 6
+                Step {
+                    order: 0
 
                     Label {
-                        text: battery.known ? battery.icon : " "
-                        color: battery.color
-                        font.pixelSize: root.fontSize + 3
-                        anchors.verticalCenter: parent.verticalCenter
+                        text: Qt.formatDateTime(clock.date, "HH:mm")
+                        font.pixelSize: 96
+                        font.bold: true
+                        color: root.subtext1
+                        opacity: 0.9
+                        // Qt's default renderer leaves text this large with
+                        // rough, colour-fringed edges.
+                        renderType: Text.CurveRendering
                     }
+                }
+
+                Step {
+                    order: 1
 
                     Label {
-                        visible: battery.known
-                        text: battery.capacity + "%"
-                        color: battery.color
-                        anchors.verticalCenter: parent.verticalCenter
+                        text: Qt.formatDateTime(clock.date, "dddd, d MMMM")
+                    }
+                }
+
+                Step {
+                    order: 2
+
+                    // The lock's row, of which only the battery is known here.
+                    // It keeps its line without one, so nothing moves. The icon
+                    // a little larger than the text, as in the bar.
+                    Row {
+                        spacing: 6
+
+                        Label {
+                            text: battery.known ? battery.icon : " "
+                            color: battery.color
+                            font.pixelSize: root.fontSize + 3
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+
+                        Label {
+                            visible: battery.known
+                            text: battery.capacity + "%"
+                            color: battery.color
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
                     }
                 }
 
@@ -730,201 +809,210 @@ ShellRoot {
                     height: 24
                 }
 
-                // The password field: a mark per character typed.
-                Item {
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    width: 320
-                    height: 48
+                Step {
+                    order: 3
 
-                    // The bar's shape and shadow, see-through as a whole.
+                    // The password field: a mark per character typed.
                     Item {
-                        anchors.fill: parent
-                        opacity: 0.7
+                        width: 320
+                        height: 48
 
-                        layer.enabled: true
-                        layer.effect: MultiEffect {
-                            shadowEnabled: true
-                            shadowColor: "#77000000"
-                            shadowBlur: 1.0
-                            blurMax: 24
-                            shadowVerticalOffset: 3
-                        }
-
-                        Rectangle {
+                        // The bar's shape and shadow, see-through as a whole.
+                        Item {
                             anchors.fill: parent
-                            radius: 6
-                            color: root.base
-                        }
-                    }
+                            opacity: 0.7
 
-                    Label {
-                        id: placeholder
-                        readonly property bool shown: root.marks === 0 && !(root.plain && root.buffer !== "")
+                            layer.enabled: true
+                            layer.effect: MultiEffect {
+                                shadowEnabled: true
+                                shadowColor: "#77000000"
+                                shadowBlur: 1.0
+                                blurMax: 24
+                                shadowVerticalOffset: 3
+                            }
 
-                        anchors.centerIn: parent
-
-                        text: root.rejection !== "" ? root.rejection : root.entered ? "checking…" : root.prompt
-                        color: root.rejection !== "" ? root.red : root.subtext0
-
-                        Behavior on color {
-                            ColorAnimation {
-                                duration: 250
+                            Rectangle {
+                                anchors.fill: parent
+                                radius: 6
+                                color: root.base
                             }
                         }
 
-                        // Gone at the first key; back once the marks have
-                        // faded.
-                        states: State {
-                            name: "typing"
-                            when: !placeholder.shown
-                            PropertyChanges {
-                                placeholder.opacity: 0
+                        Label {
+                            id: placeholder
+                            readonly property bool shown: root.marks === 0 && !(root.plain && root.buffer !== "")
+
+                            anchors.centerIn: parent
+
+                            text: root.rejection !== "" ? root.rejection : root.entered ? "checking…" : root.prompt
+                            color: root.rejection !== "" ? root.red : root.subtext0
+
+                            Behavior on color {
+                                ColorAnimation {
+                                    duration: 250
+                                }
+                            }
+
+                            // Gone at the first key; back once the marks have
+                            // faded.
+                            states: State {
+                                name: "typing"
+                                when: !placeholder.shown
+                                PropertyChanges {
+                                    placeholder.opacity: 0
+                                }
+                            }
+                            transitions: Transition {
+                                from: "typing"
+                                SequentialAnimation {
+                                    PauseAnimation {
+                                        duration: 100
+                                    }
+                                    NumberAnimation {
+                                        property: "opacity"
+                                        duration: 150
+                                    }
+                                }
                             }
                         }
-                        transitions: Transition {
-                            from: "typing"
+
+                        Label {
+                            anchors.centerIn: parent
+                            width: Math.min(implicitWidth, parent.width - 24)
+                            elide: Text.ElideLeft
+                            visible: root.plain
+                            text: root.buffer
+                            color: root.subtext1
+                            opacity: marks.opacity
+                        }
+
+                        // One per character typed: a mark fades and grows in at
+                        // the end of the row, which stays centred by sliding.
+                        Row {
+                            id: marks
+
+                            x: (parent.width - width) / 2
+                            anchors.verticalCenter: parent.verticalCenter
+                            visible: !root.plain
+                            spacing: 8
+
+                            // Pulses while the password is checked.
                             SequentialAnimation {
-                                PauseAnimation {
-                                    duration: 100
+                                running: root.entered && !root.accepted
+                                loops: Animation.Infinite
+                                onStarted: pulseEnd.stop()
+                                onStopped: pulseEnd.start()
+
+                                NumberAnimation {
+                                    target: marks
+                                    property: "opacity"
+                                    to: 0.35
+                                    duration: 450
+                                    easing.type: Easing.InOutSine
                                 }
                                 NumberAnimation {
+                                    target: marks
                                     property: "opacity"
-                                    duration: 150
+                                    to: 1
+                                    duration: 450
+                                    easing.type: Easing.InOutSine
                                 }
                             }
-                        }
-                    }
 
-                    Label {
-                        anchors.centerIn: parent
-                        width: Math.min(implicitWidth, parent.width - 24)
-                        elide: Text.ElideLeft
-                        visible: root.plain
-                        text: root.buffer
-                        color: root.subtext1
-                        opacity: marks.opacity
-                    }
-
-                    // One per character typed: a mark fades and grows in at
-                    // the end of the row, which stays centred by sliding.
-                    Row {
-                        id: marks
-
-                        x: (parent.width - width) / 2
-                        anchors.verticalCenter: parent.verticalCenter
-                        visible: !root.plain
-                        spacing: 8
-
-                        // Pulses while the password is checked.
-                        SequentialAnimation {
-                            running: root.entered && !root.accepted
-                            loops: Animation.Infinite
-                            onStarted: pulseEnd.stop()
-                            onStopped: pulseEnd.start()
-
+                            // Back to full from wherever the pulse was.
                             NumberAnimation {
-                                target: marks
-                                property: "opacity"
-                                to: 0.35
-                                duration: 450
-                                easing.type: Easing.InOutSine
-                            }
-                            NumberAnimation {
+                                id: pulseEnd
                                 target: marks
                                 property: "opacity"
                                 to: 1
-                                duration: 450
-                                easing.type: Easing.InOutSine
+                                duration: 150
+                            }
+
+                            Behavior on x {
+                                NumberAnimation {
+                                    duration: 150
+                                    easing.type: Easing.OutCubic
+                                }
+                            }
+
+                            Repeater {
+                                // As many as the field is wide, shown one per
+                                // character: no mark is made anew at a key.
+                                model: 18
+
+                                // The bar's mark of the active workspace.
+                                Label {
+                                    required property int index
+                                    readonly property bool typed: index < root.marks
+
+                                    text: String.fromCodePoint(0xf0c8)
+                                    color: root.accepted ? root.green : root.rejected ? root.red : root.subtext1
+
+                                    // Red comes in gradually. Green does not:
+                                    // what shows it is gone within a few frames.
+                                    Behavior on color {
+                                        enabled: !root.accepted
+                                        ColorAnimation {
+                                            duration: 250
+                                        }
+                                    }
+                                    opacity: typed ? 1 : 0
+                                    scale: typed ? 1 : 0.4
+                                    // Out of the row once faded: the row is as
+                                    // wide as what was typed.
+                                    visible: opacity > 0
+
+                                    Behavior on opacity {
+                                        NumberAnimation {
+                                            duration: typed ? 150 : 100
+                                        }
+                                    }
+                                    Behavior on scale {
+                                        NumberAnimation {
+                                            duration: typed ? 200 : 100
+                                            easing.type: typed ? Easing.OutBack : Easing.InQuad
+                                        }
+                                    }
+                                }
                             }
                         }
+                    }
+                }
 
-                        // Back to full from wherever the pulse was.
-                        NumberAnimation {
-                            id: pulseEnd
-                            target: marks
-                            property: "opacity"
-                            to: 1
-                            duration: 150
-                        }
+                Step {
+                    order: 4
 
-                        Behavior on x {
+                    // The reader's icon. It keeps its place when not shown, so
+                    // nothing moves.
+                    Label {
+                        text: String.fromCodePoint(0xf0237)
+                        font.pixelSize: 44
+                        opacity: root.finger === "" ? 0 : 1
+                        color: root.finger === "ok" ? root.green : root.finger === "bad" ? root.red : root.subtext0
+
+                        Behavior on opacity {
                             NumberAnimation {
                                 duration: 150
-                                easing.type: Easing.OutCubic
                             }
                         }
-
-                        Repeater {
-                            // As many as the field is wide, shown one per
-                            // character: no mark is made anew at a key.
-                            model: 18
-
-                            // The bar's mark of the active workspace.
-                            Label {
-                                required property int index
-                                readonly property bool typed: index < root.marks
-
-                                text: String.fromCodePoint(0xf0c8)
-                                color: root.accepted ? root.green : root.rejected ? root.red : root.subtext1
-
-                                // Red comes in gradually. Green does not:
-                                // what shows it is gone within a few frames.
-                                Behavior on color {
-                                    enabled: !root.accepted
-                                    ColorAnimation {
-                                        duration: 250
-                                    }
-                                }
-                                opacity: typed ? 1 : 0
-                                scale: typed ? 1 : 0.4
-                                // Out of the row once faded: the row is as
-                                // wide as what was typed.
-                                visible: opacity > 0
-
-                                Behavior on opacity {
-                                    NumberAnimation {
-                                        duration: typed ? 150 : 100
-                                    }
-                                }
-                                Behavior on scale {
-                                    NumberAnimation {
-                                        duration: typed ? 200 : 100
-                                        easing.type: typed ? Easing.OutBack : Easing.InQuad
-                                    }
-                                }
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: 150
                             }
                         }
                     }
                 }
 
-                // The reader's icon. It keeps its place when not shown, so
-                // nothing moves.
-                Label {
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    text: String.fromCodePoint(0xf0237)
-                    font.pixelSize: 44
-                    opacity: root.finger === "" ? 0 : 1
-                    color: root.finger === "ok" ? root.green : root.finger === "bad" ? root.red : root.subtext0
+                Step {
+                    order: 5
 
-                    Behavior on opacity {
-                        NumberAnimation {
-                            duration: 150
-                        }
+                    Label {
+                        // Caps Lock, else what the reader or greetd had to say.
+                        // Keeps its line when empty, so nothing moves.
+                        text: root.capsLock ? "caps lock is on" : root.status !== "" ? root.status : " "
+                        color: root.capsLock ? root.peach : root.red
+                        font.pixelSize: root.fontSize - 2
                     }
-                    Behavior on color {
-                        ColorAnimation {
-                            duration: 150
-                        }
-                    }
-                }
-
-                Label {
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    // Caps Lock, else what the reader or greetd had to say.
-                    // Keeps its line when empty, so nothing moves.
-                    text: root.capsLock ? "caps lock is on" : root.status !== "" ? root.status : " "
-                    color: root.capsLock ? root.peach : root.red
-                    font.pixelSize: root.fontSize - 2
                 }
             }
 
