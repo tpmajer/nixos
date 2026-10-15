@@ -1,0 +1,23 @@
+Keep the PAM socket after the first connection
+
+Each connection is handled by a clone of the listener, and the clone's
+Drop removed the socket file once the first password was handled: every
+later login found no socket. Upstream dropped the impl in 2eac1187d
+(after 0.6.0).
+
+--- a/src/pam_listener/mod.rs
++++ b/src/pam_listener/mod.rs
+@@ -352,13 +352,5 @@
+     }
+ }
+ 
+-impl Drop for PamListener {
+-    fn drop(&mut self) {
+-        if self.socket_path.exists() {
+-            let _ = std::fs::remove_file(&self.socket_path);
+-        }
+-    }
+-}
+-
+ #[cfg(test)]
+ mod tests;

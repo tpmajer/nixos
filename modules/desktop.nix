@@ -55,11 +55,15 @@ in
   };
 
   # pam_oo7 sent the password from a thread, with a helper process that
-  # login(1) took for its shell: a TTY login ended at once (notes/oo7.md).
+  # login(1) took for its shell: a TTY login ended at once. oo7-daemon
+  # removed its PAM socket after the first password (notes/oo7.md).
   nixpkgs.overlays = [
     (final: prev: {
       oo7-pam = prev.oo7-pam.overrideAttrs (old: {
         patches = (old.patches or [ ]) ++ [ ../patches/oo7/pam-send-before-returning.patch ];
+      });
+      oo7-server = prev.oo7-server.overrideAttrs (old: {
+        patches = (old.patches or [ ]) ++ [ ../patches/oo7/server-keep-pam-socket.patch ];
       });
     })
   ];
