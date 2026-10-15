@@ -577,9 +577,12 @@ ShellRoot {
     // out of the backdrop; then the lines come in one after another, as on
     // the lock in ~/.dotfiles.
     property bool concealed: true
-    // The cascade's time, 0 to 1.
-    property real entrance: 0
     property bool arrived: false
+
+    Cascade {
+        id: lines
+        concealed: root.concealed
+    }
 
     // The wallpapers are read (or there are none) and the screens come out
     // of the backdrop: the lines follow a moment into it. All screens, so
@@ -606,60 +609,6 @@ ShellRoot {
                 return;
             root.arrived = true;
             arrival.start();
-        }
-    }
-
-    readonly property int stepDelay: 60
-    readonly property int stepTime: 250
-    readonly property int steps: 6
-    readonly property int cascadeTime: stepTime + (steps - 1) * stepDelay
-
-    function ease(t) {
-        const c = Math.max(0, Math.min(1, t));
-        return 1 - Math.pow(1 - c, 3);
-    }
-
-    // How far in the line at the given place in the cascade is.
-    function stage(order) {
-        return ease((entrance * cascadeTime - order * stepDelay) / stepTime);
-    }
-
-    onConcealedChanged: {
-        entering.stop();
-        if (concealed)
-            entrance = 0;
-        else
-            entering.restart();
-    }
-
-    NumberAnimation {
-        id: entering
-        target: root
-        property: "entrance"
-        from: 0
-        to: 1
-        duration: root.cascadeTime
-    }
-
-    // A line of the cascade: fades in, 12 px up into its place.
-    component Step: Item {
-        id: step
-
-        property int order: 0
-        default property alias content: holder.data
-        readonly property real shown: root.stage(order)
-
-        anchors.horizontalCenter: parent?.horizontalCenter
-        implicitWidth: holder.childrenRect.width
-        implicitHeight: holder.childrenRect.height
-        opacity: shown
-        transform: Translate {
-            y: 12 * (1 - step.shown)
-        }
-
-        Item {
-            id: holder
-            anchors.fill: parent
         }
     }
 
@@ -817,10 +766,11 @@ ShellRoot {
             Column {
                 anchors.centerIn: parent
                 spacing: 24
-                scale: 1 + 0.06 * root.ease(root.leaving)
-                opacity: 1 - root.ease(root.leaving / 0.7)
+                scale: 1 + 0.06 * lines.ease(root.leaving)
+                opacity: 1 - lines.ease(root.leaving / 0.7)
 
                 Step {
+                    cascade: lines
                     order: 0
 
                     Label {
@@ -836,6 +786,7 @@ ShellRoot {
                 }
 
                 Step {
+                    cascade: lines
                     order: 1
 
                     Label {
@@ -844,6 +795,7 @@ ShellRoot {
                 }
 
                 Step {
+                    cascade: lines
                     order: 2
 
                     // The lock's row, of which only the battery is known here.
@@ -874,6 +826,7 @@ ShellRoot {
                 }
 
                 Step {
+                    cascade: lines
                     order: 3
 
                     // The password field: a mark per character typed.
@@ -1044,6 +997,7 @@ ShellRoot {
                 }
 
                 Step {
+                    cascade: lines
                     order: 4
 
                     // The reader's icon. It keeps its place when not shown, so
@@ -1068,6 +1022,7 @@ ShellRoot {
                 }
 
                 Step {
+                    cascade: lines
                     order: 5
 
                     Label {
