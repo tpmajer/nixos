@@ -88,3 +88,19 @@ within milliseconds, and getty's prompt again.
   2 s at most with `auto_start` and no daemon.
 
 Seen to work on a TTY 2026-10-11. To go once oo7 does it itself.
+
+## The PAM socket gone after one login
+
+oo7-daemon handles each connection on `/run/user/$UID/oo7-pam.sock` with a
+clone of its listener, and in 0.6.0 the listener's `Drop` removed the socket
+file: once the first password was in, the path was gone while the daemon went
+on. The daemon outlives a logout, so every later password login found no
+socket; pam_oo7, with `auto_start`, tried to start a second daemon, which
+exited with 1, and gave up after about 2 s. That wait delays the session since
+the patch above, and the password never reaches the daemon. A finger has no
+password to send and skips it all.
+
+`patches/oo7/server-keep-pam-socket.patch`, on `oo7-server` through the same
+overlay, drops the `Drop`; `start()` removes a stale socket before binding
+anyway. Upstream did the same in 2eac1187d, in 0.7.0.alpha and later: to go
+with the update to 0.7.
