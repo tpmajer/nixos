@@ -455,7 +455,7 @@ ShellRoot {
     // is up (notes/greeter.md).
     property var launching: null
     // Let in: 0 to 1 while the screen goes into the backdrop. The lines grow
-    // a little; the green marks stay as they are.
+    // a little and fade over its first 70%.
     property real leaving: 0
 
     NumberAnimation {
@@ -818,6 +818,7 @@ ShellRoot {
                 anchors.centerIn: parent
                 spacing: 24
                 scale: 1 + 0.06 * root.ease(root.leaving)
+                opacity: 1 - root.ease(root.leaving / 0.7)
 
                 Step {
                     order: 0
