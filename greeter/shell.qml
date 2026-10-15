@@ -555,11 +555,41 @@ ShellRoot {
         precision: SystemClock.Minutes
     }
 
-    // Hidden while the screens are dark; lit again, the lines come in one
-    // after another, as on the lock in ~/.dotfiles.
-    property bool concealed: false
+    // Hidden while the screens are dark, and until the screen first comes
+    // out of the backdrop; then the lines come in one after another, as on
+    // the lock in ~/.dotfiles.
+    property bool concealed: true
     // The cascade's time, 0 to 1.
-    property real entrance: 1
+    property real entrance: 0
+    property bool arrived: false
+
+    // The wallpapers are read (or there are none) and the screens come out
+    // of the backdrop: the lines follow a moment into it. All screens, so
+    // none plays it under its veil.
+    function arrive() {
+        if (arrived || windows.instances.length < Quickshell.screens.length || !windows.instances.every(w => w.loaded()))
+            return;
+        arrived = true;
+        arrival.start();
+    }
+
+    Timer {
+        id: arrival
+        interval: 200
+        onTriggered: root.concealed = false
+    }
+
+    // The lines come in even if a screen never says it is ready.
+    Timer {
+        interval: 3000
+        running: true
+        onTriggered: {
+            if (root.arrived)
+                return;
+            root.arrived = true;
+            arrival.start();
+        }
+    }
 
     readonly property int stepDelay: 60
     readonly property int stepTime: 250
@@ -693,10 +723,16 @@ ShellRoot {
     }
 
     Variants {
+        id: windows
         model: Quickshell.screens
+        onInstancesChanged: root.arrive()
 
         PanelWindow {
             required property var modelData
+            // Read when asked: as a binding, it lags the status handler.
+            function loaded() {
+                return image.status !== Image.Loading;
+            }
 
             screen: modelData
             color: root.base
@@ -729,6 +765,14 @@ ShellRoot {
                 source: root.wallpapers ? "file://" + root.wallpapers + "/" + modelData.name + ".jpg" : ""
                 fillMode: Image.PreserveAspectCrop
                 asynchronous: true
+                onStatusChanged: {
+                    if (status !== Image.Loading)
+                        root.arrive();
+                }
+                Component.onCompleted: {
+                    if (status !== Image.Loading)
+                        root.arrive();
+                }
             }
 
             Item {
