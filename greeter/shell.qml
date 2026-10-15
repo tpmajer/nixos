@@ -400,9 +400,13 @@ ShellRoot {
             // greetd hands the command to a shell, after /etc/profile; the
             // session's output goes to the journal under its id.
             // Not to exit: greetd ends this screen once the session is up.
-            root.launching = () => Greetd.launch([Quickshell.env("GREETER_RUN"), session.id, session.exec], environment, false);
-            leave.start();
-            dissolve.restart();
+            const launch = () => Greetd.launch([Quickshell.env("GREETER_RUN"), session.id, session.exec], environment, false);
+            hold.go = () => {
+                root.launching = launch;
+                leave.start();
+                dissolve.restart();
+            };
+            hold.restart();
         }
 
         // greetd's own, a session it could not start among them. Started
@@ -420,6 +424,7 @@ ShellRoot {
                 return;
             }
             root.accepted = false;
+            hold.stop();
             leave.stop();
             dissolve.stop();
             root.leaving = 0;
@@ -465,6 +470,14 @@ ShellRoot {
         from: 0
         to: 1
         duration: 250
+    }
+
+    // A moment with the green marks before the screen goes, as on the lock.
+    Timer {
+        id: hold
+        property var go: null
+        interval: 150
+        onTriggered: go?.()
     }
 
     Timer {
